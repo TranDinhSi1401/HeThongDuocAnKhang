@@ -10,12 +10,11 @@
     <name>HeThongDuocAnKhang</name>
 
     <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.target>24</maven.compiler.target>
-        <maven.compiler.source>24</maven.compiler.source>
-        <junit.version>5.13.2</junit.version>
+        <junit.version>5.10.2</junit.version>
     </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.hibernate.orm</groupId>
@@ -51,7 +50,199 @@
             <artifactId>lombok</artifactId>
             <version>1.18.44</version>
         </dependency>
+        
+        
+    <!-- ===== Apache Commons ===== -->
+    <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-collections4</artifactId>
+        <version>4.4</version>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-compress</artifactId>
+        <version>1.26.1</version>
+    </dependency>
+    <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>2.16.1</version>
+    </dependency>
+
+    <!-- ===== FlatLaf (Look & Feel) ===== -->
+    <dependency>
+        <groupId>com.formdev</groupId>
+        <artifactId>flatlaf</artifactId>
+        <version>3.4.1</version>
+    </dependency>
+    <dependency>
+        <groupId>com.formdev</groupId>
+        <artifactId>flatlaf-extras</artifactId>
+        <version>3.4.1</version>
+    </dependency>
+    <dependency>
+        <groupId>com.formdev</groupId>
+        <artifactId>flatlaf-fonts-roboto</artifactId>
+        <version>2.137</version>
+    </dependency>
+
+    <!-- ===== Email (JavaMail) ===== -->
+    <dependency>
+        <groupId>com.sun.mail</groupId>
+        <artifactId>javax.mail</artifactId>
+        <version>1.6.2</version>
+    </dependency>
+    <dependency>
+        <groupId>com.sun.activation</groupId>
+        <artifactId>javax.activation</artifactId>
+        <version>1.2.0</version>
+    </dependency>
+
+    <!-- ===== Bảo mật / Mã hóa password ===== -->
+    <dependency>
+        <groupId>org.mindrot</groupId>
+        <artifactId>jbcrypt</artifactId>
+        <version>0.4</version>
+    </dependency>
+
+    <!-- ===== JCalendar (DatePicker Swing) ===== -->
+    <dependency>
+        <groupId>com.toedter</groupId>
+        <artifactId>jcalendar</artifactId>
+        <version>1.4</version>
+    </dependency>
+
+    <!-- ===== JFreeChart (vẽ biểu đồ) ===== -->
+    <dependency>
+        <groupId>org.jfree</groupId>
+        <artifactId>jfreechart</artifactId>
+        <version>1.0.19</version>
+    </dependency>
+    <dependency>
+        <groupId>org.jfree</groupId>
+        <artifactId>jcommon</artifactId>
+        <version>1.0.23</version>
+    </dependency>
+    <dependency>
+        <groupId>org.jfree</groupId>
+        <artifactId>jfreesvg</artifactId>
+        <version>2.0</version>
+    </dependency>
+
+    <!-- ===== SVG ===== -->
+    <dependency>
+        <groupId>com.github.weisj</groupId>
+        <artifactId>jsvg</artifactId>
+        <version>1.4.0</version>
+    </dependency>
+
+    <!-- ===== Logging ===== -->
+    <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>2.0.7</version>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-api</artifactId>
+        <version>2.20.0</version>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-core</artifactId>
+        <version>2.20.0</version>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-slf4j2-impl</artifactId>
+        <version>2.20.0</version>
+    </dependency>
+
+    <!-- ===== Layout & UI Components Swing ===== -->
+        <dependency>
+            <groupId>com.miglayout</groupId>
+            <artifactId>miglayout-swing</artifactId>
+            <version>5.3</version>
+        </dependency>
+    <dependency>
+        <groupId>org.swinglabs.swingx</groupId>
+        <artifactId>swingx-all</artifactId>
+        <version>1.6.4</version>
+    </dependency>
+
+    <!-- ===== Apache POI (Excel) ===== -->
+    <dependency>
+        <groupId>org.apache.poi</groupId>
+        <artifactId>poi</artifactId>
+        <version>5.4.1</version>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.poi</groupId>
+        <artifactId>poi-ooxml</artifactId>
+        <version>5.4.1</version>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.poi</groupId>
+        <artifactId>poi-ooxml-full</artifactId>
+        <version>5.4.1</version>
+    </dependency>
+    <dependency>
+        <groupId>com.github.virtuald</groupId>
+        <artifactId>curvesapi</artifactId>
+        <version>1.07</version>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.xmlbeans</groupId>
+        <artifactId>xmlbeans</artifactId>
+        <version>5.2.1</version>
+    </dependency>
+
+    <!-- ===== SQL Server JDBC (thay cho sqljdbc42.jar) ===== -->
+    <dependency>
+        <groupId>com.microsoft.sqlserver</groupId>
+        <artifactId>mssql-jdbc</artifactId>
+        <version>12.6.1.jre11</version>
+    </dependency>
+
+    <!-- ===== Test ===== -->
+    <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.11</version>
+        <scope>test</scope>
+    </dependency>
+
+    <!-- ===== Servlet API ===== -->
+    <dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>javax.servlet-api</artifactId>
+        <version>4.0.1</version>
+        <scope>provided</scope>
+    </dependency>
+        <dependency>
+            <groupId>com.formdev</groupId>
+            <artifactId>svgSalamander</artifactId>
+            <version>1.1.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.orsoncharts</groupId>
+            <artifactId>orsoncharts</artifactId>
+            <version>1.4-eval</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.external</groupId>
+            <artifactId>AbsoluteLayout</artifactId>
+            <version>RELEASE180</version>
+        </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>netbeans</id>
+            <name>NetBeans Repository</name>
+            <url>https://netbeans.apidesign.org/maven2/</url>
+        </repository>
+    </repositories>
 
     <build>
         <plugins>
