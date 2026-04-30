@@ -4,7 +4,7 @@
  */
 package hethongnhathuocduocankhang.gui;
 
-import com.orsoncharts.util.TextAnchor;
+import org.jfree.chart3d.graphics2d.TextAnchor;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;

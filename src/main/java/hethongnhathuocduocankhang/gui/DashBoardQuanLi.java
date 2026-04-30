@@ -4,7 +4,7 @@
  */
 package hethongnhathuocduocankhang.gui;
 
-import com.orsoncharts.util.TextAnchor;
+import org.jfree.chart3d.graphics2d.TextAnchor;
 import hethongnhathuocduocankhang.bus.VaoRaCaBUS;
 import hethongnhathuocduocankhang.bus.QuanLyLoBUS;
 import hethongnhathuocduocankhang.dao.CaLamDAO;
