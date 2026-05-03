@@ -46,4 +46,6 @@ public class SanPhamCungCapDAO extends AbstractGenericDaoImpl<SanPhamCungCap, Lo
             return true;
         });
     }
+
+    public List<SanPhamCungCap> getSanPhamCungCapTheoMaSP(String maSP) { return getTheoMaSP(maSP); }
 }

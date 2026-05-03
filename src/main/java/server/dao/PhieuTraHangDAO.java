@@ -48,4 +48,7 @@ public class PhieuTraHangDAO extends AbstractGenericDaoImpl<PhieuTraHang, String
             return 0;
         });
     }
+
+    public List<PhieuTraHang> getPhieuTraHangTheoMaHoaDon(String maHD) { return timPTHTheoMaHoaDon(maHD); }
+    public int getSoPhieuTraHangCuoiCung() { return getSoPTHCuoiCungTrongNgay(java.time.LocalDate.now().toString().replace("-", "")); }
 }

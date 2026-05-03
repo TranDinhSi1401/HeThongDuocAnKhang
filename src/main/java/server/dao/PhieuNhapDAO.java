@@ -58,4 +58,6 @@ public class PhieuNhapDAO extends AbstractGenericDaoImpl<PhieuNhap, String> {
             return 0;
         });
     }
+
+    public int getSoPhieuNhapCuoiCung() { return getSoPNCuoiCungTrongNgay(java.time.LocalDate.now().toString().replace("-", "")); }
 }

@@ -14,6 +14,10 @@ public class ChiTietHoaDonDAO extends AbstractGenericDaoImpl<ChiTietHoaDon, Stri
     }
 
     /** Lấy tất cả chi tiết hóa đơn theo mã hóa đơn. */
+    public List<ChiTietHoaDon> getChiTietHoaDonTheoMaHoaDon(String maHoaDon) {
+        return getCTHDTheoMaHoaDon(maHoaDon);
+    }
+
     public List<ChiTietHoaDon> getCTHDTheoMaHoaDon(String maHoaDon) {
         return doInTransaction(em ->
             em.createQuery(
@@ -48,6 +52,17 @@ public class ChiTietHoaDonDAO extends AbstractGenericDaoImpl<ChiTietHoaDon, Stri
             if (!result.isEmpty() && result.get(0) != null)
                 return Integer.parseInt(result.get(0).substring(prefix.length()));
             return 0;
+        });
+    }
+
+    /** Xóa tất cả chi tiết hóa đơn theo mã hóa đơn. */
+    public boolean xoaChiTietHoaDonTheoMaHD(String maHoaDon) {
+        return doInTransaction(em -> {
+            int rows = em.createQuery(
+                "DELETE FROM ChiTietHoaDon cthd WHERE cthd.hoaDon.maHoaDon = :maHD")
+                .setParameter("maHD", maHoaDon)
+                .executeUpdate();
+            return rows >= 0;
         });
     }
 }
