@@ -13,7 +13,7 @@ import java.util.Set;
 @ToString(exclude = "lichSuCaLams")
 @Entity
 @Table(name = "ca_lam")
-public class CaLam {
+public class CaLam implements java.io.Serializable {
     @Id
     @Column(name = "ma_ca")
     private String maCa;

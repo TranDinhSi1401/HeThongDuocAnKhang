@@ -11,7 +11,7 @@ import lombok.*;
 @ToString(exclude = "sanPham")
 @Entity
 @Table(name = "ma_vach_san_pham")
-public class MaVachSanPham {
+public class MaVachSanPham implements java.io.Serializable {
     @Id
     @Column(name = "ma_vach")
     private String maVach;

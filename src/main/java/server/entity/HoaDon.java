@@ -13,7 +13,7 @@ import java.util.Set;
 @ToString(exclude = {"chiTietHoaDons", "phieuTraHangs"})
 @Entity
 @Table(name = "hoa_don")
-public class HoaDon {
+public class HoaDon implements java.io.Serializable {
     @Id
     @Column(name = "ma_hoa_don")
     private String maHoaDon;

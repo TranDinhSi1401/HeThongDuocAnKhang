@@ -13,7 +13,7 @@ import java.util.Set;
 @Builder
 @Entity
 @Table(name = "nha_cung_cap")
-public class NhaCungCap {
+public class NhaCungCap implements java.io.Serializable {
     @Id
     @Column(name = "ma_ncc")
     private String maNCC;

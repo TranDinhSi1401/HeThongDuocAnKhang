@@ -12,7 +12,7 @@ import java.util.Set;
 @ToString(exclude = {"maVachSanPhams", "khuyenMaiSanPhams", "sanPhamCungCaps", "loSanPhams", "donViTinhs"})
 @Entity
 @Table(name = "san_pham")
-public class SanPham {
+public class SanPham implements java.io.Serializable {
     @Id
     @Column(name = "ma_sp")
     private String maSP;

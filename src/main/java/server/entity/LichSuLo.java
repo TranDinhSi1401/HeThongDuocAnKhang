@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @ToString
 @Entity
 @Table(name = "lich_su_lo")
-public class LichSuLo {
+public class LichSuLo implements java.io.Serializable {
     @Id
     @Column(name = "ma_lich_su_lo")
     private String maLichSuLo;

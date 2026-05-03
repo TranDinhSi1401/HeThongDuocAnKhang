@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Table(name = "khuyen_mai_san_pham", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"ma_khuyen_mai", "ma_sp"})
 })
-public class KhuyenMaiSanPham {
+public class KhuyenMaiSanPham implements java.io.Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

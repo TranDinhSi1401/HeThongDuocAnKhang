@@ -14,7 +14,7 @@ import java.util.Set;
 @ToString(exclude = {"chiTietPhieuNhaps", "lichSuLos", "chiTietXuatLos"})
 @Entity
 @Table(name = "lo_san_pham")
-public class LoSanPham {
+public class LoSanPham implements java.io.Serializable {
     @Id
     @Column(name = "ma_lo_san_pham")
     private String maLoSanPham;

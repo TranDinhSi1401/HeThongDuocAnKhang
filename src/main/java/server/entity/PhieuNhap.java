@@ -14,7 +14,7 @@ import java.util.Set;
 @ToString(exclude = "chiTietPhieuNhaps")
 @Entity
 @Table(name = "phieu_nhap")
-public class PhieuNhap {
+public class PhieuNhap implements java.io.Serializable {
     @Id
     @Column(name = "ma_phieu_nhap")
     private String maPhieuNhap;

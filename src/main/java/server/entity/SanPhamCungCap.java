@@ -13,7 +13,7 @@ import lombok.*;
 @Table(name = "san_pham_cung_cap", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"ma_sp", "ma_ncc"})
 })
-public class SanPhamCungCap {
+public class SanPhamCungCap implements java.io.Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

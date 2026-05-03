@@ -13,7 +13,7 @@ import lombok.*;
 @Table(name = "chi_tiet_phieu_tra_hang", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"ma_phieu_tra_hang", "ma_chi_tiet_hoa_don"})
 })
-public class ChiTietPhieuTraHang {
+public class ChiTietPhieuTraHang implements java.io.Serializable {
     @Id
     @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
     private Long id;
