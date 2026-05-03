@@ -74,6 +74,17 @@ public class ClientHandler implements Runnable {
         try {
             return switch (cmd) {
 
+                // ===== AUTH =====
+                case LOGIN -> {
+                    Object[] arr = (Object[]) data;
+                    TaiKhoanDTO dto = nhanVienService.login((String) arr[0], (String) arr[1]);
+                    if (dto == null)
+                        yield Response.fail("Sai tài khoản hoặc mật khẩu!");
+                    if (dto.isBiKhoa())
+                        yield Response.fail("Tài khoản đã bị khóa!");
+                    yield Response.ok("Đăng nhập thành công", dto);
+                }
+
                 // ===== SAN PHAM =====
                 case GET_ALL_SAN_PHAM             -> Response.ok(sanPhamService.getAllSanPham());
                 case GET_SAN_PHAM_BY_MA           -> Response.ok(sanPhamService.timSPTheoMa((String) data));
@@ -155,8 +166,9 @@ public class ClientHandler implements Runnable {
                 case XOA_TAI_KHOAN          -> Response.ok(nhanVienService.xoaTaiKhoan((String) data));
                 case KIEM_TRA_EMAIL_TON_TAI  -> Response.ok(nhanVienService.kiemTraEmailTonTai((String) data));
                 case UPDATE_MAT_KHAU -> {
+                    // arr[0]=maNV, arr[1]=matKhauCuThô, arr[2]=matKhauMoiThô
                     Object[] arr = (Object[]) data;
-                    yield Response.ok(nhanVienService.updateMatKhau((String) arr[0], (String) arr[1], (String) arr[2]));
+                    yield Response.ok(nhanVienService.doiMatKhau((String) arr[0], (String) arr[1], (String) arr[2]));
                 }
                 case KIEM_TRA_EMAIL_THUOC_TAI_KHOAN -> {
                     Object[] arr = (Object[]) data;

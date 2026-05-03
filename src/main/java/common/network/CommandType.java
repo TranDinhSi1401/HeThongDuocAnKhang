@@ -11,6 +11,9 @@ import java.io.Serializable;
  */
 public enum CommandType implements Serializable {
 
+    // ===== Auth =====
+    LOGIN,                    // data = Object[]{ tenDangNhap, plainPassword }
+
     // ===== SanPham =====
     GET_ALL_SAN_PHAM,
     GET_SAN_PHAM_BY_MA,

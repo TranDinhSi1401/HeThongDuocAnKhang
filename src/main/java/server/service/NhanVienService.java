@@ -2,6 +2,7 @@ package server.service;
 
 import common.dto.NhanVienDTO;
 import common.dto.TaiKhoanDTO;
+import org.mindrot.jbcrypt.BCrypt;
 import server.dao.NhanVienDAO;
 import server.dao.TaiKhoanDAO;
 import server.entity.NhanVien;
@@ -116,5 +117,33 @@ public class NhanVienService {
 
     public boolean kiemTraEmailThuocTaiKhoan(String maNV, String email) {
         return taiKhoanDAO.kiemTraEmailThuocTaiKhoan(maNV, email);
+    }
+
+    /**
+     * Xác thực đăng nhập phía Server.
+     * @param tenDangNhap  mã NV / tên đăng nhập
+     * @param plainPassword mật khẩu thô từ Client
+     * @return TaiKhoanDTO nếu thành công, null nếu sai tài khoản/mật khẩu
+     */
+    public TaiKhoanDTO login(String tenDangNhap, String plainPassword) {
+        TaiKhoan tk = taiKhoanDAO.getTaiKhoanTheoMaNV(tenDangNhap);
+        if (tk == null) return null;
+        if (!BCrypt.checkpw(plainPassword, tk.getMatKhau())) return null;
+        return EntityMapper.toDTO(tk);
+    }
+
+    /**
+     * Đổi mật khẩu: kiểm tra mật khẩu cũ (BCrypt), hash mật khẩu mới rồi cập nhật DB.
+     * @param maNV     mã nhân viên
+     * @param oldPlain mật khẩu cũ dạng thô
+     * @param newPlain mật khẩu mới dạng thô
+     * @return true nếu đổi thành công
+     */
+    public boolean doiMatKhau(String maNV, String oldPlain, String newPlain) {
+        TaiKhoan tk = taiKhoanDAO.getTaiKhoanTheoMaNV(maNV);
+        if (tk == null) return false;
+        if (!BCrypt.checkpw(oldPlain, tk.getMatKhau())) return false;
+        String newHash = BCrypt.hashpw(newPlain, BCrypt.gensalt(12));
+        return taiKhoanDAO.updateMatKhauTheoMaNV(maNV, newHash);
     }
 }
