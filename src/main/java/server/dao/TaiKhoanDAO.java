@@ -89,4 +89,16 @@ public class TaiKhoanDAO extends AbstractGenericDaoImpl<TaiKhoan, String> {
             return count > 0;
         });
     }
+
+    /** Cập nhật mật khẩu chỉ theo maNV (dùng khi đổi mật khẩu đã xác thực). */
+    public boolean updateMatKhauTheoMaNV(String maNV, String matKhauHash) {
+        return doInTransaction(em -> {
+            int rows = em.createQuery(
+                "UPDATE TaiKhoan tk SET tk.matKhau = :mk WHERE tk.maNV = :maNV")
+                .setParameter("mk", matKhauHash)
+                .setParameter("maNV", maNV)
+                .executeUpdate();
+            return rows > 0;
+        });
+    }
 }

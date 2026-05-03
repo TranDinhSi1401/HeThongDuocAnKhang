@@ -36,4 +36,9 @@ public class ChiTietXuatLoDAO extends AbstractGenericDaoImpl<ChiTietXuatLo, Long
               .getResultList()
         );
     }
+
+    /** Alias rõ nghĩa hơn để Service gọi. */
+    public List<ChiTietXuatLo> getChiTietXuatLoTheoMaCTHD(String maCTHD) {
+        return getTheoMaCTHD(maCTHD);
+    }
 }

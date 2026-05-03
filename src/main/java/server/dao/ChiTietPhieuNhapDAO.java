@@ -45,4 +45,6 @@ public class ChiTietPhieuNhapDAO extends AbstractGenericDaoImpl<ChiTietPhieuNhap
               .getResultList()
         );
     }
+
+    public List<ChiTietPhieuNhap> getChiTietPhieuNhapTheoMaPN(String maPN) { return getTheoMaPhieuNhap(maPN); }
 }

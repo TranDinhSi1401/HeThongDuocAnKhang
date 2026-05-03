@@ -36,4 +36,6 @@ public class ChiTietPhieuTraHangDAO extends AbstractGenericDaoImpl<ChiTietPhieuT
               .getResultList()
         );
     }
+
+    public List<ChiTietPhieuTraHang> getChiTietPhieuTraHangTheoMaPTH(String maPTH) { return getTheoMaPhieuTra(maPTH); }
 }

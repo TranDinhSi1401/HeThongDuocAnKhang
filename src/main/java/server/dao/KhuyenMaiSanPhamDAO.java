@@ -41,4 +41,7 @@ public class KhuyenMaiSanPhamDAO extends AbstractGenericDaoImpl<KhuyenMaiSanPham
             return true;
         });
     }
+
+    public List<KhuyenMaiSanPham> getKhuyenMaiSanPhamTheoMaKM(String maKM) { return getTheoMaKM(maKM); }
+    public List<KhuyenMaiSanPham> getKhuyenMaiSanPhamTheoMaSP(String maSP) { return getTheoMaSP(maSP); }
 }
