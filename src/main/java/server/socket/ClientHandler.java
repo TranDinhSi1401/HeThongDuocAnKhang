@@ -100,7 +100,7 @@ public class ClientHandler implements Runnable {
                 case XOA_SAN_PHAM                 -> Response.ok(sanPhamService.xoaSanPham((String) data));
                 case GET_SP_BAN_CHAY_THANG        -> Response.ok(sanPhamService.getSPBanChayTrongThang((LocalDate) data));
                 case GET_SP_BAN_CHAY_NAM          -> Response.ok(sanPhamService.getSPBanChayTrongNam((LocalDate) data));
-
+                case GET_CHI_TIET_SP -> Response.ok(sanPhamService.getChiTietSpBangMaSp((String) data));
                 // SUA_SAN_PHAM: data = Object[]{maSP, SanPhamDTO}
                 case SUA_SAN_PHAM -> {
                     Object[] arr = (Object[]) data;

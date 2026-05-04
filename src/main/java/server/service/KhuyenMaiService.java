@@ -22,6 +22,10 @@ public class KhuyenMaiService {
         return khuyenMaiDAO.getKhuyenMaiDangHoatDong().stream().map(EntityMapper::toDTO).collect(Collectors.toList());
     }
 
+    public List<KhuyenMaiDTO> getKhuyenMaiTheoMaSp(String maSP) {
+        return khuyenMaiDAO.getKhuyenMaiTheoMaSP(maSP).stream().map(EntityMapper::toDTO).collect(Collectors.toList());
+    }
+
     public int getMaKMCuoiCung() { return khuyenMaiDAO.getMaKMCuoiCung(); }
 
     public boolean addKhuyenMai(KhuyenMaiDTO dto) {

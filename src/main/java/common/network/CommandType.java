@@ -28,7 +28,7 @@ public enum CommandType implements Serializable {
     XOA_SAN_PHAM,
     GET_SP_BAN_CHAY_THANG,
     GET_SP_BAN_CHAY_NAM,
-
+    GET_CHI_TIET_SP,
     // ===== DonViTinh =====
     GET_DVT_BY_MA_SP,
     GET_DVT_CO_BAN_BY_MA_SP,
