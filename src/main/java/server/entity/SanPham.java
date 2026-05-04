@@ -51,8 +51,6 @@ public class SanPham {
     @OneToMany(mappedBy = "sanPham", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<LoSanPham> loSanPhams;
 
-    @Column(name = "da_xoa")
-    private boolean daXoa;
 
     @OneToMany(mappedBy = "sanPham", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<DonViTinh> donViTinhs;
