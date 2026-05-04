@@ -11,6 +11,7 @@ import common.dto.*;
 import common.network.CommandType;
 import common.network.Request;
 import common.network.Response;
+import server.entity.KhuyenMai;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -147,11 +148,11 @@ public class BanHangPane extends javax.swing.JPanel {
                 }
                 
                 try {
-//                    Object[] updatedInfo = bus.thayDoiChiTietHoaDon(masp, soLuong, tenDVT);
-//                    model.setValueAt(updatedInfo[0], row, 3);
-//                    model.setValueAt(updatedInfo[1], row, 5);
-//                    model.setValueAt(updatedInfo[2], row, 6);
-//                    model.setValueAt(updatedInfo[3], row, 7);
+                    Object[] updatedInfo = thayDoiChiTietHoaDon(masp, soLuong, tenDVT);
+                    model.setValueAt(updatedInfo[0], row, 3);
+                    model.setValueAt(updatedInfo[1], row, 5);
+                    model.setValueAt(updatedInfo[2], row, 6);
+                    model.setValueAt(updatedInfo[3], row, 7);
                     capNhatTongTien(model);
                 } catch (Exception ex) {
                     String msg = ex.getMessage().trim();
@@ -927,7 +928,7 @@ public class BanHangPane extends javax.swing.JPanel {
         // Thêm sản phẩm vào table cthd
         try {
             String maSP = txtTimKiem.getText().trim();
-            if(maSP.isEmpty() || maSP.equalsIgnoreCase("Nhập mã sản phẩm [F1]")) {
+            if(maSP.isEmpty() || maSP.equalsIgnoreCase("Nhập mã sản phẩm [F3]")) {
                 JOptionPane.showMessageDialog(this, "Vui lòng nhập mã sản phẩm hoặc mã vạch", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
                 return;
             }
@@ -946,6 +947,10 @@ public class BanHangPane extends javax.swing.JPanel {
 
     private void txtSdtKHActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSdtKHActionPerformed
         String sdt = txtSdtKH.getText().trim();
+        if(sdt.isEmpty() || sdt.equalsIgnoreCase("Nhập sđt khách hàng [F4]")) {
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập số điện thoại khách hàng", "Warning Message", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
         Request request = new Request(CommandType.GET_KHACH_HANG_BY_SDT, sdt);
         Response response = SocketClient.getInstance().sendRequest(request);
         if(!response.isSuccess()) {
@@ -974,24 +979,24 @@ public class BanHangPane extends javax.swing.JPanel {
     }//GEN-LAST:event_txtTienKhachDuaActionPerformed
  
     private void btnThanhToanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnThanhToanActionPerformed
-//        try {
-//            String maKH = lblMaKH1.getText().trim();
-//            boolean chuyenKhoan = radChuyenKhoan.isSelected();
-//            double tongTien = getTongTien();
-//            double tienKhachDua = Double.parseDouble(txtTienKhachDua.getText().replaceAll("\\s", ""));
-//            double tienThua = Double.parseDouble(lblTienThua1.getText().replaceAll("[^\\d]", ""));
+        try {
+            String maKH = lblMaKH1.getText().trim();
+            boolean chuyenKhoan = radChuyenKhoan.isSelected();
+            double tongTien = getTongTien();
+            double tienKhachDua = Double.parseDouble(txtTienKhachDua.getText().replaceAll("\\s", ""));
+            double tienThua = Double.parseDouble(lblTienThua1.getText().replaceAll("[^\\d]", ""));
 //            if(bus.thanhToan(tblCTHD, maKH, chuyenKhoan, tongTien, tienKhachDua, tienThua)) {
 //                parent.dongTabHienTai(this);
 //            }
-//        } catch(Exception e) {
-//            if(e.getMessage().equalsIgnoreCase("For input string: \"Nhậptiềnkháchđưa[F7]\"")) {
-//                JOptionPane.showMessageDialog(this, "tiền khách đưa phải là số dương", "Error Message", JOptionPane.ERROR_MESSAGE);
-//            } else if (e.getMessage().equalsIgnoreCase("empty String")){
-//                JOptionPane.showMessageDialog(this, "Ô tiền thừa bị trống", "Error Message", JOptionPane.ERROR_MESSAGE);
-//            } else {
-//                JOptionPane.showMessageDialog(this, e.getMessage(), "Error Message", JOptionPane.ERROR_MESSAGE);
-//            }
-//        }
+        } catch(Exception e) {
+            if(e.getMessage().equalsIgnoreCase("For input string: \"Nhậptiềnkháchđưa[F7]\"")) {
+                JOptionPane.showMessageDialog(this, "tiền khách đưa phải là số dương", "Error Message", JOptionPane.ERROR_MESSAGE);
+            } else if (e.getMessage().equalsIgnoreCase("empty String")){
+                JOptionPane.showMessageDialog(this, "Ô tiền thừa bị trống", "Error Message", JOptionPane.ERROR_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, e.getMessage(), "Error Message", JOptionPane.ERROR_MESSAGE);
+            }
+        }
     }//GEN-LAST:event_btnThanhToanActionPerformed
 
     private void txtTimKiemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtTimKiemActionPerformed
@@ -1380,6 +1385,54 @@ public class BanHangPane extends javax.swing.JPanel {
         }
 
         return Double.parseDouble(str);
+    }
+
+    public Object[] thayDoiChiTietHoaDon(String maSP, int soLuong, String tenDVT) throws Exception{
+        // Chi tiết của sản phẩm
+        Request request = new Request(CommandType.GET_CHI_TIET_SP, maSP);
+        Response response = SocketClient.getInstance().sendRequest(request);
+        if(!response.isSuccess()) {
+            JOptionPane.showMessageDialog(this, response.getMessage(), "Warning Message", JOptionPane.WARNING_MESSAGE);
+            return null;
+        }
+        ChiTietSanPhamDTO chiTietSanPhamDTO = (ChiTietSanPhamDTO) response.getData();
+        // Lấy khuyến mãi đủ điều kiện
+        List<KhuyenMaiDTO> dskm = chiTietSanPhamDTO.getDsKM();
+        dskm.sort((b, a) -> Double.compare(a.getPhanTram(), b.getPhanTram()));
+        double giamGia = 0;
+        for(KhuyenMaiDTO km : dskm) {
+            if(soLuong >= km.getSoLuongToiThieu() && soLuong <= km.getSoLuongToiDa()) {
+                giamGia = km.getPhanTram();
+                break;
+            }
+        }
+        // Lấy số lượng trong kho
+        List<LoSanPhamDTO> dsLSP = chiTietSanPhamDTO.getDsLSP();
+        int tongSoLuong = 0;
+        for(LoSanPhamDTO lsp : dsLSP) {
+            tongSoLuong += lsp.getSoLuong();
+        }
+
+        List<DonViTinhDTO> dsDVT = chiTietSanPhamDTO.getDsDVT();
+        dsDVT.sort((a, b) -> Double.compare(a.getHeSoQuyDoi(), b.getHeSoQuyDoi()));
+        for (DonViTinhDTO dvt : dsDVT) {
+            if (dvt.getTenDonViTinh().equals(tenDVT)) {
+                int heSoQuyDoi = dvt.getHeSoQuyDoi();
+                double donGia = dvt.getGiaBanTheoDonVi();
+                double thanhTien = soLuong * donGia * (1 - giamGia / 100);
+                String maDVT = dvt.getMaDonViTinh();
+                int tonTheoDonVi = tongSoLuong / heSoQuyDoi;
+                if(soLuong * heSoQuyDoi > tongSoLuong) {
+                    throw new Exception("Không đủ số lượng\nTổng số lượng còn lại: " + tonTheoDonVi + " " + tenDVT);
+                }
+                if(soLuong < 1) {
+                    throw new Exception("Số lượng phải lớn hơn bằng 1");
+                }
+                Object[] updatedInfo = {donGia, giamGia, thanhTien, maDVT};
+                return updatedInfo;
+            }
+        }
+        return null;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
