@@ -10,7 +10,7 @@ import java.util.Set;
 @Getter
 @Setter
 @Builder
-@ToString(exclude = {"chiTietXuatLos", "chiTietPhieuTraHangs"})
+@ToString(exclude = { "chiTietXuatLos", "chiTietPhieuTraHangs" })
 @Entity
 @Table(name = "chi_tiet_hoa_don")
 public class ChiTietHoaDon {

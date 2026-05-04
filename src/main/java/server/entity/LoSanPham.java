@@ -11,7 +11,7 @@ import java.util.Set;
 @Setter
 @Getter
 @Builder
-@ToString(exclude = {"chiTietPhieuNhaps", "lichSuLos", "chiTietXuatLos"})
+@ToString(exclude = { "chiTietPhieuNhaps", "lichSuLos", "chiTietXuatLos" })
 @Entity
 @Table(name = "lo_san_pham")
 public class LoSanPham {
@@ -42,5 +42,5 @@ public class LoSanPham {
     private Set<LichSuLo> lichSuLos;
 
     @OneToMany(mappedBy = "loSanPham", cascade = CascadeType.ALL, orphanRemoval = true)
-    private  Set<ChiTietXuatLo> chiTietXuatLos;
+    private Set<ChiTietXuatLo> chiTietXuatLos;
 }

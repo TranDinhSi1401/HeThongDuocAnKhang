@@ -140,16 +140,19 @@ public class LoSanPhamGUI extends javax.swing.JPanel {
                 if (x1 >= 0) {
                     String maSP = tblLoSanPham.getValueAt(x1, 0).toString();
                     String ten = tblLoSanPham.getValueAt(x1, 1).toString();
-                    String maLO = tblLoSanPham.getValueAt(x1, 2).toString();
+                    String maLo = tblLoSanPham.getValueAt(x1, 2).toString();
                     String donVi = tblLoSanPham.getValueAt(x1, 3).toString();
                     String sl = tblLoSanPham.getValueAt(x1, 4).toString();
                     NhaCungCap ncc = NhaCungCapDAO
-                            .timNCCTheoMa(SanPhamCungCapDAO.getSanPhamCungCap(maSP).getNhaCungCap().getMaNCC());
-                    LoSanPham lo = LoSanPhamDAO.timLoSanPham(maLO);
+                            .timNCCTheoMa(SanPhamCungCapDAO
+                                    .getSanPhamCungCap(maSP)
+                                    .getNhaCungCap()
+                                    .getMaNCC());
+                    LoSanPham lo = LoSanPhamDAO.timLoSanPham(maLo);
 
                     txtMaSanPham.setText(maSP);
                     txtTenSanPham.setText(ten);
-                    txtMaLo.setText(maLO);
+                    txtMaLo.setText(maLo);
                     txtNhaCungCap.setText(ncc.getTenNCC());
                     txtNgaySanXuat.setText(lo.getNgaySanXuat().toString());
                     txtNgayHetHan.setText(lo.getNgayHetHan().toString());
@@ -159,7 +162,6 @@ public class LoSanPhamGUI extends javax.swing.JPanel {
                 }
             }
         });
-
         SwingUtilities.invokeLater(() -> {
             tblTab.requestFocusInWindow();
             cmbTimKiemTheo.requestFocusInWindow();
@@ -209,7 +211,7 @@ public class LoSanPhamGUI extends javax.swing.JPanel {
         btnXoaSanPham.setToolTipText("Xóa sản phẩm được chọn");
         btnXacNhan.setToolTipText("Nhập lô được chọn");
         btnTimLoHetHan.setToolTipText("Tìm danh sách lô hết hạn");
-
+        // phím tắt
     }
 
     /**
@@ -1041,7 +1043,6 @@ public class LoSanPhamGUI extends javax.swing.JPanel {
         }
         // TODO add your handling code here:
     }// GEN-LAST:event_btnHuyLoActionPerformed
-
     private void txtNhaCungCapActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_txtNhaCungCapActionPerformed
         // TODO add your handling code here:
     }// GEN-LAST:event_txtNhaCungCapActionPerformed

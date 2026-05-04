@@ -11,7 +11,7 @@ import lombok.*;
 @ToString
 @Entity
 @Table(name = "chi_tiet_phieu_tra_hang", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"ma_phieu_tra_hang", "ma_chi_tiet_hoa_don"})
+        @UniqueConstraint(columnNames = { "ma_phieu_tra_hang", "ma_chi_tiet_hoa_don" })
 })
 public class ChiTietPhieuTraHang {
     @Id

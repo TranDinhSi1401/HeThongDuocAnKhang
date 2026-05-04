@@ -3,16 +3,12 @@
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_2.xsd"
              version="3.2">
-    <persistence-unit name="default">
 
-    </persistence-unit>
     <persistence-unit name="mariadb-pu">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
         <class>server.entity.SanPham</class>
         <class>server.entity.MaVachSanPham</class>
-        <class>server.entity.LoaiSanPhamEnum</class>
         <class>server.entity.KhuyenMai</class>
-        <class>server.entity.LoaiKhuyenMaiEnum</class>
         <class>server.entity.KhuyenMaiSanPham</class>
         <class>server.entity.CaLam</class>
         <class>server.entity.ChiTietPhieuNhap</class>
@@ -28,8 +24,6 @@
         <class>server.entity.HoaDon</class>
         <class>server.entity.KhachHang</class>
         <class>server.entity.ChiTietPhieuTraHang</class>
-        <class>server.entity.TinhTrangSanPhamEnum</class>
-        <class>server.entity.TruongHopDoiTraEnum</class>
         <class>server.entity.PhieuTraHang</class>
         <class>server.entity.ChiTietXuatLo</class>
         <class>server.entity.DonViTinh</class>
@@ -40,8 +34,8 @@
                       value="jdbc:mariadb://localhost:3306/nhathuocduocankhang"/>
             <property name="jakarta.persistence.jdbc.user" value="root"/>
             <property name="jakarta.persistence.jdbc.password"
-                      value="sapassword"/>
-            <property name="jakarta.persistence.jdbc.dialect"
+                      value="123456"/>
+            <property name="hibernate.dialect"
                       value="org.hibernate.dialect.MariaDBDialect"/>
             <property name="hibernate.show_sql" value="true"/>
             <property name="hibernate.format_sql" value="true"/>

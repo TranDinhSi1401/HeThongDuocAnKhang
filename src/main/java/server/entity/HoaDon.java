@@ -5,12 +5,13 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.Set;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Setter
 @Getter
 @Builder
-@ToString(exclude = {"chiTietHoaDons", "phieuTraHangs"})
+@ToString(exclude = { "chiTietHoaDons", "phieuTraHangs" })
 @Entity
 @Table(name = "hoa_don")
 public class HoaDon {

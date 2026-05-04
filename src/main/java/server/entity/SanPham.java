@@ -9,7 +9,7 @@ import java.util.Set;
 @Setter
 @Getter
 @Builder
-@ToString(exclude = {"maVachSanPhams", "khuyenMaiSanPhams", "sanPhamCungCaps", "loSanPhams", "donViTinhs"})
+@ToString(exclude = { "maVachSanPhams", "khuyenMaiSanPhams", "sanPhamCungCaps", "loSanPhams", "donViTinhs" })
 @Entity
 @Table(name = "san_pham")
 public class SanPham {
@@ -35,6 +35,9 @@ public class SanPham {
 
     @Column(name = "ton_toi_da")
     private int tonToiDa;
+
+    @Column(name = "da_xoa")
+    private boolean daXoa;
 
     @OneToMany(mappedBy = "sanPham", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<MaVachSanPham> maVachSanPhams;

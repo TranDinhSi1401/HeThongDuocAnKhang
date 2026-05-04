@@ -11,7 +11,7 @@ import java.util.Set;
 @Setter
 @Getter
 @Builder
-@ToString(exclude = {"lichSuCaLams", "phieuNhaps", "taiKhoan", "lichSuLos", "hoaDons", "phieuTraHangs"})
+@ToString(exclude = { "lichSuCaLams", "phieuNhaps", "taiKhoan", "lichSuLos", "hoaDons", "phieuTraHangs" })
 @Entity
 @Table(name = "nhan_vien")
 public class NhanVien {

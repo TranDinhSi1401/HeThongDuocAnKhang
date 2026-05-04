@@ -9,7 +9,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Setter
 @Getter
-@ToString(exclude = {"sanPhamCungCaps", "chiTietPhieuNhaps"})
+@ToString(exclude = { "sanPhamCungCaps", "chiTietPhieuNhaps" })
 @Builder
 @Entity
 @Table(name = "nha_cung_cap")
