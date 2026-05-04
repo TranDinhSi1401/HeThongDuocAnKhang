@@ -122,20 +122,18 @@ public class GiaoDienChinhGUI extends JFrame{
         AboutGUI aboutDialog = new AboutGUI(app);
         aboutDialog.setVisible(true);
     }
-    
+
     public static void showForm(Component component) {
-        component.applyComponentOrientation(app.getComponentOrientation());
-        app.mainForm.showForm(component);
+        client.gui.GiaoDienChinhGUI.showForm(component);
     }
     
     public static JPanel getOrCreatePanel(String key, Supplier<JPanel> creator) {
         return cachedPanels.computeIfAbsent(key, k -> creator.get());
     }
-    
+
     public static void showFormByKey(String key, Supplier<JPanel> creator) {
-        setCurrentForm(key, creator);
-        JPanel panel = getOrCreatePanel(key, creator);
-        showForm(panel);
+        // Forward sang class mới ở client.gui (vì giờ login đi qua đó)
+        client.gui.GiaoDienChinhGUI.showFormByKey(key, creator);
     }
     
     public static void logout() {

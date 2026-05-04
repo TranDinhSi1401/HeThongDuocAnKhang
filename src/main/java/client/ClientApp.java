@@ -4,23 +4,14 @@ import client.gui.DangNhapGUI;
 import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
 import com.formdev.flatlaf.themes.FlatMacLightLaf;
+import hethongnhathuocduocankhang.connectDB.ConnectDB;   // ★ thêm import này
 
 import javax.swing.*;
 
-/**
- * Điểm khởi động phía Client.
- *
- * Client KHÔNG kết nối DB trực tiếp. Mọi dữ liệu đều được
- * lấy từ Server qua Socket ({@link client.socket.SocketClient}).
- *
- * Cách chạy:
- *   1. Khởi động {@link server.socket.Server} trước.
- *   2. Chạy class này.
- */
 public class ClientApp {
 
     public static void main(String[] args) {
-        // ── Khởi động Look & Feel ──────────────────────────────
+        // ── Look & Feel ──
         FlatRobotoFont.install();
         FlatLaf.setPreferredFontFamily(FlatRobotoFont.FAMILY);
         FlatLaf.setPreferredLightFontFamily(FlatRobotoFont.FAMILY_LIGHT);
@@ -29,10 +20,20 @@ public class ClientApp {
         try {
             UIManager.setLookAndFeel(new FlatMacLightLaf());
         } catch (UnsupportedLookAndFeelException e) {
-            System.err.println("[ClientApp] Không thể áp dụng LookAndFeel: " + e.getMessage());
+            System.err.println("[ClientApp] LookAndFeel: " + e.getMessage());
         }
 
-        // ── Mở màn hình Đăng nhập ─────────────────────────────
+        // ★ Kết nối SQL Server cho các DAO legacy
+        try {
+            ConnectDB.getInstance().connect();
+            System.out.println("[ClientApp] Kết nối CSDL thành công");
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null,
+                    "Không kết nối được CSDL SQL Server:\n" + e.getMessage(),
+                    "Lỗi kết nối", JOptionPane.ERROR_MESSAGE);
+            System.exit(1);
+        }
+
         SwingUtilities.invokeLater(DangNhapGUI::new);
     }
 }

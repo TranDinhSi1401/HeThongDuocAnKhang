@@ -7,6 +7,11 @@ package hethongnhathuocduocankhang.entity;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+@lombok.Builder
+@lombok.Getter
+@lombok.Setter
+@lombok.ToString
+
 public class TaiKhoan {
 
     private String tenDangNhap;

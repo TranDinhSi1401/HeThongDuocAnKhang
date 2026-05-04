@@ -44,6 +44,9 @@ public class GiaoDienChinhGUI extends JFrame {
         currentTaiKhoan = taiKhoan;
         instance        = this;
 
+        hethongnhathuocduocankhang.gui.GiaoDienChinhGUI.setTk(toEntity(taiKhoan));
+
+
         initComponents();
 
         URL iconUrl = getClass().getResource("/resources/images/logo.png");
@@ -102,6 +105,8 @@ public class GiaoDienChinhGUI extends JFrame {
             instance.dispose();
             cachedPanels.clear();
             currentTaiKhoan = null;
+            hethongnhathuocduocankhang.gui.GiaoDienChinhGUI.setTk(null);   // ★ thêm dòng này
+
             SwingUtilities.invokeLater(DangNhapGUI::new);
         }
     }
@@ -197,7 +202,21 @@ public class GiaoDienChinhGUI extends JFrame {
     public static TaiKhoanDTO getCurrentTaiKhoan() {
         return currentTaiKhoan;
     }
-
+    /** Chuyển DTO nhận từ Server thành entity TaiKhoan để các panel legacy dùng qua getTk(). */
+    private static hethongnhathuocduocankhang.entity.TaiKhoan toEntity(TaiKhoanDTO dto) {
+        if (dto == null) return null;
+        hethongnhathuocduocankhang.entity.TaiKhoan tk =
+                new hethongnhathuocduocankhang.entity.TaiKhoan();
+        tk.setTenDangNhap(dto.getMaNV());     // tenDangNhap trong DTO === maNV trong entity
+        tk.setMatKhau(dto.getMatKhau());
+        tk.setQuanLy(dto.isQuanLy());
+        tk.setQuanLyLo(dto.isQuanLyLo());
+        tk.setBiKhoa(dto.isBiKhoa());
+        tk.setEmail(dto.getEmail());
+        tk.setNgayTao(dto.getNgayTao());
+        tk.setBiKhoa(false);
+        return tk;
+    }
     /** Compat helper: trả về true/false theo quyền quản lý */
     public static boolean isQuanLy() {
         return currentTaiKhoan != null && currentTaiKhoan.isQuanLy();
