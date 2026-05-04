@@ -12,8 +12,7 @@ import java.io.Serializable;
 public enum CommandType implements Serializable {
 
     // ===== Auth =====
-    LOGIN,                    // data = Object[]{ tenDangNhap, plainPassword }
-
+    LOGIN,                    // data = Object[]{ tenDangNhap, plainPassword }     // data = Object[]{ maNV, email, newPlainPassword }
     // ===== SanPham =====
     GET_ALL_SAN_PHAM,
     GET_SAN_PHAM_BY_MA,
@@ -76,7 +75,7 @@ public enum CommandType implements Serializable {
     UPDATE_MAT_KHAU,
     KIEM_TRA_EMAIL_TON_TAI,
     KIEM_TRA_EMAIL_THUOC_TAI_KHOAN,
-
+    QUEN_MAT_KHAU,
     // ===== HoaDon =====
     GET_HOA_DON_MOI_NHAT_TRONG_NGAY,
     GET_HOA_DON_BY_MA,

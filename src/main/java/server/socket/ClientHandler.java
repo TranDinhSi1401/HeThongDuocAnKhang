@@ -4,6 +4,7 @@ import common.dto.*;
 import common.network.CommandType;
 import common.network.Request;
 import common.network.Response;
+import server.dao.TaiKhoanDAO;
 import server.service.*;
 
 import java.io.*;
@@ -159,6 +160,10 @@ public class ClientHandler implements Runnable {
                 }
 
                 // ===== TAI KHOAN =====
+                case QUEN_MAT_KHAU -> {
+                    Object[] arr = (Object[]) data;
+                    yield Response.ok(nhanVienService.updateMatKhau((String) arr[0], (String) arr[1], (String) arr[2]));
+                }
                 case GET_TAI_KHOAN_BY_MA_NV -> Response.ok(nhanVienService.getTaiKhoanTheoMaNV((String) data));
                 case GET_TAI_KHOAN_BY_EMAIL -> Response.ok(nhanVienService.getTaiKhoanTheoEmail((String) data));
                 case ADD_TAI_KHOAN          -> Response.ok(nhanVienService.addTaiKhoan((TaiKhoanDTO) data));
