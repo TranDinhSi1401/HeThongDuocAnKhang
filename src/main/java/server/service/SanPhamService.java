@@ -159,4 +159,11 @@ public class SanPhamService {
     public boolean deleteMaVach(String maVach) {
         return maVachSanPhamDAO.delete(maVach);
     }
+
+    public List<MaVachSanPhamDTO> getMaVachByMaSP(String maSP) {
+        return maVachSanPhamDAO.getMaVachTheoMaSP(maSP)
+                .stream()
+                .map(code -> new MaVachSanPhamDTO(code.getMaVach(), maSP))
+                .collect(Collectors.toList());
+    }
 }

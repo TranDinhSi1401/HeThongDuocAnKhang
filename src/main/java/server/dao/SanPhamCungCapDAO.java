@@ -47,5 +47,16 @@ public class SanPhamCungCapDAO extends AbstractGenericDaoImpl<SanPhamCungCap, Lo
         });
     }
 
+    /** Xóa tất cả nhà cung cấp của một sản phẩm. */
+    public boolean xoaHetNCCuaSP(String maSP) {
+        return doInTransaction(em -> {
+            em.createQuery(
+                "DELETE FROM SanPhamCungCap spcc WHERE spcc.sanPham.maSP = :maSP")
+                .setParameter("maSP", maSP)
+                .executeUpdate();
+            return true;
+        });
+    }
+
     public List<SanPhamCungCap> getSanPhamCungCapTheoMaSP(String maSP) { return getTheoMaSP(maSP); }
 }

@@ -27,6 +27,7 @@ public enum CommandType implements Serializable {
     ADD_SAN_PHAM,
     SUA_SAN_PHAM,
     XOA_SAN_PHAM,
+    GET_SP_SAP_HET_HANG,
     GET_SP_BAN_CHAY_THANG,
     GET_SP_BAN_CHAY_NAM,
 
@@ -42,6 +43,7 @@ public enum CommandType implements Serializable {
     // ===== MaVachSanPham =====
     ADD_MA_VACH,
     DELETE_MA_VACH,
+    GET_MA_VACH_BY_MA_SP,
 
     // ===== KhachHang =====
     GET_ALL_KHACH_HANG,
@@ -90,16 +92,22 @@ public enum CommandType implements Serializable {
     GET_SO_PTH,
     GET_TONG_TIEN_CAC_PTH,
     ADD_HOA_DON,
-    GET_DOANH_THU_NGAY,
-    GET_DOANH_THU_THANG,
-    GET_DOANH_THU_TUNG_NGAY,
-    GET_DOANH_THU_TUNG_THANG,
-    GET_NAM_HOA_DON,
+    GET_DOANH_THU_TUNG_NGAY_TRONG_KHOANG,
+    GET_DOANH_THU_TUNG_THANG_TRONG_NAM,
+    GET_DOANH_THU_TUNG_QUY_TRONG_NAM,
+    GET_DOANH_THU_TUNG_NAM_TRONG_KHOANG,
+    GET_NAM_HD_CU_NHAT_VA_MOI_NHAT,
+    GET_DOANH_THU_THEO_NGAY,
+    GET_HD_BY_NGAY_LAP,
 
     // ===== ChiTietHoaDon =====
     GET_CTHD_BY_MA_HD,
+    GET_CTHD_DA_TRU_PTH_BY_MA_HD,
+    GET_CTHD_BY_MA,
+    GET_CTHD_DA_TUNG_TRA_ROI_BY_MA,
     ADD_CHI_TIET_HOA_DON,
     XOA_CTHD_BY_MA_HD,
+    GET_CTHD_MOI_NHAT_TRONG_NGAY,
 
     // ===== ChiTietXuatLo =====
     ADD_CHI_TIET_XUAT_LO,
@@ -138,20 +146,36 @@ public enum CommandType implements Serializable {
     GET_SPCC_BY_MA_SP,
     ADD_SAN_PHAM_CUNG_CAP,
     DELETE_SAN_PHAM_CUNG_CAP,
+    XOA_HET_SPCC_BY_MA_SP,
 
     // ===== KhuyenMai =====
     GET_ALL_KHUYEN_MAI,
+    GET_KHUYEN_MAI_BY_MA,
     GET_KHUYEN_MAI_DANG_HOAT_DONG,
     GET_MA_KM_CUOI,
     ADD_KHUYEN_MAI,
     SUA_KHUYEN_MAI,
     XOA_KHUYEN_MAI,
+    GET_KHUYEN_MAI_BY_MA_SP,
 
     // ===== KhuyenMaiSanPham =====
     GET_KMSP_BY_MA_KM,
     GET_KMSP_BY_MA_SP,
     ADD_KHUYEN_MAI_SAN_PHAM,
     DELETE_KHUYEN_MAI_SAN_PHAM,
+    XOA_HET_KMSP_BY_MA_SP,
+
+    // ===== PhieuDatHang =====
+    GET_ALL_PHIEU_DAT_HANG,
+    GET_PHIEU_DAT_BY_MA,
+    GET_PHIEU_DAT_BY_MA_NCC,
+    GET_PHIEU_DAT_BY_MA_NV,
+    GET_PHIEU_DAT_BY_NGAY,
+    ADD_PHIEU_DAT_HANG,
+
+    // ===== ChiTietPhieuDatHang =====
+    GET_CT_PHIEU_DAT_BY_MA_PDH,
+    ADD_CHI_TIET_PHIEU_DAT_HANG,
 
     // ===== PhieuNhap =====
     GET_PHIEU_NHAP_BY_MA,
@@ -166,6 +190,9 @@ public enum CommandType implements Serializable {
     // ===== PhieuTraHang =====
     GET_PTH_BY_MA_HD,
     GET_PTH_BY_MA,
+    GET_PTH_BY_MA_NV,
+    GET_PTH_BY_NGAY,
+    GET_ALL_PHIEU_TRA_HANG,
     ADD_PHIEU_TRA_HANG,
     GET_SO_PTH_CUOI,
 
@@ -185,5 +212,6 @@ public enum CommandType implements Serializable {
     GET_LSCL_BY_NGAY,
     GET_LSCL_DANG_LAM_BY_MA_NV,
     ADD_LICH_SU_CA_LAM,
-    UPDATE_LICH_SU_CA_LAM
+    UPDATE_LICH_SU_CA_LAM,
+
 }

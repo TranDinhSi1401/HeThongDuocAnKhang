@@ -18,6 +18,14 @@ public class LoSanPhamService {
     private final LoSanPhamDAO loSanPhamDAO = new LoSanPhamDAO();
     private final LichSuLoDAO lichSuLoDAO = new LichSuLoDAO();
 
+    public List<LoSanPhamDTO> getAllLoSanPham() {
+        return loSanPhamDAO.findAll().stream().map(EntityMapper::toDTO).collect(Collectors.toList());
+    }
+
+    public List<LichSuLoDTO> getAllLichSuLo() {
+        return lichSuLoDAO.findAll().stream().map(EntityMapper::toDTO).collect(Collectors.toList());
+    }
+
     public List<LoSanPhamDTO> getLoSanPhamTheoMaSP(String maSP) {
         return loSanPhamDAO.getLoSanPhamTheoMaSP(maSP)
                 .stream().map(EntityMapper::toDTO).collect(Collectors.toList());

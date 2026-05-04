@@ -16,4 +16,8 @@ public class HoaDonDTO implements Serializable {
     private LocalDateTime ngayLapHoaDon;
     private boolean chuyenKhoan;
     private double tongTien;
+    
+    // Thêm các trường hiển thị
+    private String tenKH;
+    private int diemTichLuyKH;
 }

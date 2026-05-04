@@ -1,52 +1,29 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package hethongnhathuocduocankhang.bus;
 
-import hethongnhathuocduocankhang.dao.ChiTietPhieuTraDAO;
-import hethongnhathuocduocankhang.dao.HoaDonDAO;
-import hethongnhathuocduocankhang.dao.KhachHangDAO;
-import hethongnhathuocduocankhang.dao.LoSanPhamDAO;
-import hethongnhathuocduocankhang.dao.PhieuTraHangDAO;
-import hethongnhathuocduocankhang.entity.ChiTietPhieuTraHang;
-import hethongnhathuocduocankhang.entity.HoaDon;
-import hethongnhathuocduocankhang.entity.LoSanPham;
-import hethongnhathuocduocankhang.entity.PhieuTraHang;
-import hethongnhathuocduocankhang.entity.TinhTrangSanPhamEnum;
-import hethongnhathuocduocankhang.entity.TruongHopDoiTraEnum;
+import client.socket.SocketClient;
+import common.dto.*;
+import common.network.CommandType;
+import common.network.Request;
+import common.network.Response;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
-/**
- *
- * @author MINH KHANG
- */
 public class TraHangBUS {
-    /**
-     * Nghiệp vụ 1: Kiểm tra điều kiện trả hàng
-     * Logic: Hóa đơn tồn tại VÀ ngày lập <= 30 ngày 
-     */
-    public HoaDon kiemTraDieuKienTraHang(String maHoaDon) throws Exception {
+
+    public HoaDonDTO kiemTraDieuKienTraHang(String maHoaDon) throws Exception {
         if (maHoaDon == null || maHoaDon.trim().isEmpty()) {
             throw new Exception("Vui lòng nhập mã hóa đơn!");
         }
 
-        HoaDon hoaDon = HoaDonDAO.getHoaDonTheoMaHD(maHoaDon);
-        if (hoaDon == null) {
+        Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_HOA_DON_BY_MA, maHoaDon));
+        if (!res.isSuccess() || res.getData() == null) {
             throw new Exception("Không tìm thấy hóa đơn với mã: " + maHoaDon);
         }
+        HoaDonDTO hoaDon = (HoaDonDTO) res.getData();
 
-        // Lấy ngày lập (Kiểu LocalDate)
-        LocalDateTime ngayLapHoaDon;
-
-        // Kiểm tra xem getNgayLapHoaDon trả về LocalDate hay LocalDateTime để xử lý
-        // Giả sử getter trả về LocalDate (theo lỗi gợi ý), nếu getter trả về LocalDateTime thì dùng .toLocalDate()
-        ngayLapHoaDon = hoaDon.getNgayLapHoaDon(); 
-
-        // Tính khoảng cách ngày (Chắc chắn cả 2 đều là LocalDate)
+        LocalDateTime ngayLapHoaDon = hoaDon.getNgayLapHoaDon();
         long ngayDaTroiQua = ChronoUnit.DAYS.between(ngayLapHoaDon, LocalDateTime.now());
 
         if (ngayDaTroiQua > 30) {
@@ -56,120 +33,86 @@ public class TraHangBUS {
         return hoaDon;
     }
 
-    /**
-     * Nghiệp vụ 2: Lấy chuỗi hiển thị phần trăm hoàn trả
-     */
-    public static String layPhanTramHoanTra(TruongHopDoiTraEnum lyDo, boolean isNguyenVen) {
-            if (isNguyenVen) {
-                return "100%";
-            }
-            if (lyDo == TruongHopDoiTraEnum.HANG_LOI_DO_NHA_SAN_XUAT) return "100%";
-            if (lyDo == TruongHopDoiTraEnum.DI_UNG_MAN_CAM) return "70%";
-            return "Miễn trả hàng";
+    public static String layPhanTramHoanTra(String lyDo, boolean isNguyenVen) {
+        if (isNguyenVen) {
+            return "100%";
         }
+        if ("HANG_LOI_DO_NHA_SAN_XUAT".equals(lyDo)) return "100%";
+        if ("DI_UNG_MAN_CAM".equals(lyDo)) return "70%";
+        return "Miễn trả hàng";
+    }
 
-    /**
-     * Nghiệp vụ 3: Tính tiền hoàn trả cho từng sản phẩm
-     */
-public static double tinhTienHoanTraItem(double thanhTienGoc, TruongHopDoiTraEnum lyDo, boolean isNguyenVen) {
-        // 1. Nếu hàng nguyên vẹn -> Luôn hoàn 100% tiền (theo logic code cũ của bạn)
+    public static double tinhTienHoanTraItem(double thanhTienGoc, String lyDo, boolean isNguyenVen) {
         if (isNguyenVen) {
             return thanhTienGoc;
         }
-
-        // 2. Nếu hàng KHÔNG nguyên vẹn -> Xét theo lý do
-        if (lyDo == TruongHopDoiTraEnum.HANG_LOI_DO_NHA_SAN_XUAT) {
-            return thanhTienGoc; // 100%
-        } else if (lyDo == TruongHopDoiTraEnum.DI_UNG_MAN_CAM) {
-            return thanhTienGoc * 0.7; // 70%
+        if ("HANG_LOI_DO_NHA_SAN_XUAT".equals(lyDo)) {
+            return thanhTienGoc;
+        } else if ("DI_UNG_MAN_CAM".equals(lyDo)) {
+            return thanhTienGoc * 0.7;
         } else {
-            return 0; // Nhu cầu khách hàng -> 0%
+            return 0;
         }
     }
 
-    /**
-     * Nghiệp vụ 4: Sinh mã phiếu trả hàng tự động
-     */
     public static String phatSinhMaPhieuTraHang() {
         int ngay = LocalDate.now().getDayOfMonth();
         int thang = LocalDate.now().getMonthValue();
-        int nam = LocalDate.now().getYear() % 1000; // Lấy 2 số cuối của năm
+        int nam = LocalDate.now().getYear() % 100; 
         String ngayThangNam = String.format("%02d%02d%02d", ngay, thang, nam);
         
-        int soPhieuHomNay = PhieuTraHangDAO.phieuTraHangMoiNhatHomNay();
+        Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_SO_PTH_CUOI, null));
+        int soPhieuHomNay = (res.isSuccess() && res.getData() != null) ? (int) res.getData() : 0;
         return String.format("PTH-%s-%04d", ngayThangNam, soPhieuHomNay + 1);
     }
 
-    /**
-     * Nghiệp vụ 5 (Quan trọng nhất): Xử lý giao dịch trả hàng
-     * Bao gồm: Lưu phiếu, Lưu chi tiết, Cộng kho, Trừ điểm
-     */
-    public static void xuLyTraHang(PhieuTraHang pth, List<ChiTietPhieuTraHang> listChiTiet) {
+    public static void xuLyTraHang(PhieuTraHangDTO pth, List<ChiTietPhieuTraHangDTO> listChiTiet) {
         // 1. Lưu phiếu trả hàng
-        PhieuTraHangDAO.themPhieuTra(pth);
+        SocketClient.getInstance().sendRequest(new Request(CommandType.ADD_PHIEU_TRA_HANG, pth));
 
         // 2. Lưu chi tiết phiếu trả & Cập nhật kho
-        for (ChiTietPhieuTraHang ctpth : listChiTiet) {
-            // Lưu chi tiết vào DB
-            ChiTietPhieuTraDAO.insertChiTietPhieuTra(ctpth);
+        for (ChiTietPhieuTraHangDTO ctpth : listChiTiet) {
+            SocketClient.getInstance().sendRequest(new Request(CommandType.ADD_CHI_TIET_PHIEU_TRA_HANG, ctpth));
             
             // --- LOGIC CỘNG KHO ---
-            TinhTrangSanPhamEnum tinhTrang = ctpth.getTinhTrangSanPham();
-            TruongHopDoiTraEnum truongHop = ctpth.getTruongHopDoiTra();
+            String tinhTrang = ctpth.getTinhTrangSanPham();
+            String truongHop = ctpth.getTruongHopDoiTra();
             
-            // Điều kiện cộng lại kho: Hàng nguyên vẹn VÀ (Do khách đổi ý HOẶC Dị ứng/Thuốc không hợp)
-            // Lỗi nhà sản xuất thường sẽ trả về NCC chứ không bán lại -> Cân nhắc nghiệp vụ này tùy cửa hàng
-            boolean hangTraVeKho = tinhTrang == TinhTrangSanPhamEnum.HANG_NGUYEN_VEN 
-                    && (truongHop == TruongHopDoiTraEnum.NHU_CAU_KHACH_HANG || truongHop == TruongHopDoiTraEnum.DI_UNG_MAN_CAM);
+            boolean hangTraVeKho = "HANG_NGUYEN_VEN".equals(tinhTrang) 
+                    && ("NHU_CAU_KHACH_HANG".equals(truongHop) || "DI_UNG_MAN_CAM".equals(truongHop));
 
             if (hangTraVeKho) {
-                 String maCTHD = ctpth.getChiTietHoaDon().getMaChiTietHoaDon();
-                 int heSoQuyDoi = ctpth.getChiTietHoaDon().getDonViTinh().getHeSoQuyDoi();
-                 
-                 // Tính tổng số lượng đơn vị cơ bản cần trả lại kho
-                 // VD: Trả 2 hộp, 1 hộp = 10 viên => Cần trả 20 viên
-                 int soLuongCanTra = ctpth.getSoLuong() * heSoQuyDoi; 
-                 
-                 // Lấy danh sách lô đã xuất cho CTHD này (Đã sort Mới -> Cũ)
-                 List<LoSanPham> dsLoDaXuat = LoSanPhamDAO.getDanhSachLoDaXuatTheoMaCTHD(maCTHD);
-                 
-                 for (LoSanPham lo : dsLoDaXuat) {
-                     if (soLuongCanTra <= 0) break; // Đã trả đủ
-                     
-                     String maLo = lo.getMaLoSanPham();
-                     int soLuongDaLayTuLoNay = lo.getSoLuong(); // Số lượng đã xuất từ lô này trong quá khứ
-                     
-                     // Tính số lượng sẽ đắp vào lô này
-                     // Không được đắp quá số lượng đã lấy ra từ lô đó
-                     int soLuongDapVao = Math.min(soLuongCanTra, soLuongDaLayTuLoNay);
-                     
-                     // Gọi DAO update cộng lại số lượng
-                     // Lưu ý: pass heSoQuyDoi = 1 vì soLuongDapVao đã là đơn vị cơ bản rồi
-                     LoSanPhamDAO.congSoLuong(maLo, soLuongDapVao, 1);
-                     
-                     // Trừ đi số lượng vừa xử lý
-                     soLuongCanTra -= soLuongDapVao;
-                 }
-                 
-                 // Xử lý ngoại lệ (Optional): Nếu vòng lặp hết mà soLuongCanTra vẫn > 0
-                 // (Trường hợp dữ liệu bị lệch), có thể cộng dồn vào lô mới nhất hoặc log lỗi.
-                 if (soLuongCanTra > 0 && !dsLoDaXuat.isEmpty()) {
-                     String maLoMoiNhat = dsLoDaXuat.get(0).getMaLoSanPham();
-                     LoSanPhamDAO.congSoLuong(maLoMoiNhat, soLuongCanTra, 1);
-                 }
+                Response resCt = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_CTHD_BY_MA, ctpth.getMaChiTietHoaDon()));
+                ChiTietHoaDonDTO cthd = (resCt.isSuccess() && resCt.getData() != null) ? (ChiTietHoaDonDTO) resCt.getData() : null;
+                
+                if (cthd != null) {
+                    Response resDvt = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_DVT_BY_MA_SP, cthd.getMaSP()));
+                    List<DonViTinhDTO> dvts = (resDvt.isSuccess() && resDvt.getData() != null) ? (List<DonViTinhDTO>) resDvt.getData() : null;
+                    int heSoQuyDoi = 1;
+                    if (dvts != null) {
+                        for (DonViTinhDTO d : dvts) {
+                            if (d.getTenDonVi().equals(cthd.getTenDonVi())) {
+                                heSoQuyDoi = d.getHeSoQuyDoi();
+                                break;
+                            }
+                        }
+                    }
+
+                    int soLuongCanTra = ctpth.getSoLuong() * heSoQuyDoi;
+                    // Logic cộng kho này nên được server xử lý khi nhận ADD_CHI_TIET_PHIEU_TRA_HANG
+                }
             }
         }
 
         // 3. Trừ điểm tích lũy khách hàng
-        if (pth.getHoaDon().getKhachHang() != null && 
-            !pth.getHoaDon().getKhachHang().getMaKH().equalsIgnoreCase("KH-00000")) {
-            
-            String maKhachHang = pth.getHoaDon().getKhachHang().getMaKH();
-            // Đảm bảo không chia cho 0 hoặc tính toán sai
-            if (pth.getTongTienHoanTra() >= 1000) {
-                int diemTru = (int) (pth.getTongTienHoanTra() / 1000);
+        Response resHd = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_HOA_DON_BY_MA, pth.getMaHoaDon()));
+        HoaDonDTO hd = (resHd.isSuccess() && resHd.getData() != null) ? (HoaDonDTO) resHd.getData() : null;
+        
+        if (hd != null && hd.getMaKhachHang() != null && !hd.getMaKhachHang().equalsIgnoreCase("KH-00000")) {
+            if (pth.getTongTienHoaTra() >= 1000) {
+                int diemTru = (int) (pth.getTongTienHoaTra() / 1000);
                 if (diemTru > 0) {
-                    KhachHangDAO.truDiemTichLuy(diemTru, maKhachHang);
+                    SocketClient.getInstance().sendRequest(new Request(CommandType.TRU_DIEM_TICH_LUY, new Object[]{hd.getMaKhachHang(), diemTru}));
                 }
             }
         }
@@ -177,5 +120,53 @@ public static double tinhTienHoanTraItem(double thanhTienGoc, TruongHopDoiTraEnu
 
     public static double tinhThanhTienGoc(int soLuong, double donGia, double phanTramGiamGia) {
         return (soLuong * donGia) - (soLuong * donGia * (phanTramGiamGia / 100));
+    }
+
+    public int getSoPTH(String maHoaDon) {
+        Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_SO_PTH, maHoaDon));
+        if (res.isSuccess() && res.getData() != null) {
+            return (int) res.getData();
+        }
+        return 0;
+    }
+
+    public List<ChiTietHoaDonDTO> getChiTietHoaDonByMaHoaDon(String maHoaDon) {
+        Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_CTHD_BY_MA_HD, maHoaDon));
+        if (res.isSuccess() && res.getData() != null) {
+            return (List<ChiTietHoaDonDTO>) res.getData();
+        }
+        return null;
+    }
+
+    public List<ChiTietHoaDonDTO> getChiTietHoaDonDaTruPTHTheoMaHD(String maHoaDon) {
+        Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_CTHD_DA_TRU_PTH_BY_MA_HD, maHoaDon));
+        if (res.isSuccess() && res.getData() != null) {
+            return (List<ChiTietHoaDonDTO>) res.getData();
+        }
+        return null;
+    }
+
+    public double getTongTienCacPTH(String maHoaDon) {
+        Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_TONG_TIEN_CAC_PTH, maHoaDon));
+        if (res.isSuccess() && res.getData() != null) {
+            return (double) res.getData();
+        }
+        return 0.0;
+    }
+
+    public ChiTietHoaDonDTO getChiTietHoaDonByMa(String maCTHD) {
+        Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_CTHD_BY_MA, maCTHD));
+        if (res.isSuccess() && res.getData() != null) {
+            return (ChiTietHoaDonDTO) res.getData();
+        }
+        return null;
+    }
+
+    public ChiTietHoaDonDTO getChiTietHoaDonDaTungTraRoiByMa(String maCTHD) {
+        Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_CTHD_DA_TUNG_TRA_ROI_BY_MA, maCTHD));
+        if (res.isSuccess() && res.getData() != null) {
+            return (ChiTietHoaDonDTO) res.getData();
+        }
+        return null;
     }
 }

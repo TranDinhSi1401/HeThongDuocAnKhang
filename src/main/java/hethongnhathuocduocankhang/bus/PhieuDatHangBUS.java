@@ -9,7 +9,7 @@ import hethongnhathuocduocankhang.dao.PhieuDatHangDAO;
 import hethongnhathuocduocankhang.entity.DonViTinh;
 import hethongnhathuocduocankhang.entity.NhaCungCap;
 import hethongnhathuocduocankhang.entity.SanPham;
-import hethongnhathuocduocankhang.gui.TaoPhieuDatHangGUI;
+import client.gui.TaoPhieuDatHangGUI;
 
 /**
  *

@@ -1,17 +1,12 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package hethongnhathuocduocankhang.bus;
 
-import hethongnhathuocduocankhang.dao.LoSanPhamDAO;
-import hethongnhathuocduocankhang.dao.NhaCungCapDAO;
-import hethongnhathuocduocankhang.dao.SanPhamCungCapDAO;
-import hethongnhathuocduocankhang.dao.SanPhamDAO;
-import hethongnhathuocduocankhang.entity.DonViTinh;
-import hethongnhathuocduocankhang.entity.LoSanPham;
-import hethongnhathuocduocankhang.entity.NhaCungCap;
-import hethongnhathuocduocankhang.entity.SanPham;
+import common.dto.LoSanPhamDTO;
+import common.dto.SanPhamDTO;
+import common.dto.DonViTinhDTO;
+import common.network.CommandType;
+import common.network.Request;
+import common.network.Response;
+import client.socket.SocketClient;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -22,17 +17,22 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import javax.swing.JOptionPane;
 
-/**
- *
- * @author admin
- */
-public class QuanLyLoBUS {    
-        public ArrayList<LoSanPham> getLoKhongHuy(){
-        ArrayList<LoSanPham> all = hethongnhathuocduocankhang.dao.LoSanPhamDAO.dsLoSanPham();
-        ArrayList<LoSanPham> kq = new ArrayList<>();
-        if(all!=null){
-            for(LoSanPham lo: all){
-                if(!lo.isDaHuy()){
+public class QuanLyLoBUS {
+
+    public List<LoSanPhamDTO> getAllLo() {
+        Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_ALL_LO_SAN_PHAM, null));
+        if (res.isSuccess() && res.getData() != null) {
+            return (List<LoSanPhamDTO>) res.getData();
+        }
+        return new ArrayList<>();
+    }
+
+    public ArrayList<LoSanPhamDTO> getLoKhongHuy() {
+        List<LoSanPhamDTO> all = getAllLo();
+        ArrayList<LoSanPhamDTO> kq = new ArrayList<>();
+        if (all != null) {
+            for (LoSanPhamDTO lo : all) {
+                if (!lo.isDaHuy()) {
                     kq.add(lo);
                 }
             }
@@ -40,19 +40,25 @@ public class QuanLyLoBUS {
         return kq;
     }
 
-    public Object[] toTableRow(LoSanPham lo){
-        DonViTinh donVi = hethongnhathuocduocankhang.dao.DonViTinhDAO.getMotDonViTinhTheoMaSP(lo.getSanPham().getMaSP());
-        SanPham sp = SanPhamDAO.timSPTheoMa(lo.getSanPham().getMaSP());
+    public Object[] toTableRow(LoSanPhamDTO lo) {
+        // Lấy thông tin sản phẩm
+        Response resSp = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_SAN_PHAM_BY_MA, lo.getMaSP()));
+        SanPhamDTO sp = (resSp.isSuccess() && resSp.getData() != null) ? (SanPhamDTO) resSp.getData() : null;
+
+        // Lấy đơn vị tính cơ bản
+        Response resDvt = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_DVT_CO_BAN_BY_MA_SP, lo.getMaSP()));
+        DonViTinhDTO dvt = (resDvt.isSuccess() && resDvt.getData() != null) ? (DonViTinhDTO) resDvt.getData() : null;
+
         return new Object[]{
-            lo.getSanPham().getMaSP(),
-            sp!=null? sp.getTen():"",
+            lo.getMaSP(),
+            sp != null ? sp.getTen() : "",
             lo.getMaLoSanPham(),
-            donVi!=null? donVi.getTenDonVi():"",
+            dvt != null ? dvt.getTenDonVi() : "",
             lo.getSoLuong()
         };
     }
 
-        public String tinhTrangThaiLo(LoSanPham lo) {
+    public String tinhTrangThaiLo(LoSanPhamDTO lo) {
         if (lo.isDaHuy()) {
             return "Đã hủy";
         }
@@ -61,189 +67,163 @@ public class QuanLyLoBUS {
 
         if (kq < 0) {
             return "Hết hạn";
-        } else if (kq >= 0 && kq <180) {
+        } else if (kq >= 0 && kq < 180) {
             return "Sắp hết hạn";
         } else {
             return "Còn hạn";
         }
     }
 
-    
-    public Map<String, Object> thongKe(ArrayList<LoSanPham> dsLo){
-        int daHuy =0, hetHan=0, sapHetHan =0, conHan=0;
-        ArrayList<LoSanPham> dsDaHuy = new ArrayList<>();
-        ArrayList<LoSanPham> dsHetHan = new ArrayList<>();
-        ArrayList<LoSanPham> dsSapHetHan = new ArrayList<>();
-        ArrayList<LoSanPham> dsConHan = new ArrayList<>();
-        for (LoSanPham i:dsLo){
-            if(!i.isDaHuy()){
+    public Map<String, Object> thongKe(List<LoSanPhamDTO> dsLo) {
+        int daHuy = 0, hetHan = 0, sapHetHan = 0, conHan = 0;
+        ArrayList<LoSanPhamDTO> dsDaHuy = new ArrayList<>();
+        ArrayList<LoSanPhamDTO> dsHetHan = new ArrayList<>();
+        ArrayList<LoSanPhamDTO> dsSapHetHan = new ArrayList<>();
+        ArrayList<LoSanPhamDTO> dsConHan = new ArrayList<>();
+        for (LoSanPhamDTO i : dsLo) {
+            if (!i.isDaHuy()) {
                 long kq = kiemTra(LocalDate.now(), i.getNgayHetHan());
-                if(kq>=0&&kq<=30){
+                if (kq >= 0 && kq <= 30) {
                     sapHetHan++;
                     dsSapHetHan.add(i);
-                }
-                else if(kq<0){
+                } else if (kq < 0) {
                     hetHan++;
                     dsHetHan.add(i);
-                }
-                else{
+                } else {
                     conHan++;
                     dsConHan.add(i);
-                } 
-            }else{
+                }
+            } else {
                 daHuy++;
                 dsDaHuy.add(i);
             }
         }
-        Map<String, Object> dsThongKeLo = new  HashMap<>();
+        Map<String, Object> dsThongKeLo = new HashMap<>();
         dsThongKeLo.put("SoLoDaHuy", daHuy);
         dsThongKeLo.put("SoLoHetHan", hetHan);
         dsThongKeLo.put("SoLoSapHetHan", sapHetHan);
         dsThongKeLo.put("SoLoConHan", conHan);
-        
+
         dsThongKeLo.put("dsLoDaHuy", dsDaHuy);
         dsThongKeLo.put("dsLoHetHan", dsHetHan);
         dsThongKeLo.put("dsLoSapHetHan", dsSapHetHan);
         dsThongKeLo.put("dsConHan", dsConHan);
-        
+
         return dsThongKeLo;
     }
-    
-    public long kiemTra(LocalDate ht, LocalDate hh){
+
+    public long kiemTra(LocalDate ht, LocalDate hh) {
         return ChronoUnit.DAYS.between(ht, hh);
     }
 
-    
-    public static String chuyenDinhDang(String date){
+    public static String chuyenDinhDang(String date) {
         DateTimeFormatter nhap = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         LocalDate datee = LocalDate.parse(date, nhap);
         DateTimeFormatter xuat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         String newDate = datee.format(xuat);
         return newDate;
     }
- 
-    private ArrayList<LoSanPham> timLoTheotenNhaCungCap(ArrayList<LoSanPham> dsLo, String tenNCC){
-        ArrayList<LoSanPham> ds = new ArrayList<>();
-        NhaCungCap ncc = NhaCungCapDAO.timMotNCCTheoTen(tenNCC);
-        if(ncc!=null){
-            for(LoSanPham lo:dsLo){
-                String maSanPham = lo.getSanPham().getMaSP();
-                NhaCungCap nccTheoLo = NhaCungCapDAO.timNCCTheoMa(SanPhamCungCapDAO.getSanPhamCungCap(maSanPham).getNhaCungCap().getMaNCC());
-                if(ncc.getTenNCC() == null ? nccTheoLo.getTenNCC() == null : ncc.getTenNCC().equals(nccTheoLo.getTenNCC())){
-                    ds.add(lo);
+
+    private List<LoSanPhamDTO> timLoTheotenNhaCungCap(List<LoSanPhamDTO> dsLo, String tenNCC) {
+        // Tìm NCC theo tên (giả sử có command này)
+        Response resNcc = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_NCC_BY_TEN, tenNCC));
+        if (resNcc.isSuccess() && resNcc.getData() != null) {
+            List<common.dto.NhaCungCapDTO> nccs = (List<common.dto.NhaCungCapDTO>) resNcc.getData();
+            if (nccs.isEmpty()) return new ArrayList<>();
+            String maNCC = nccs.get(0).getMaNCC();
+            
+            return dsLo.stream().filter(lo -> {
+                // Lấy maNCC của SP trong lô
+                Response resSpcc = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_SPCC_BY_MA_SP, lo.getMaSP()));
+                if (resSpcc.isSuccess() && resSpcc.getData() != null) {
+                    List<common.dto.SanPhamCungCapDTO> spccs = (List<common.dto.SanPhamCungCapDTO>) resSpcc.getData();
+                    for (common.dto.SanPhamCungCapDTO spcc : spccs) {
+                        if (spcc.getMaNCC().equals(maNCC)) return true;
+                    }
                 }
-            }
+                return false;
+            }).collect(Collectors.toList());
         }
-        return ds;
+        return new ArrayList<>();
     }
-    
-    public ArrayList<LoSanPham> timKiemLoVoiNhieuDieuKien(String tieuChi, String noiDung, String trangThai) {
+
+    public ArrayList<LoSanPhamDTO> timKiemLoVoiNhieuDieuKien(String tieuChi, String noiDung, String trangThai) {
         String loaiTimKiem = (tieuChi == null) ? "tất cả" : tieuChi.trim().toLowerCase();
         String trangThaiLoc = (trangThai == null) ? "tất cả" : trangThai.trim().toLowerCase();
         String noiDungSafe = (noiDung == null) ? "" : noiDung.trim();
         String noiDungLowerCase = noiDungSafe.toLowerCase();
-        
-        if (!"tất cả".equals(loaiTimKiem)) { 
+
+        if (!"tất cả".equals(loaiTimKiem)) {
             if (noiDungSafe.isEmpty()) {
                 JOptionPane.showMessageDialog(null, "Bạn phải nhập thông tin tìm kiếm khi chọn tiêu chí cụ thể.");
                 return new ArrayList<>();
             }
         }
-        if (!noiDungSafe.isEmpty()) {
-            switch(loaiTimKiem){
-                case "mã lô sản phẩm":
-                    if(!noiDungSafe.matches("LO-[A-Z]{2}-[0-9]{4}-[0-9]{8}-[0-9]{1}")){
-                        JOptionPane.showMessageDialog(null, "Mã lô phải tuân theo định dạng LO-SP-XXXX-XXXXXX-X, vui lòng nhập lại");
-                        return new ArrayList<>();
-                    }
-                    break;
-                case "mã sản phẩm":
-                    if(!noiDungSafe.matches("SP-\\d{4}")){
-                        JOptionPane.showMessageDialog(null, "Mã sản phẩm phải bắt đầu bằng SP- và 4 số nguyên.");
-                        return new ArrayList<>();
-                    }
-                    break;
-                case "tên sản phẩm":
-                    if(noiDungSafe.trim().equals("")){
-                        JOptionPane.showMessageDialog(null, "Bạn chưa nhập tên sản phẩm, vui lòng nhập tên sản phẩm và thử lại");
-                    }break;
-                case "nhà cung cấp":
-                    if(noiDungSafe.trim().equals("")){
-                        JOptionPane.showMessageDialog(null, "Bạn chưa nhập tên nhà cung cấp, vui lòng nhập và thử lại");
-                        return new ArrayList<>();
-                    }
-                    break;
-            }
+        
+        List<LoSanPhamDTO> allLo = getAllLo();
+        Map<String, Object> dsThongKe = thongKe(allLo);
+        List<LoSanPhamDTO> dsLoDaLocTheoTrangThai;
+        
+        dsLoDaLocTheoTrangThai = switch (trangThaiLoc) {
+            case "còn hạn" -> (List<LoSanPhamDTO>) dsThongKe.get("dsConHan");
+            case "sắp hết hạn" -> (List<LoSanPhamDTO>) dsThongKe.get("dsLoSapHetHan");
+            case "hết hạn" -> (List<LoSanPhamDTO>) dsThongKe.get("dsLoHetHan");
+            case "đã hủy" -> (List<LoSanPhamDTO>) dsThongKe.get("dsLoDaHuy");
+            default -> allLo;
+        };
+
+        if (loaiTimKiem.equals("nhà cung cấp")) {
+            return new ArrayList<>(timLoTheotenNhaCungCap(dsLoDaLocTheoTrangThai, noiDungSafe));
         }
-        Map<String, Object> dsThongKe = thongKe(LoSanPhamDAO.dsLoSanPham());
-        ArrayList<LoSanPham> dsLoDaLocTheoTrangThai;
-        try {
-            dsLoDaLocTheoTrangThai = switch(trangThaiLoc){
-                case "còn hạn" -> (ArrayList<LoSanPham>) dsThongKe.get("dsConHan");
-                case "sắp hết hạn" -> (ArrayList<LoSanPham>) dsThongKe.get("dsLoSapHetHan");
-                case "hết hạn" -> (ArrayList<LoSanPham>) dsThongKe.get("dsLoHetHan");
-                case "đã hủy" -> (ArrayList<LoSanPham>) dsThongKe.get("dsLoDaHuy");
-                default -> LoSanPhamDAO.dsLoSanPham();
-            };
-        } catch (ClassCastException e) {
-            JOptionPane.showMessageDialog(null, "Lỗi dữ liệu nội bộ khi lọc theo trạng thái: " + e.getMessage());
-            return new ArrayList<>();
-        }
-        if(loaiTimKiem.equals("nhà cung cấp")){
-            return timLoTheotenNhaCungCap(dsLoDaLocTheoTrangThai, noiDungSafe);
-        }
-        Map<String, SanPham> spCache = new HashMap<>();
-        List<LoSanPham> ketQuaLoc = dsLoDaLocTheoTrangThai.stream().filter(lo -> {
+
+        List<LoSanPhamDTO> ketQuaLoc = dsLoDaLocTheoTrangThai.stream().filter(lo -> {
             if (loaiTimKiem.equals("tất cả")) {
                 return true;
             }
-            switch(loaiTimKiem){
+            switch (loaiTimKiem) {
                 case "mã lô sản phẩm":
                     return lo.getMaLoSanPham() != null && lo.getMaLoSanPham().toLowerCase().contains(noiDungLowerCase);
-                case "mã sản phẩm": 
-                    if (lo.getSanPham() == null || lo.getSanPham().getMaSP() == null) return false;
-                    return lo.getSanPham().getMaSP().toLowerCase().contains(noiDungLowerCase);
+                case "mã sản phẩm":
+                    return lo.getMaSP() != null && lo.getMaSP().toLowerCase().contains(noiDungLowerCase);
                 case "tên sản phẩm":
-                    SanPham spThamChieu = lo.getSanPham();
-                    if (spThamChieu == null || spThamChieu.getMaSP() == null) return false;
-                    String maSP = spThamChieu.getMaSP();
-                    SanPham chiTietSP = spCache.get(maSP);
-                    if (chiTietSP == null) {
-                        chiTietSP = SanPhamDAO.timSPTheoMa(maSP); 
-                        if (chiTietSP != null) {
-                            spCache.put(maSP, chiTietSP);
-                        } else {
-                            return false; 
-                        }
+                    Response resSp = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_SAN_PHAM_BY_MA, lo.getMaSP()));
+                    if (resSp.isSuccess() && resSp.getData() != null) {
+                        SanPhamDTO sp = (SanPhamDTO) resSp.getData();
+                        return sp.getTen().toLowerCase().contains(noiDungLowerCase);
                     }
-
-                    // Kiểm tra điều kiện lọc
-                    return chiTietSP.getTen() != null && chiTietSP.getTen().toLowerCase().contains(noiDungLowerCase);
-
-                default: 
+                    return false;
+                default:
                     return true;
             }
-        }).collect(Collectors.toList()); 
+        }).collect(Collectors.toList());
 
         return new ArrayList<>(ketQuaLoc);
     }
-    public static boolean tongSoLuongTheoSanPham(String maSP, LoSanPham loSP){
-        ArrayList<LoSanPham> dsLo = LoSanPhamDAO.getLoSanPhamTheoMaSP(maSP);
-        int tongSL=0;
-        for(LoSanPham lo:dsLo)
-            tongSL+=lo.getSoLuong();
-        SanPham sp = SanPhamDAO.timSPTheoMa(maSP);
-        if(sp.getTonToiDa()<tongSL)
-            return true;
+
+    public static boolean tongSoLuongTheoSanPham(String maSP, LoSanPhamDTO loSP) {
+        Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_LO_BY_MA_SP, maSP));
+        if (res.isSuccess() && res.getData() != null) {
+            List<LoSanPhamDTO> dsLo = (List<LoSanPhamDTO>) res.getData();
+            int tongSL = 0;
+            for (LoSanPhamDTO lo : dsLo) {
+                tongSL += lo.getSoLuong();
+            }
+            Response resSp = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_SAN_PHAM_BY_MA, maSP));
+            if (resSp.isSuccess() && resSp.getData() != null) {
+                SanPhamDTO sp = (SanPhamDTO) resSp.getData();
+                if (sp.getTonToiDa() < tongSL) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
-    
-    /**
-     * Lấy thống kê số lượng lô theo trạng thái
-     * @return int[4] - [0]=Còn hạn, [1]=Sắp hết hạn, [2]=Hết hạn, [3]=Đã hủy
-     */
+
     public static int[] layThongKeLoTheoTrangThai() {
-        return LoSanPhamDAO.demLoTheoTrangThai();
+        Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.DEM_LO_THEO_TRANG_THAI, null));
+        if (res.isSuccess() && res.getData() != null) {
+            return (int[]) res.getData();
+        }
+        return new int[]{0, 0, 0, 0};
     }
-    
 }

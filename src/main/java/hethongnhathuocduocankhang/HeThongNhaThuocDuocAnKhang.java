@@ -18,9 +18,9 @@ import hethongnhathuocduocankhang.dao.LoSanPhamDAO;
 import hethongnhathuocduocankhang.dao.NhanVienDAO;
 import hethongnhathuocduocankhang.dao.SanPhamDAO;
 import hethongnhathuocduocankhang.entity.LoSanPham;
-import hethongnhathuocduocankhang.gui.DangNhapGUI;
-import hethongnhathuocduocankhang.gui.GiaoDienChinhGUI;
-import hethongnhathuocduocankhang.gui.SplashScreen;
+import client.gui.DangNhapGUI;
+import client.gui.GiaoDienChinhGUI;
+import client.gui.SplashScreen;
 import java.awt.Font;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +41,7 @@ public class HeThongNhaThuocDuocAnKhang {
         java.awt.EventQueue.invokeLater(() -> {
             
             FlatRobotoFont.install();
-            FlatLaf.registerCustomDefaultsSource("hethongnhathuocduocankhang.theme");
+            FlatLaf.registerCustomDefaultsSource("client.theme");
             UIManager.put("defaultFont", new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 13));
             FlatMacLightLaf.setup();
             

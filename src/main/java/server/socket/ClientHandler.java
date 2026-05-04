@@ -121,6 +121,7 @@ public class ClientHandler implements Runnable {
                 // ===== MA VACH =====
                 case ADD_MA_VACH    -> Response.ok(sanPhamService.addMaVach((MaVachSanPhamDTO) data));
                 case DELETE_MA_VACH -> Response.ok(sanPhamService.deleteMaVach((String) data));
+                case GET_MA_VACH_BY_MA_SP -> Response.ok(sanPhamService.getMaVachByMaSP((String) data));
 
                 // ===== KHACH HANG =====
                 case GET_ALL_KHACH_HANG      -> Response.ok(khachHangService.getAllKhachHang());
@@ -251,9 +252,11 @@ public class ClientHandler implements Runnable {
                 case GET_SPCC_BY_MA_SP         -> Response.ok(nhaCungCapService.getSPCCTheoMaSP((String) data));
                 case ADD_SAN_PHAM_CUNG_CAP     -> Response.ok(nhaCungCapService.addSanPhamCungCap((SanPhamCungCapDTO) data));
                 case DELETE_SAN_PHAM_CUNG_CAP  -> Response.ok(nhaCungCapService.deleteSanPhamCungCap((Long) data));
+                case XOA_HET_SPCC_BY_MA_SP -> Response.ok(nhaCungCapService.deleteSPCCByMaSP((String) data));
 
                 // ===== KHUYEN MAI =====
                 case GET_ALL_KHUYEN_MAI          -> Response.ok(khuyenMaiService.getAllKhuyenMai());
+                case GET_KHUYEN_MAI_BY_MA        -> Response.ok(khuyenMaiService.timKMTheoMa((String) data));
                 case GET_KHUYEN_MAI_DANG_HOAT_DONG -> Response.ok(khuyenMaiService.getKhuyenMaiDangHoatDong());
                 case GET_MA_KM_CUOI              -> Response.ok(khuyenMaiService.getMaKMCuoiCung());
                 case ADD_KHUYEN_MAI              -> Response.ok(khuyenMaiService.addKhuyenMai((KhuyenMaiDTO) data));
@@ -268,6 +271,7 @@ public class ClientHandler implements Runnable {
                 case GET_KMSP_BY_MA_SP         -> Response.ok(khuyenMaiService.getKMSPTheoMaSP((String) data));
                 case ADD_KHUYEN_MAI_SAN_PHAM   -> Response.ok(khuyenMaiService.addKhuyenMaiSanPham((KhuyenMaiSanPhamDTO) data));
                 case DELETE_KHUYEN_MAI_SAN_PHAM-> Response.ok(khuyenMaiService.deleteKhuyenMaiSanPham((Long) data));
+                case XOA_HET_KMSP_BY_MA_SP -> Response.ok(khuyenMaiService.deleteKMSPByMaSP((String) data));
 
                 // ===== PHIEU NHAP =====
                 case GET_PHIEU_NHAP_BY_MA -> Response.ok(phieuService.getPhieuNhapTheoMa((String) data));
@@ -302,6 +306,22 @@ public class ClientHandler implements Runnable {
                 case GET_LSCL_DANG_LAM_BY_MA_NV -> Response.ok(caLamService.getLSCLDangLamTheoMaNV((String) data));
                 case ADD_LICH_SU_CA_LAM      -> Response.ok(caLamService.addLichSuCaLam((LichSuCaLamDTO) data));
                 case UPDATE_LICH_SU_CA_LAM   -> Response.ok(caLamService.updateLichSuCaLam((LichSuCaLamDTO) data));
+
+                // ===== LO SAN PHAM =====
+                case GET_ALL_LO_SAN_PHAM      -> Response.ok(loSanPhamService.getAllLoSanPham());
+                case GET_LO_BY_MA            -> Response.ok(loSanPhamService.timLoSanPham((String) data));
+                case GET_LO_BY_MA_SP         -> Response.ok(loSanPhamService.getLoSanPhamTheoMaSP((String) data));
+                case ADD_LO_SAN_PHAM         -> Response.ok(loSanPhamService.addLoSanPham((LoSanPhamDTO) data));
+                case UPDATE_LO_SAN_PHAM      -> {
+                    Object[] arr = (Object[]) data;
+                    yield Response.ok(loSanPhamService.capNhatSoLuongLo((LoSanPhamDTO) arr[0], (int) arr[1]));
+                }
+                case DELETE_LO_SAN_PHAM      -> Response.ok(loSanPhamService.huyLoSanPham((LoSanPhamDTO) data));
+                case DEM_LO_THEO_TRANG_THAI  -> Response.ok(loSanPhamService.demLoTheoTrangThai());
+
+                // ===== LICH SU LO =====
+                case GET_ALL_LICH_SU_LO      -> Response.ok(loSanPhamService.getAllLichSuLo());
+                case ADD_LICH_SU_LO          -> Response.ok(loSanPhamService.addLichSuLo((LichSuLoDTO) data));
             };
         } catch (Exception e) {
             return Response.fail("Lỗi server: " + e.getMessage());

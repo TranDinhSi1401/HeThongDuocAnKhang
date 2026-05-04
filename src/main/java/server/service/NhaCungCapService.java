@@ -65,4 +65,8 @@ public class NhaCungCapService {
     }
 
     public boolean deleteSanPhamCungCap(Long id) { return sanPhamCungCapDAO.delete(id); }
+
+    public boolean deleteSPCCByMaSP(String maSP) {
+        return sanPhamCungCapDAO.xoaHetNCCuaSP(maSP);
+    }
 }

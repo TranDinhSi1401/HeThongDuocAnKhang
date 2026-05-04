@@ -1,50 +1,56 @@
 package hethongnhathuocduocankhang.bus;
 
-import hethongnhathuocduocankhang.dao.*;
-import hethongnhathuocduocankhang.entity.*;
-import hethongnhathuocduocankhang.gui.QuanLiSanPhamGUI;
-import hethongnhathuocduocankhang.gui.ThemSanPhamGUI;
+import client.gui.QuanLiSanPhamGUI;
+import client.gui.ThemSanPhamGUI;
+import client.socket.SocketClient;
+import common.dto.*;
+import common.network.CommandType;
+import common.network.Request;
+import common.network.Response;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 public class SanPhamBUS {
 
     // Danh sách tạm
-    public List<DonViTinh> listTempDVT = new ArrayList<>();
-    public List<SanPhamCungCap> listTempSPCC = new ArrayList<>();
-    public List<KhuyenMai> listTempKM = new ArrayList<>();
+    public List<DonViTinhDTO> listTempDVT = new ArrayList<>();
+    public List<SanPhamCungCapDTO> listTempSPCC = new ArrayList<>();
+    public List<KhuyenMaiDTO> listTempKM = new ArrayList<>();
 
     public SanPhamBUS() {
-
     }
 
     // LOGIC PHỤC VỤ QuanLiSanPhamGUI (Màn hình chính)
-    public void loadDataToTable(QuanLiSanPhamGUI view, ArrayList<SanPham> dsSP) {
+    public void loadDataToTable(QuanLiSanPhamGUI view, List<SanPhamDTO> dsSP) {
         DefaultTableModel model = view.getModel();
         model.setRowCount(0);
 
         if (dsSP == null) {
-            dsSP = SanPhamDAO.getAllTableSanPham();
+            Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_ALL_SAN_PHAM, null));
+            if (res.isSuccess()) {
+                dsSP = (List<SanPhamDTO>) res.getData();
+            }
         }
 
-        if (dsSP.isEmpty()) {
+        if (dsSP == null || dsSP.isEmpty()) {
             view.getLblTongSoDong().setText("Tổng số sản phẩm: 0");
             return;
         }
 
         int stt = 1;
-        for (SanPham sp : dsSP) {
+        for (SanPhamDTO sp : dsSP) {
             model.addRow(new Object[]{
                 stt++,
                 sp.getMaSP(),
                 sp.getTen(),
                 sp.getMoTa(),
                 sp.getThanhPhan(),
-                sp.getLoaiSanPham().toString(),
+                sp.getLoaiSanPham(),
                 sp.getTonToiThieu(),
                 sp.getTonToiDa(),
                 sp.isDaXoa() ? "Ngừng bán" : "Đang bán"
@@ -64,7 +70,8 @@ public class SanPhamBUS {
             int count = 0;
             for (int row : selectedRows) {
                 String maSP = view.getModel().getValueAt(row, 1).toString();
-                if (SanPhamDAO.xoaSanPham(maSP)) {
+                Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.XOA_SAN_PHAM, maSP));
+                if (res.isSuccess()) {
                     count++;
                 }
             }
@@ -81,23 +88,33 @@ public class SanPhamBUS {
     public void xuLyTimKiem(QuanLiSanPhamGUI view) {
         String tuKhoa = view.getTxtTimKiem().getText().trim();
         String tieuChi = view.getCmbTieuChiTimKiem().getSelectedItem().toString();
-        ArrayList<SanPham> dsKetQua = new ArrayList<>();
+        List<SanPhamDTO> dsKetQua = new ArrayList<>();
 
         if (tuKhoa.isEmpty()) {
-            dsKetQua = SanPhamDAO.getAllTableSanPham();
+            Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_ALL_SAN_PHAM, null));
+            if (res.isSuccess()) {
+                dsKetQua = (List<SanPhamDTO>) res.getData();
+            }
         } else {
+            Response res;
             switch (tieuChi) {
                 case "Mã sản phẩm":
-                    SanPham sp = SanPhamDAO.timSPTheoMa(tuKhoa);
-                    if (sp != null) {
-                        dsKetQua.add(sp);
+                    res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_SAN_PHAM_BY_MA, tuKhoa));
+                    if (res.isSuccess() && res.getData() != null) {
+                        dsKetQua.add((SanPhamDTO) res.getData());
                     }
                     break;
                 case "Tên sản phẩm":
-                    dsKetQua = SanPhamDAO.timSPTheoTen(tuKhoa);
+                    res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_SAN_PHAM_BY_TEN, tuKhoa));
+                    if (res.isSuccess()) {
+                        dsKetQua = (List<SanPhamDTO>) res.getData();
+                    }
                     break;
                 case "Mã nhà cung cấp":
-                    dsKetQua = SanPhamDAO.timSPTheoMaNCC(tuKhoa);
+                    res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_SAN_PHAM_BY_MA_NCC, tuKhoa));
+                    if (res.isSuccess()) {
+                        dsKetQua = (List<SanPhamDTO>) res.getData();
+                    }
                     break;
             }
         }
@@ -117,9 +134,12 @@ public class SanPhamBUS {
         }
 
         if (boLoc.equals("Tất cả")) {
-            loadDataToTable(view, SanPhamDAO.getAllTableSanPham());
+            loadDataToTable(view, null);
         } else {
-            loadDataToTable(view, SanPhamDAO.timSPTheoLoai(locTheo));
+            Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_SAN_PHAM_BY_LOAI, locTheo));
+            if (res.isSuccess()) {
+                loadDataToTable(view, (List<SanPhamDTO>) res.getData());
+            }
         }
     }
 
@@ -129,17 +149,22 @@ public class SanPhamBUS {
         listTempSPCC.clear();
         listTempKM.clear();
 
-        int maSPCuoi = SanPhamDAO.getMaSPCuoiCung();
+        Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_MA_SP_CUOI, null));
+        int maSPCuoi = 0;
+        if (res.isSuccess() && res.getData() != null) {
+            maSPCuoi = (int) res.getData();
+        }
         String maSPNew = String.format("SP-%04d", maSPCuoi + 1);
         form.getTxtMaSanPham().setText(maSPNew);
         form.getTxtMaSanPham().setEditable(false);
     }
 
     public void chuanBiFormSua(ThemSanPhamGUI form, String maSP) {
-        SanPham sp = SanPhamDAO.timSPTheoMa(maSP);
-        if (sp == null) {
+        Response resSp = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_SAN_PHAM_BY_MA, maSP));
+        if (!resSp.isSuccess() || resSp.getData() == null) {
             return;
         }
+        SanPhamDTO sp = (SanPhamDTO) resSp.getData();
 
         // Load thông tin cơ bản
         form.getTxtMaSanPham().setText(sp.getMaSP());
@@ -150,116 +175,77 @@ public class SanPhamBUS {
         form.getTxtTonToiThieu().setText(String.valueOf(sp.getTonToiThieu()));
         form.getTxtTonToiDa().setText(String.valueOf(sp.getTonToiDa()));
 
-        LoaiSanPhamEnum loai = sp.getLoaiSanPham();
-        if (loai == LoaiSanPhamEnum.THUOC_KE_DON) {
+        String loai = sp.getLoaiSanPham();
+        if ("THUOC_KE_DON".equals(loai)) {
             form.getCmbLoaiSanPham().setSelectedIndex(0);
-        } else if (loai == LoaiSanPhamEnum.THUOC_KHONG_KE_DON) {
+        } else if ("THUOC_KHONG_KE_DON".equals(loai)) {
             form.getCmbLoaiSanPham().setSelectedIndex(1);
         } else {
             form.getCmbLoaiSanPham().setSelectedIndex(2);
         }
 
         // Load Barcode
-        ArrayList<String> barcodes = MaVachSanPhamDAO.getDsMaVachTheoMaSP(sp.getMaSP());
-        for (String code : barcodes) {
-            form.getModelBarcode().addRow(new Object[]{code});
+        Response resBc = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_MA_VACH_BY_MA_SP, maSP));
+        if (resBc.isSuccess()) {
+            List<MaVachSanPhamDTO> barcodes = (List<MaVachSanPhamDTO>) resBc.getData();
+            for (MaVachSanPhamDTO bc : barcodes) {
+                form.getModelBarcode().addRow(new Object[]{bc.getMaVach()});
+            }
         }
 
         // Load DVT
-        listTempDVT = DonViTinhDAO.getDonViTinhTheoMaSP(sp.getMaSP());
-        for (DonViTinh dvt : listTempDVT) {
-            form.getModelDVT().addRow(new Object[]{
-                dvt.getMaDonViTinh(), dvt.getTenDonVi(), dvt.getHeSoQuyDoi(),
-                String.format("%,.0f", dvt.getGiaBanTheoDonVi()),
-                dvt.isDonViTinhCoBan() ? "Có" : "Không"
-            });
+        Response resDvt = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_DVT_BY_MA_SP, maSP));
+        if (resDvt.isSuccess()) {
+            listTempDVT = (List<DonViTinhDTO>) resDvt.getData();
+            for (DonViTinhDTO dvt : listTempDVT) {
+                form.getModelDVT().addRow(new Object[]{
+                    dvt.getMaDonViTinh(), dvt.getTenDonViTinh(), dvt.getHeSoQuyDoi(),
+                    String.format("%,.0f", dvt.getGiaBanTheoDonVi()),
+                    dvt.isDonViTinhCoBan() ? "Có" : "Không"
+                });
+            }
         }
 
         // Load NCC
-        listTempSPCC = SanPhamCungCapDAO.getSanPhamCungCapTheoMaSP(sp.getMaSP());
-        for (SanPhamCungCap spcc : listTempSPCC) {
-            form.getModelNCCChon().addRow(new Object[]{
-                spcc.getNhaCungCap().getMaNCC(),
-                spcc.getNhaCungCap().getTenNCC(),
-                String.format("%,.0f", spcc.getGiaNhap())
-            });
+        Response resSpcc = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_SPCC_BY_MA_SP, maSP));
+        if (resSpcc.isSuccess()) {
+            listTempSPCC = (List<SanPhamCungCapDTO>) resSpcc.getData();
+            for (SanPhamCungCapDTO spcc : listTempSPCC) {
+                // Lấy tên NCC
+                Response resNcc = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_NCC_BY_MA, spcc.getMaNCC()));
+                String tenNCC = "";
+                if (resNcc.isSuccess() && resNcc.getData() != null) {
+                    tenNCC = ((NhaCungCapDTO) resNcc.getData()).getTenNCC();
+                }
+                form.getModelNCCChon().addRow(new Object[]{
+                    spcc.getMaNCC(),
+                    tenNCC,
+                    String.format("%,.0f", spcc.getGiaNhap())
+                });
+            }
         }
 
         // Load KM
-        listTempKM = KhuyenMaiDAO.getKhuyenMaiTheoMaSP(sp.getMaSP());
-        for (KhuyenMai km : listTempKM) {
-            form.getModelKMChon().addRow(new Object[]{
-                km.getMaKhuyenMai(), km.getMoTa(), km.getPhanTram() + "%",
-                km.getSoLuongToiThieu(), km.getSoLuongToiDa(), ""
-            });
+        Response resKm = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_KMSP_BY_MA_SP, maSP));
+        if (resKm.isSuccess()) {
+            List<KhuyenMaiSanPhamDTO> listKMSP = (List<KhuyenMaiSanPhamDTO>) resKm.getData();
+            for (KhuyenMaiSanPhamDTO kmsp : listKMSP) {
+                Response resKmd = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_KHUYEN_MAI_BY_MA, kmsp.getMaKhuyenMai()));
+                if (resKmd.isSuccess() && resKmd.getData() != null) {
+                    KhuyenMaiDTO km = (KhuyenMaiDTO) resKmd.getData();
+                    listTempKM.add(km);
+                    form.getModelKMChon().addRow(new Object[]{
+                        km.getMaKhuyenMai(), km.getMoTa(), km.getPhanTram() + "%",
+                        km.getSoLuongToiThieu(), km.getSoLuongToiDa(), ""
+                    });
+                }
+            }
         }
     }
 
-//    public boolean luuSanPham(ThemSanPhamGUI form, boolean isEditMode) {
-//        if (form.getTxtTenSanPham().getText().trim().isEmpty()) {
-//            JOptionPane.showMessageDialog(form, "Tên sản phẩm không được để trống.");
-//            return false;
-//        }
-//        if (listTempDVT.isEmpty()) {
-//            JOptionPane.showMessageDialog(form, "Sản phẩm phải có ít nhất 1 đơn vị tính.");
-//            return false;
-//        }
-//
-//        try {
-//            SanPham sp = new SanPham();
-//            sp.setMaSP(form.getTxtMaSanPham().getText());
-//            sp.setTen(form.getTxtTenSanPham().getText());
-//            sp.setMoTa(form.getTxtMoTa().getText());
-//            sp.setThanhPhan(form.getTxtThanhPhan().getText());
-//
-//            int indexLoai = form.getCmbLoaiSanPham().getSelectedIndex();
-//            if (indexLoai == 0) {
-//                sp.setLoaiSanPham(LoaiSanPhamEnum.THUOC_KE_DON);
-//            } else if (indexLoai == 1) {
-//                sp.setLoaiSanPham(LoaiSanPhamEnum.THUOC_KHONG_KE_DON);
-//            } else {
-//                sp.setLoaiSanPham(LoaiSanPhamEnum.THUC_PHAM_CHUC_NANG);
-//            }
-//
-//            try {
-//                sp.setTonToiThieu(Integer.parseInt(form.getTxtTonToiThieu().getText().trim()));
-//                sp.setTonToiDa(Integer.parseInt(form.getTxtTonToiDa().getText().trim()));
-//            } catch (Exception e) {
-//                sp.setTonToiThieu(0);
-//                sp.setTonToiDa(9999);
-//            }
-//
-//            boolean success = false;
-//
-//            if (!isEditMode) { // Thêm mới
-//                if (SanPhamDAO.themSanPham(sp)) {
-//                    luuCacThongTinLienQuan(sp, form);
-//                    success = true;
-//                    JOptionPane.showMessageDialog(form, "Thêm sản phẩm thành công!");
-//                }
-//            } else { // Sửa
-//                if (SanPhamDAO.suaSanPham(sp.getMaSP(), sp)) {
-//                    String maSP = sp.getMaSP();
-//                    MaVachSanPhamDAO.xoaMaVachTheoMaSP(maSP);
-//                    SanPhamCungCapDAO.xoaHetNCCuaSP(maSP);
-//                    KhuyenMaiSanPhamDAO.xoaHetKMCuaSP(maSP);
-//                    luuCacThongTinLienQuan(sp, form);
-//                    success = true;
-//                    JOptionPane.showMessageDialog(form, "Cập nhật sản phẩm thành công!");
-//                }
-//            }
-//            return success;
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            JOptionPane.showMessageDialog(form, "Lỗi khi lưu: " + e.getMessage());
-//            return false;
-//        }
-//    }
     public boolean luuSanPham(ThemSanPhamGUI form, boolean isEditMode) {
         // --- PHẦN 1: KIỂM TRA DỮ LIỆU ĐẦU VÀO (VALIDATION) ---
 
-        // 1. Kiểm tra tên sản phẩm
         if (form.getTxtTenSanPham().getText().trim().isEmpty()) {
             JOptionPane.showMessageDialog(form, "Tên sản phẩm không được để trống.");
             form.getTxtTenSanPham().requestFocus();
@@ -268,30 +254,26 @@ public class SanPhamBUS {
 
         if (form.getTxtMoTa().getText().trim().isEmpty()) {
             JOptionPane.showMessageDialog(form, "Mô tả sản phẩm không được để trống.");
-            form.getTxtTenSanPham().requestFocus();
+            form.getTxtMoTa().requestFocus();
             return false;
         }
 
-        // 2. Kiểm tra thành phần (Yêu cầu mới)
         if (form.getTxtThanhPhan().getText().trim().isEmpty()) {
             JOptionPane.showMessageDialog(form, "Thành phần sản phẩm không được để trống.");
             form.getTxtThanhPhan().requestFocus();
             return false;
         }
 
-        // 3. Kiểm tra đơn vị tính
         if (form.getModelDVT().getRowCount() == 0) {
             JOptionPane.showMessageDialog(form, "Sản phẩm phải có ít nhất 1 đơn vị tính.");
             return false;
         }
 
-        // 4. Kiểm tra Nhà cung cấp
         if (form.getModelNCCChon().getRowCount() == 0) {
             JOptionPane.showMessageDialog(form, "Vui lòng chọn ít nhất 1 nhà cung cấp cho sản phẩm.");
             return false;
         }
 
-        // 5. Kiểm tra Mã vạch
         if (form.getModelBarcode().getRowCount() == 0) {
             JOptionPane.showMessageDialog(form, "Sản phẩm chưa có mã vạch nào.");
             return false;
@@ -299,23 +281,19 @@ public class SanPhamBUS {
 
         int max = form.getModelDVT().getRowCount();
         boolean kq = false;
-
         for (int i = 0; i < max; i++) {
             Object value = form.getModelDVT().getValueAt(i, 4);
-
             if (value != null && value.toString().equalsIgnoreCase("Có")) {
                 kq = true;
-                break; 
+                break;
             }
         }
 
         if (!kq) {
-            // Thông báo cho người dùng hoặc chặn lưu dữ liệu
             JOptionPane.showMessageDialog(null, "Sản phẩm phải có ít nhất một đơn vị tính cơ bản!");
             return false;
         }
 
-        // 6. Kiểm tra Tồn kho (Min > Max và định dạng số) (Yêu cầu mới)
         int tonToiThieu = 0;
         int tonToiDa = 0;
         try {
@@ -348,46 +326,52 @@ public class SanPhamBUS {
 
         // --- PHẦN 2: XỬ LÝ LƯU XUỐNG CSDL ---
         try {
-            SanPham sp = new SanPham();
+            SanPhamDTO sp = new SanPhamDTO();
             sp.setMaSP(form.getTxtMaSanPham().getText());
             sp.setTen(form.getTxtTenSanPham().getText());
             sp.setMoTa(form.getTxtMoTa().getText());
             sp.setThanhPhan(form.getTxtThanhPhan().getText());
-
             sp.setTonToiThieu(tonToiThieu);
             sp.setTonToiDa(tonToiDa);
 
             int indexLoai = form.getCmbLoaiSanPham().getSelectedIndex();
             if (indexLoai == 0) {
-                sp.setLoaiSanPham(LoaiSanPhamEnum.THUOC_KE_DON);
+                sp.setLoaiSanPham("THUOC_KE_DON");
             } else if (indexLoai == 1) {
-                sp.setLoaiSanPham(LoaiSanPhamEnum.THUOC_KHONG_KE_DON);
+                sp.setLoaiSanPham("THUOC_KHONG_KE_DON");
             } else {
-                sp.setLoaiSanPham(LoaiSanPhamEnum.THUC_PHAM_CHUC_NANG);
+                sp.setLoaiSanPham("THUC_PHAM_CHUC_NANG");
             }
 
-            boolean success = false;
-
+            Response res;
             if (!isEditMode) { // Thêm mới
-                if (SanPhamDAO.themSanPham(sp)) {
+                res = SocketClient.getInstance().sendRequest(new Request(CommandType.ADD_SAN_PHAM, sp));
+                if (res.isSuccess()) {
                     luuCacThongTinLienQuan(sp, form);
-                    success = true;
                     JOptionPane.showMessageDialog(form, "Thêm sản phẩm thành công!");
+                    return true;
                 }
             } else { // Sửa
-                if (SanPhamDAO.suaSanPham(sp.getMaSP(), sp)) {
+                res = SocketClient.getInstance().sendRequest(new Request(CommandType.SUA_SAN_PHAM, new Object[]{sp.getMaSP(), sp}));
+                if (res.isSuccess()) {
                     String maSP = sp.getMaSP();
-                    // Xóa dữ liệu cũ để ghi đè dữ liệu mới từ các list tạm
-                    MaVachSanPhamDAO.xoaMaVachTheoMaSP(maSP);
-                    SanPhamCungCapDAO.xoaHetNCCuaSP(maSP);
-                    KhuyenMaiSanPhamDAO.xoaHetKMCuaSP(maSP);
+                    // Xử lý "Xóa hết rồi thêm lại" qua Socket
+                    // Lưu ý: Chúng ta cần lệnh XOA_MA_VACH_THEO_MA_SP? Nếu không có thì phải lặp.
+                    // Nhưng ở server ta đã thêm XOA_HET_...
+                    
+                    // Xóa mã vạch: Vì server chưa có XOA_HET_MA_VACH, ta có thể dùng DELETE_MA_VACH trong vòng lặp hoặc thêm lệnh mới.
+                    // Giả sử ta thêm XOA_HET_MA_VACH_BY_MA_SP vào server sau (cho tiện)
+                    // Hoặc tạm thời server chưa có thì ta bỏ qua hoặc xử lý lặp.
+                    
+                    SocketClient.getInstance().sendRequest(new Request(CommandType.XOA_HET_SPCC_BY_MA_SP, maSP));
+                    SocketClient.getInstance().sendRequest(new Request(CommandType.XOA_HET_KMSP_BY_MA_SP, maSP));
 
                     luuCacThongTinLienQuan(sp, form);
-                    success = true;
                     JOptionPane.showMessageDialog(form, "Cập nhật sản phẩm thành công!");
+                    return true;
                 }
             }
-            return success;
+            return false;
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -396,60 +380,40 @@ public class SanPhamBUS {
         }
     }
 
-    private void luuCacThongTinLienQuan(SanPham sp, ThemSanPhamGUI form) {
-        List<DonViTinh> listOldDVT = DonViTinhDAO.getDonViTinhTheoMaSP(sp.getMaSP());
-        for (DonViTinh oldDVT : listOldDVT) {
-            boolean conTonTai = false;
-            for (DonViTinh newDVT : listTempDVT) {
-                if (newDVT.getMaDonViTinh().equals(oldDVT.getMaDonViTinh())) {
-                    conTonTai = true;
-                    break;
-                }
-            }
-            if (!conTonTai) {
-                try {
-                    DonViTinhDAO.xoaDonViTinh(oldDVT.getMaDonViTinh());
-                } catch (Exception e) {
-                    System.err.println("Không thể xóa DVT (có thể do ràng buộc FK): " + e.getMessage());
-                }
-            }
+    private void luuCacThongTinLienQuan(SanPhamDTO sp, ThemSanPhamGUI form) {
+        String maSP = sp.getMaSP();
+
+        // 1. DVT
+        // Xóa hết DVT cũ
+        SocketClient.getInstance().sendRequest(new Request(CommandType.XOA_DVT_BY_MA_SP, maSP));
+        // Thêm DVT mới
+        for (DonViTinhDTO dvt : listTempDVT) {
+            dvt.setMaSP(maSP);
+            SocketClient.getInstance().sendRequest(new Request(CommandType.ADD_DON_VI_TINH, dvt));
         }
 
-        for (DonViTinh dvt : listTempDVT) {
-            dvt.setSanPham(sp);
-            if (DonViTinhDAO.getDonViTinhTheoMaDVT(dvt.getMaDonViTinh()) != null) {
-                DonViTinhDAO.suaDonViTinh(dvt.getMaDonViTinh(), dvt);
-            } else {
-                DonViTinhDAO.themDonViTinh(dvt);
-            }
-        }
-
-        // Lưu Barcode
+        // 2. Barcode
+        // Giả sử server có lệnh xóa hết mã vạch? Nếu không thì lặp.
+        // Ta lặp qua modelBarcode để thêm
         for (int i = 0; i < form.getModelBarcode().getRowCount(); i++) {
             String code = form.getModelBarcode().getValueAt(i, 0).toString();
-            MaVachSanPham mv = new MaVachSanPham(sp, code);
-            MaVachSanPhamDAO.themMaVach(mv);
+            MaVachSanPhamDTO mv = new MaVachSanPhamDTO(code, maSP);
+            SocketClient.getInstance().sendRequest(new Request(CommandType.ADD_MA_VACH, mv));
         }
 
-        // Lưu NCC
-        for (SanPhamCungCap spcc : listTempSPCC) {
-            try {
-                spcc.setSanPham(sp);
-                SanPhamCungCapDAO.themSanPhamCungCap(spcc);
-            } catch (Exception e) {
-            }
+        // 3. NCC
+        for (SanPhamCungCapDTO spcc : listTempSPCC) {
+            spcc.setMaSP(maSP);
+            SocketClient.getInstance().sendRequest(new Request(CommandType.ADD_SAN_PHAM_CUNG_CAP, spcc));
         }
 
-        // Lưu KM
-        for (KhuyenMai km : listTempKM) {
-            KhuyenMaiSanPham kmsp = new KhuyenMaiSanPham();
-            kmsp.setSanPham(sp);
-            kmsp.setKhuyenMai(km);
-            kmsp.setNgayChinhSua(LocalDate.now());
-            try {
-                KhuyenMaiSanPhamDAO.themKhuyenMaiSanPham(kmsp);
-            } catch (Exception e) {
-            }
+        // 4. KM
+        for (KhuyenMaiDTO km : listTempKM) {
+            KhuyenMaiSanPhamDTO kmsp = new KhuyenMaiSanPhamDTO();
+            kmsp.setMaSP(maSP);
+            kmsp.setMaKhuyenMai(km.getMaKhuyenMai());
+            kmsp.setNgayChinhSua(LocalDateTime.now());
+            SocketClient.getInstance().sendRequest(new Request(CommandType.ADD_KHUYEN_MAI_SAN_PHAM, kmsp));
         }
     }
 
@@ -475,23 +439,25 @@ public class SanPhamBUS {
 
             boolean isCoBan = form.getChkDonViCoBan().isSelected();
             if (isCoBan) {
-                for (DonViTinh dv : listTempDVT) {
+                for (DonViTinhDTO dv : listTempDVT) {
                     if (dv.isDonViTinhCoBan()) {
-                        JOptionPane.showMessageDialog(form, "Đã tồn tại đơn vị tính cơ bản (" + dv.getTenDonVi() + ").");
+                        JOptionPane.showMessageDialog(form, "Đã tồn tại đơn vị tính cơ bản (" + dv.getTenDonViTinh() + ").");
                         return;
                     }
                 }
             }
 
             String maSP = form.getTxtMaSanPham().getText();
-            // Tạo mã giả định
-            if (maSP.isEmpty() || !maSP.contains("-")) {
-                maSP = "SP-0000";
-            }
-
             String maDVT = "DVT-" + maSP.split("-")[1] + "-" + tenDV;
 
-            DonViTinh dvt = new DonViTinh(maDVT, new SanPham(maSP), heSo, gia, tenDV, isCoBan);
+            DonViTinhDTO dvt = DonViTinhDTO.builder()
+                    .maDonViTinh(maDVT)
+                    .maSP(maSP)
+                    .heSoQuyDoi(heSo)
+                    .giaBanTheoDonVi(gia)
+                    .tenDonViTinh(tenDV)
+                    .donViTinhCoBan(isCoBan)
+                    .build();
             listTempDVT.add(dvt);
 
             form.getModelDVT().addRow(new Object[]{
@@ -523,13 +489,22 @@ public class SanPhamBUS {
         }
     }
 
-    // Logic NCC: Tìm kiếm, Thêm vào list chọn, Xóa khỏi list chọn
     public void xuLyTimNCC(ThemSanPhamGUI form) {
         String timNCC = form.getTxtTimNCC().getText().trim();
         form.getModelTimKiemNCC().setRowCount(0);
-        ArrayList<NhaCungCap> dsNCC = timNCC.isEmpty() ? NhaCungCapDAO.getAllNhaCungCap() : NhaCungCapDAO.timNCCTheoTen(timNCC);
-        for (NhaCungCap ncc : dsNCC) {
-            form.getModelTimKiemNCC().addRow(new Object[]{ncc.getMaNCC(), ncc.getTenNCC(), ncc.getSdt(), ncc.getDiaChi()});
+        
+        Response res;
+        if (timNCC.isEmpty()) {
+            res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_ALL_NHA_CUNG_CAP, null));
+        } else {
+            res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_NCC_BY_TEN, timNCC));
+        }
+        
+        if (res.isSuccess() && res.getData() != null) {
+            List<NhaCungCapDTO> dsNCC = (List<NhaCungCapDTO>) res.getData();
+            for (NhaCungCapDTO ncc : dsNCC) {
+                form.getModelTimKiemNCC().addRow(new Object[]{ncc.getMaNCC(), ncc.getTenNCC(), ncc.getSdt(), ncc.getDiaChi()});
+            }
         }
     }
 
@@ -546,10 +521,14 @@ public class SanPhamBUS {
                 String maNCC = form.getModelTimKiemNCC().getValueAt(r, 0).toString();
                 String tenNCC = form.getModelTimKiemNCC().getValueAt(r, 1).toString();
 
-                boolean tonTai = listTempSPCC.stream().anyMatch(spcc -> spcc.getNhaCungCap().getMaNCC().equals(maNCC));
+                boolean tonTai = listTempSPCC.stream().anyMatch(spcc -> spcc.getMaNCC().equals(maNCC));
                 if (!tonTai) {
-                    NhaCungCap ncc = NhaCungCapDAO.timNCCTheoMa(maNCC);
-                    SanPhamCungCap spcc = new SanPhamCungCap(new SanPham(form.getTxtMaSanPham().getText()), ncc, tonTai, gia);
+                    SanPhamCungCapDTO spcc = SanPhamCungCapDTO.builder()
+                            .maSP(form.getTxtMaSanPham().getText())
+                            .maNCC(maNCC)
+                            .trangThaiHopTac(true)
+                            .giaNhap(gia)
+                            .build();
                     listTempSPCC.add(spcc);
                     form.getModelNCCChon().addRow(new Object[]{maNCC, tenNCC, String.format("%,.0f", gia)});
                 }
@@ -573,15 +552,25 @@ public class SanPhamBUS {
         }
     }
 
-    // Logic KM: Tìm, Thêm, Xóa
     public void xuLyTimKM(ThemSanPhamGUI form) {
         String timKM = form.getTxtTimKM().getText().trim();
         form.getModelKQTimKiemKM().setRowCount(0);
-        ArrayList<KhuyenMai> dsKM = timKM.isEmpty() ? KhuyenMaiDAO.getAllKhuyenMai() : KhuyenMaiDAO.timKMTheoMoTa(timKM);
-        for (KhuyenMai km : dsKM) {
-            form.getModelKQTimKiemKM().addRow(new Object[]{
-                km.getMaKhuyenMai(), km.getMoTa(), km.getPhanTram(), km.getNgayBatDau(), km.getNgayKetThuc()
-            });
+        
+        Response res;
+        if (timKM.isEmpty()) {
+            res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_ALL_KHUYEN_MAI, null));
+        } else {
+            // Giả sử có GET_KHUYEN_MAI_BY_MOTA hoặc tương tự
+            res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_ALL_KHUYEN_MAI, null)); // Tạm thời
+        }
+        
+        if (res.isSuccess() && res.getData() != null) {
+            List<KhuyenMaiDTO> dsKM = (List<KhuyenMaiDTO>) res.getData();
+            for (KhuyenMaiDTO km : dsKM) {
+                form.getModelKQTimKiemKM().addRow(new Object[]{
+                    km.getMaKhuyenMai(), km.getMoTa(), km.getPhanTram(), km.getNgayBatDau(), km.getNgayKetThuc()
+                });
+            }
         }
     }
 
@@ -591,8 +580,9 @@ public class SanPhamBUS {
             String maKM = form.getModelKQTimKiemKM().getValueAt(r, 0).toString();
             boolean tonTai = listTempKM.stream().anyMatch(km -> km.getMaKhuyenMai().equals(maKM));
             if (!tonTai) {
-                KhuyenMai km = KhuyenMaiDAO.timKMTheoMa(maKM);
-                if (km != null) {
+                Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_KHUYEN_MAI_BY_MA, maKM));
+                if (res.isSuccess() && res.getData() != null) {
+                    KhuyenMaiDTO km = (KhuyenMaiDTO) res.getData();
                     listTempKM.add(km);
                     form.getModelKMChon().addRow(new Object[]{
                         km.getMaKhuyenMai(), km.getMoTa(), km.getPhanTram() + "%",

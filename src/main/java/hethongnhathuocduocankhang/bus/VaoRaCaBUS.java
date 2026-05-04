@@ -1,37 +1,23 @@
 package hethongnhathuocduocankhang.bus;
 
-import hethongnhathuocduocankhang.dao.CaLamDAO;
-import hethongnhathuocduocankhang.dao.LichSuCaLamDAO;
-import hethongnhathuocduocankhang.dao.NhanVienDAO;
-import hethongnhathuocduocankhang.entity.CaLam;
-import hethongnhathuocduocankhang.entity.LichSuCaLam;
-import hethongnhathuocduocankhang.entity.NhanVien;
-import java.sql.SQLException;
+import client.socket.SocketClient;
+import common.dto.*;
+import common.network.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 public class VaoRaCaBUS {
-    
-    private final LichSuCaLamDAO lsDAO = new LichSuCaLamDAO();
-    // private final CaLamDAO caLamDAO = new CaLamDAO(); // Nếu bạn có instance, hoặc dùng static method như code cũ
     
     /**
      * Kiểm tra xem nhân viên đã vào ca trong ngày chưa để set trạng thái nút
      */
     public boolean kiemTraDangLamViec(String maNV) {
-        try {
-            return lsDAO.kiemTraNhanVienDangLamViec(maNV, LocalDate.now());
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
+        Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_LSCL_DANG_LAM_BY_MA_NV, maNV));
+        return (res.isSuccess() && res.getData() != null);
     }
 
-    /**
-     * Xác định ca làm dựa trên giờ hiện tại
-     * @return CaLam object hoặc null nếu không tìm thấy
-     */
-    public CaLam getCaLamHienTai() {
+    public CaLamDTO getCaLamHienTai() {
         LocalTime gioHienTai = LocalTime.now();
         String maCa = "";
         
@@ -41,28 +27,30 @@ public class VaoRaCaBUS {
             maCa = "TOI";
         }
         
-        try {
-            return CaLamDAO.timCaLamTheoMa(maCa);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+        Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_CA_LAM_BY_TEN, maCa));
+        return (res.isSuccess()) ? (CaLamDTO) res.getData() : null;
     }
 
-    public boolean xuLyVaoCa(String maNV, CaLam caLam) throws SQLException {
-        NhanVien nv = NhanVienDAO.getNhanVienTheoMaNV(maNV);
+    public boolean xuLyVaoCa(String maNV, CaLamDTO caLam) throws Exception {
         LocalDate ngayHienTai = LocalDate.now();
         LocalTime gioHienTai = LocalTime.now();
         
-        LichSuCaLam ls = new LichSuCaLam(nv, ngayHienTai, caLam, gioHienTai, null, "");
+        LichSuCaLamDTO ls = LichSuCaLamDTO.builder()
+                .maNV(maNV)
+                .maCa(caLam.getMaCa())
+                .ngayLam(ngayHienTai)
+                .gioVao(gioHienTai)
+                .build();
         
-        return lsDAO.themLichSuCaLam(ls);
+        Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.ADD_LICH_SU_CA_LAM, ls));
+        return res.isSuccess();
     }
 
-    public boolean xuLyRaCa(String maNV, CaLam caLam, String ghiChu) throws SQLException {
+    public boolean xuLyRaCa(String maNV, CaLamDTO caLam, String ghiChu) throws Exception {
         LocalDate ngayHienTai = LocalDate.now();
         LocalTime gioHienTai = LocalTime.now();
         
-        return lsDAO.capNhatRaCa(maNV, caLam.getMaCa(), ngayHienTai, gioHienTai, ghiChu);
+        Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.UPDATE_LICH_SU_CA_LAM, new Object[]{maNV, caLam.getMaCa(), ngayHienTai, gioHienTai, ghiChu}));
+        return res.isSuccess();
     }
 }

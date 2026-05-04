@@ -9,7 +9,7 @@ import hethongnhathuocduocankhang.entity.NhaCungCap;
 import hethongnhathuocduocankhang.entity.NhanVien;
 import hethongnhathuocduocankhang.entity.PhieuNhap;
 import hethongnhathuocduocankhang.entity.TaiKhoan;
-import hethongnhathuocduocankhang.gui.GiaoDienChinhGUI;
+import client.gui.GiaoDienChinhGUI;
 import java.sql.SQLException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;

@@ -22,6 +22,11 @@ public class KhuyenMaiService {
         return khuyenMaiDAO.getKhuyenMaiDangHoatDong().stream().map(EntityMapper::toDTO).collect(Collectors.toList());
     }
 
+    public KhuyenMaiDTO timKMTheoMa(String maKM) {
+        KhuyenMai km = khuyenMaiDAO.findById(maKM);
+        return km != null ? EntityMapper.toDTO(km) : null;
+    }
+
     public int getMaKMCuoiCung() { return khuyenMaiDAO.getMaKMCuoiCung(); }
 
     public boolean addKhuyenMai(KhuyenMaiDTO dto) {
@@ -55,4 +60,8 @@ public class KhuyenMaiService {
     }
 
     public boolean deleteKhuyenMaiSanPham(Long id) { return kmspDAO.delete(id); }
+
+    public boolean deleteKMSPByMaSP(String maSP) {
+        return kmspDAO.xoaHetKMCuaSP(maSP);
+    }
 }

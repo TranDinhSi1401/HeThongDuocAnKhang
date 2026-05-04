@@ -6,8 +6,8 @@ import common.dto.TaiKhoanDTO;
 import common.network.CommandType;
 import common.network.Request;
 import common.network.Response;
-import hethongnhathuocduocankhang.gui.*;
-import hethongnhathuocduocankhang.menu.Menu;
+import client.gui.*;
+import client.menu.Menu;
 
 import javax.swing.*;
 import java.awt.*;
@@ -24,7 +24,7 @@ import java.util.function.Supplier;
  *
  * Nhận {@link TaiKhoanDTO} từ Server và lưu làm phiên làm việc.
  * Các panel màn hình (BanHangGUI, QuanLiNhanVienGUI, …) vẫn được
- * dùng lại từ package {@code hethongnhathuocduocankhang.gui},
+ * dùng lại từ package {@code client.gui},
  * trong khi tầng auth / đổi mật khẩu đã chuyển sang SocketClient.
  */
 public class GiaoDienChinhGUI extends JFrame {
@@ -38,6 +38,26 @@ public class GiaoDienChinhGUI extends JFrame {
     private static final Map<String, JPanel> cachedPanels = new HashMap<>();
     private static String         currentKey      = null;
     private static Supplier<JPanel> currentSupplier = null;
+    
+    public static TaiKhoanDTO getTkDTO() {
+        return currentTaiKhoan;
+    }
+
+    public static hethongnhathuocduocankhang.entity.TaiKhoan getTk() {
+        if (currentTaiKhoan == null) return null;
+        hethongnhathuocduocankhang.entity.NhanVien nv = new hethongnhathuocduocankhang.entity.NhanVien();
+        nv.setMaNV(currentTaiKhoan.getMaNV());
+        return new hethongnhathuocduocankhang.entity.TaiKhoan(
+            currentTaiKhoan.getMaNV(), 
+            nv, 
+            currentTaiKhoan.getMatKhau(), 
+            currentTaiKhoan.isQuanLy(), 
+            currentTaiKhoan.isQuanLyLo(), 
+            currentTaiKhoan.isBiKhoa(), 
+            currentTaiKhoan.getEmail(), 
+            currentTaiKhoan.getNgayTao()
+        );
+    }
 
     // ── Constructor ──────────────────────────────────────────
     public GiaoDienChinhGUI(TaiKhoanDTO taiKhoan) {
