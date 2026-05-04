@@ -1,0 +1,83 @@
+package server.dao;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
+
+import java.util.List;
+import java.util.function.Function;
+
+/**
+ * Abstract DAO cung cấp implement mặc định cho GenericDao và phương thức
+ * doInTransaction để các DAO con tái sử dụng transaction một cách nhất quán.
+ *
+ * @param <T>  Kiểu entity
+ * @param <ID> Kiểu khóa chính
+ */
+public abstract class AbstractGenericDaoImpl<T, ID> implements GenericDao<T, ID> {
+
+    protected final Class<T> entityClass;
+
+    protected AbstractGenericDaoImpl(Class<T> entityClass) {
+        this.entityClass = entityClass;
+    }
+
+    /**
+     * Thực thi một thao tác trong transaction.
+     * Tự động mở, commit, rollback và đóng EntityManager.
+     */
+    protected <R> R doInTransaction(Function<EntityManager, R> function) {
+        EntityManager em = null;
+        EntityTransaction tx = null;
+        try {
+            em = HibernateUtil.getEntityManager();
+            tx = em.getTransaction();
+            tx.begin();
+            R result = function.apply(em);
+            tx.commit();
+            return result;
+        } catch (Exception ex) {
+            if (tx != null && tx.isActive())
+                tx.rollback();
+            throw new RuntimeException(ex);
+        } finally {
+            if (em != null && em.isOpen())
+                em.close();
+        }
+    }
+
+    @Override
+    public T create(T t) {
+        return doInTransaction(em -> {
+            em.persist(t);
+            return t;
+        });
+    }
+
+    @Override
+    public T update(T t) {
+        return doInTransaction(em -> em.merge(t));
+    }
+
+    @Override
+    public boolean delete(ID id) {
+        return doInTransaction(em -> {
+            T t = em.find(entityClass, id);
+            if (t == null) return false;
+            em.remove(t);
+            return true;
+        });
+    }
+
+    @Override
+    public T findById(ID id) {
+        return doInTransaction(em -> em.find(entityClass, id));
+    }
+
+    @Override
+    public List<T> loadAll() {
+        return doInTransaction(em ->
+            em.createQuery("FROM " + entityClass.getSimpleName(), entityClass)
+              .getResultList()
+        );
+    }
+}
