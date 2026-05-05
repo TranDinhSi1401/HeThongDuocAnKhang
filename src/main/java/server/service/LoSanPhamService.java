@@ -1,14 +1,17 @@
 package server.service;
 
-import common.dto.LoSanPhamDTO;
-import common.dto.LichSuLoDTO;
-import server.dao.LoSanPhamDAO;
-import server.dao.LichSuLoDAO;
-import server.entity.*;
-import server.mapper.EntityMapper;
-
 import java.util.List;
 import java.util.stream.Collectors;
+
+import common.dto.LichSuLoDTO;
+import common.dto.LoSanPhamDTO;
+import server.dao.LichSuLoDAO;
+import server.dao.LoSanPhamDAO;
+import server.entity.LichSuLo;
+import server.entity.LoSanPham;
+import server.entity.NhanVien;
+import server.entity.SanPham;
+import server.mapper.EntityMapper;
 
 /**
  * Service xử lý nghiệp vụ LoSanPham và LichSuLo.
@@ -20,6 +23,16 @@ public class LoSanPhamService {
 
     public List<LoSanPhamDTO> getLoSanPhamTheoMaSP(String maSP) {
         return loSanPhamDAO.getLoSanPhamTheoMaSP(maSP)
+                .stream().map(EntityMapper::toDTO).collect(Collectors.toList());
+    }
+
+    public List<LoSanPhamDTO> getAllLoSanPham() {
+        return loSanPhamDAO.getAllLoSanPham()
+                .stream().map(EntityMapper::toDTO).collect(Collectors.toList());
+    }
+
+    public List<LoSanPhamDTO> getAllLoSanPhamKhongHuy() {
+        return loSanPhamDAO.getAllLoSanPhamKhongHuy()
                 .stream().map(EntityMapper::toDTO).collect(Collectors.toList());
     }
 
@@ -83,6 +96,11 @@ public class LoSanPhamService {
 
     public List<LichSuLoDTO> getLichSuLoTheoMaLo(String maLo) {
         return lichSuLoDAO.getLichSuLoTheoMaLo(maLo)
+                .stream().map(EntityMapper::toDTO).collect(Collectors.toList());
+    }
+
+    public List<LichSuLoDTO> getAllLichSuLo() {
+        return lichSuLoDAO.getAllLichSuLo()
                 .stream().map(EntityMapper::toDTO).collect(Collectors.toList());
     }
 

@@ -52,7 +52,7 @@ public class AboutGUI extends JDialog {
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
 
         try {
-            lblLogo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/images/logo.png")));
+            lblLogo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/logo.png")));
         } catch (Exception ex) {
             lblLogo.setText("Logo");
         }

@@ -1,8 +1,8 @@
 package server.dao;
 
-import server.entity.LichSuLo;
-
 import java.util.List;
+
+import server.entity.LichSuLo;
 
 /**
  * DAO cho entity LichSuLo.
@@ -11,6 +11,16 @@ public class LichSuLoDAO extends AbstractGenericDaoImpl<LichSuLo, Long> {
 
     public LichSuLoDAO() {
         super(LichSuLo.class);
+    }
+
+    /** Lấy toàn bộ lịch sử lô. */
+    public List<LichSuLo> getAllLichSuLo() {
+        return doInTransaction(em ->
+            em.createQuery(
+                "SELECT lsl FROM LichSuLo lsl ORDER BY lsl.thoiGian DESC",
+                LichSuLo.class)
+              .getResultList()
+        );
     }
 
     /** Lấy lịch sử lô theo mã lô sản phẩm. */

@@ -111,6 +111,9 @@ public enum CommandType implements Serializable {
     GET_LO_BY_MA_NCC,
     GET_DS_LO_BY_MA_SP,
     GET_DS_LO_DA_XUAT_BY_CTHD,
+    GET_ALL_LO_SAN_PHAM,
+    GET_ALL_LO_SAN_PHAM_KHONG_HUY,
+    GET_LO_SAN_PHAM_BY_MA,
     DEM_LO_THEO_TRANG_THAI,
     ADD_LO_SAN_PHAM,
     TRU_SO_LUONG_LO,
@@ -120,6 +123,7 @@ public enum CommandType implements Serializable {
 
     // ===== LichSuLo =====
     GET_LICH_SU_LO_BY_MA_LO,
+    GET_ALL_LICH_SU_LO,
     ADD_LICH_SU_LO,
 
     // ===== NhaCungCap =====

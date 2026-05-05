@@ -1,10 +1,10 @@
 package server.dao;
 
-import server.entity.LoSanPham;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+
+import server.entity.LoSanPham;
 
 /**
  * DAO cho entity LoSanPham.
@@ -13,6 +13,24 @@ public class LoSanPhamDAO extends AbstractGenericDaoImpl<LoSanPham, String> {
 
     public LoSanPhamDAO() {
         super(LoSanPham.class);
+    }
+
+    /** Lấy tất cả lô sản phẩm. */
+    public List<LoSanPham> getAllLoSanPham() {
+        return doInTransaction(em ->
+            em.createQuery("SELECT lsp FROM LoSanPham lsp ORDER BY lsp.ngayHetHan ASC", LoSanPham.class)
+              .getResultList()
+        );
+    }
+
+    /** Lấy tất cả lô sản phẩm chưa bị hủy. */
+    public List<LoSanPham> getAllLoSanPhamKhongHuy() {
+        return doInTransaction(em ->
+            em.createQuery(
+                "SELECT lsp FROM LoSanPham lsp WHERE lsp.daHuy = false ORDER BY lsp.ngayHetHan ASC",
+                LoSanPham.class)
+              .getResultList()
+        );
     }
 
     /** Lấy lô theo mã SP (còn hạn, còn hàng, sắp xếp ASC theo ngày hết hạn). */

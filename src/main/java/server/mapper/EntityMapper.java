@@ -1,7 +1,49 @@
 package server.mapper;
 
-import common.dto.*;
-import server.entity.*;
+import common.dto.CaLamDTO;
+import common.dto.ChiTietHoaDonDTO;
+import common.dto.ChiTietPhieuNhapDTO;
+import common.dto.ChiTietPhieuTraHangDTO;
+import common.dto.ChiTietXuatLoDTO;
+import common.dto.DonViTinhDTO;
+import common.dto.HoaDonDTO;
+import common.dto.KhachHangDTO;
+import common.dto.KhuyenMaiDTO;
+import common.dto.KhuyenMaiSanPhamDTO;
+import common.dto.LichSuCaLamDTO;
+import common.dto.LichSuLoDTO;
+import common.dto.LoSanPhamDTO;
+import common.dto.MaVachSanPhamDTO;
+import common.dto.NhaCungCapDTO;
+import common.dto.NhanVienDTO;
+import common.dto.PhieuNhapDTO;
+import common.dto.PhieuTraHangDTO;
+import common.dto.SanPhamCungCapDTO;
+import common.dto.SanPhamDTO;
+import common.dto.TaiKhoanDTO;
+import server.entity.CaLam;
+import server.entity.ChiTietHoaDon;
+import server.entity.ChiTietPhieuNhap;
+import server.entity.ChiTietPhieuTraHang;
+import server.entity.ChiTietXuatLo;
+import server.entity.DonViTinh;
+import server.entity.HoaDon;
+import server.entity.KhachHang;
+import server.entity.KhuyenMai;
+import server.entity.KhuyenMaiSanPham;
+import server.entity.LichSuCaLam;
+import server.entity.LichSuLo;
+import server.entity.LoSanPham;
+import server.entity.LoaiKhuyenMaiEnum;
+import server.entity.LoaiSanPhamEnum;
+import server.entity.MaVachSanPham;
+import server.entity.NhaCungCap;
+import server.entity.NhanVien;
+import server.entity.PhieuNhap;
+import server.entity.PhieuTraHang;
+import server.entity.SanPham;
+import server.entity.SanPhamCungCap;
+import server.entity.TaiKhoan;
 
 /**
  * "Phiên dịch viên" giữa Entity (JPA, chỉ dùng phía Server)
@@ -219,9 +261,47 @@ public class EntityMapper {
     }
 
     public static LoSanPhamDTO toDTO(LoSanPham entity) {
+                String tenSanPham = null;
+                String tenDonViTinh = null;
+                String tenNhaCungCap = null;
+                double giaNhap = 0D;
+
+                if (entity.getSanPham() != null) {
+                        tenSanPham = entity.getSanPham().getTen();
+
+                        if (entity.getSanPham().getDonViTinhs() != null) {
+                                DonViTinh donViTinhChon = null;
+                                for (DonViTinh donViTinh : entity.getSanPham().getDonViTinhs()) {
+                                        if (donViTinhChon == null || donViTinh.isDonViTinhCoBan()) {
+                                                donViTinhChon = donViTinh;
+                                                if (donViTinh.isDonViTinhCoBan()) {
+                                                        break;
+                                                }
+                                        }
+                                }
+                                if (donViTinhChon != null) {
+                                        tenDonViTinh = donViTinhChon.getTenDonViTinh();
+                                }
+                        }
+                }
+
+                if (entity.getChiTietPhieuNhaps() != null) {
+                        for (ChiTietPhieuNhap chiTietPhieuNhap : entity.getChiTietPhieuNhaps()) {
+                                if (chiTietPhieuNhap.getNhaCungCap() != null) {
+                                        tenNhaCungCap = chiTietPhieuNhap.getNhaCungCap().getTenNCC();
+                                }
+                                giaNhap = chiTietPhieuNhap.getDonGia();
+                                break;
+                        }
+                }
+
         return LoSanPhamDTO.builder()
                 .maLoSanPham(entity.getMaLoSanPham())
                 .maSP(entity.getSanPham() != null ? entity.getSanPham().getMaSP() : null)
+                                .tenSP(tenSanPham)
+                                .tenDonVi(tenDonViTinh)
+                                .tenNhaCungCap(tenNhaCungCap)
+                                .giaNhap(giaNhap)
                 .soLuong(entity.getSoLuong())
                 .ngaySanXuat(entity.getNgaySanXuat())
                 .ngayHetHan(entity.getNgayHetHan())
