@@ -44,7 +44,7 @@ public class BanHangPane extends javax.swing.JPanel {
     private Object oldSoLuong = null;
     private Object oldDonViTinh = null;
     private final BanHangGUI parent;
-    private static boolean keDon = false;
+    //private static boolean keDon = false;
     private static final String LINE = "=".repeat(120);
     private static final String SEPARATOR = "-".repeat(120);
     /**
@@ -1166,7 +1166,7 @@ public class BanHangPane extends javax.swing.JPanel {
     public void xoaTrang() {
         DefaultTableModel model = (DefaultTableModel)tblCTHD.getModel();
         model.setRowCount(0);
-        keDon = false;
+        //keDon = false;
         lblTongTien1.setText("0 ₫");
         txtTienKhachDua.setText("Nhập tiền khách đưa [F7]");
         lblTienThua1.setText("");
@@ -1285,7 +1285,7 @@ public class BanHangPane extends javax.swing.JPanel {
 
         if(sp.getLoaiSanPham().equalsIgnoreCase("THUOC_KE_DON")) {
             JOptionPane.showMessageDialog(this, "Thuốc bạn vừa tìm kiếm là thuốc kê đơn \n Vui lòng kiểm tra đơn kê rõ ràng và lưu thông tin khách hàng", "Cảnh báo kê đơn", JOptionPane.WARNING_MESSAGE);
-            keDon = true;
+            //keDon = true;
         }
 
         // Bắt lỗi các trường hợp có thể xảy ra
@@ -1413,12 +1413,12 @@ public class BanHangPane extends javax.swing.JPanel {
             if (tienThua != tienKhachDua - tongTien) {
                 throw new Exception("Tiền thừa phải bằng tiền khách đưa trừ tổng tiền");
             }
-            for (int i = 0; i < tblCTHD.getRowCount(); i++) {
-                String maSP = tblCTHD.getValueAt(i, 8).toString();
-                if (keDon && maKH.equalsIgnoreCase("KH-00000")) {
-                    throw new Exception("Vui lòng lưu thông tin khách hàng trước khi thanh toán vì có thuốc kê đơn");
-                }
-            }
+//            for (int i = 0; i < tblCTHD.getRowCount(); i++) {
+//                String maSP = tblCTHD.getValueAt(i, 8).toString();
+//                if (keDon && maKH.equalsIgnoreCase("KH-00000")) {
+//                    throw new Exception("Vui lòng lưu thông tin khách hàng trước khi thanh toán vì có thuốc kê đơn");
+//                }
+//            }
             if (tongTien > tienKhachDua) {
                 throw new Exception("Tiền khách đưa phải lớn hơn hoặc bằng tổng tiền");
             }
