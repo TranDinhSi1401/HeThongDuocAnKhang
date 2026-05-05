@@ -3,6 +3,7 @@ package common.dto;
 import lombok.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class PhieuTraHangDTO implements Serializable {
@@ -13,4 +14,7 @@ public class PhieuTraHangDTO implements Serializable {
     private String maHoaDon;
     private LocalDateTime ngayLapPhieuTraHang;
     private double tongTienHoaTra;
+
+    /** Danh sách chi tiết – chỉ dùng khi gửi request ADD, không map xuống DB */
+    private List<Object[]> dsChiTietTraHang;
 }

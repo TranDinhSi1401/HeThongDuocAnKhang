@@ -288,7 +288,13 @@ public class ClientHandler implements Runnable {
                 case GET_PTH_BY_MA    -> Response.ok(phieuService.getPhieuTraHangTheoMa((String) data));
                 case GET_PTH_BY_MA_HD -> Response.ok(phieuService.getPTHTheoMaHD((String) data));
                 case GET_SO_PTH_CUOI  -> Response.ok(phieuService.getSoPhieuTraHangCuoiCung());
-                case ADD_PHIEU_TRA_HANG -> Response.ok(phieuService.addPhieuTraHang((PhieuTraHangDTO) data));
+                case ADD_PHIEU_TRA_HANG -> {
+                    PhieuTraHangDTO dto = (PhieuTraHangDTO) data;
+                    boolean ok = phieuService.addPhieuTraHang(dto);
+                    // Trả về mã PTH mới (đã được service set trong dto), KHÔNG phải boolean
+                    yield ok ? Response.ok(dto.getMaPhieuTraHang())
+                            : Response.fail("Không tạo được phiếu");
+                }
 
                 // ===== CHI TIET PHIEU TRA HANG =====
                 case GET_CTPTH_BY_MA_PTH     -> Response.ok(phieuService.getCTPTHTheoMaPTH((String) data));

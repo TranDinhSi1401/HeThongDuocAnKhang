@@ -1,6 +1,8 @@
 package server.dao;
 
+import server.entity.ChiTietHoaDon;
 import server.entity.ChiTietPhieuTraHang;
+import server.entity.PhieuTraHang;
 
 import java.util.List;
 
@@ -35,6 +37,17 @@ public class ChiTietPhieuTraHangDAO extends AbstractGenericDaoImpl<ChiTietPhieuT
               .setParameter("maCTHD", maChiTietHoaDon)
               .getResultList()
         );
+    }
+
+    // Trong server/dao/ChiTietPhieuTraHangDAO.java
+    public boolean createWithRefs(ChiTietPhieuTraHang ct, String maPTH, String maCTHD) {
+        return doInTransaction(em -> {
+            // getReference trả proxy managed trong EM này, không query DB
+            ct.setPhieuTraHang(em.getReference(PhieuTraHang.class, maPTH));
+            ct.setChiTietHoaDon(em.getReference(ChiTietHoaDon.class, maCTHD));
+            em.persist(ct);
+            return true;
+        });
     }
 
     public List<ChiTietPhieuTraHang> getChiTietPhieuTraHangTheoMaPTH(String maPTH) { return getTheoMaPhieuTra(maPTH); }

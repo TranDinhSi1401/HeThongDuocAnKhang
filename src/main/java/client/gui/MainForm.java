@@ -72,9 +72,9 @@ public class MainForm extends JLayeredPane {
             } else if (index == 1) {
                 GiaoDienChinhGUI.showFormByKey("banHang", BanHangGUI::new);
             } else if (index == 2) {
-                //GiaoDienChinhGUI.showFormByKey("traHang", TraHangGUI::new);
+                GiaoDienChinhGUI.showFormByKey("traHang", TraHangGUI::new);
             } else if (index == 3) {
-                //GiaoDienChinhGUI.showFormByKey("traCuuChung", TraCuuChungGUI::new);
+                GiaoDienChinhGUI.showFormByKey("traCuuChung", TraCuuChungGUI::new);
             } else if (index == 4) {
                 if(GiaoDienChinhGUI.getTk().isQuanLy()) {
                     switch (subIndex) {
@@ -126,7 +126,7 @@ public class MainForm extends JLayeredPane {
             } else if (index == 6) {
                 //GiaoDienChinhGUI.showFormByKey("thongKeHoaDon", ThongKeHoaDonGUI::new);
             } else if (index == 7) {
-                //GiaoDienChinhGUI.showFormByKey("baoCao", BaoCaoGUI::new);
+                GiaoDienChinhGUI.showFormByKey("baoCao", BaoCaoGUI::new);
             } else if (index == 8) {
                 switch (subIndex) {
                     case 1 -> {
