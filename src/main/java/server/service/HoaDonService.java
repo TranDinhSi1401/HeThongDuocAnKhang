@@ -476,4 +476,17 @@ public class HoaDonService {
     public List<DoanhThu> getDoanhThuTungNgayTrongKhoangThoiGian(LocalDate begin, LocalDate end) {
         return hoaDonDAO.getDoanhThuTungNgayTrongKhoangThoiGian(begin, end);
     }
+
+    public List<DoanhThu> getDoanhThuTungThangTrongNam(int nam) {
+        return hoaDonDAO.getDoanhThuTungThangTrongNam(nam);
+    }
+
+    public List<DoanhThu> getDoanhThuTungQuyTrongNam(int nam) {
+        return hoaDonDAO.getDoanhThuTungQuyTrongNam(nam);
+    }
+
+    public List<DoanhThu> getDoanhThuTungNamTheoKhoang(int namBatDau, int namKetThuc) {
+        return hoaDonDAO.getDoanhThuTungNamTheoKhoang(namBatDau, namKetThuc);
+    }
+
 }

@@ -12,6 +12,9 @@ import java.io.Serializable;
 public enum CommandType implements Serializable {
     THANH_TOAN,
     GET_DOANH_THU_THEO_NGAY_TRONG_KHOANG_THOI_GIAN,
+    GET_DOANH_THU_TUNG_THANG_TRONG_NAM,
+    GET_DOANH_THU_TUNG_QUY_TRONG_NAM,
+    GET_DOANH_THU_TUNG_NAM_THEO_KHOANG,
     // ===== Auth =====
     LOGIN,                    // data = Object[]{ tenDangNhap, plainPassword }     // data = Object[]{ maNV, email, newPlainPassword }
     // ===== SanPham =====

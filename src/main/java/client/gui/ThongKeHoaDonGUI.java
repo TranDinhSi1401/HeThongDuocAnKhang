@@ -4,6 +4,7 @@
  */
 package client.gui;
 
+import client.socket.SocketClient;
 import common.dto.DoanhThu;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -29,6 +30,10 @@ import javax.swing.KeyStroke;
 import javax.swing.ToolTipManager;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+
+import common.network.CommandType;
+import common.network.Request;
+import common.network.Response;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -295,16 +300,43 @@ public class ThongKeHoaDonGUI extends javax.swing.JPanel {
                         "Ngày bắt đầu không được lớn hơn ngày kết thúc");
                 return;
             }
-            //List<DoanhThu> data = HoaDonDAO.getDoanhThuTungNgayTrongKhoangThoiGian(ngayBatDau, ngayKetThuc);
-            //veBieuDoVaBangDuLieuTheoNgay(data, ngayBatDau, ngayKetThuc);
+            Request request = new Request(CommandType.GET_DOANH_THU_THEO_NGAY_TRONG_KHOANG_THOI_GIAN, new Object[]{ngayBatDau, ngayKetThuc});
+            Response response = SocketClient.getInstance().sendRequest(request);
+            if(!response.isSuccess()) {
+                JOptionPane.showMessageDialog(this,
+                        "Lỗi kết nối:\n" + response.getMessage(),
+                        "Connection Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            List<DoanhThu> data = (List<DoanhThu>) response.getData();
+            veBieuDoVaBangDuLieuTheoNgay(data, ngayBatDau, ngayKetThuc);
         } else if (loaiThoiGian.equalsIgnoreCase("tháng")) {  
             int nam = Integer.parseInt(cbbNam.getSelectedItem().toString());
-//            List<DoanhThu> data = HoaDonDAO.getDoanhThuTungThangTrongNam(nam);
-//            veBieuDoVaBangDuLieuTheoThang(data, nam);
+            Request request = new Request(CommandType.GET_DOANH_THU_TUNG_THANG_TRONG_NAM, nam);
+            Response response = SocketClient.getInstance().sendRequest(request);
+            if(!response.isSuccess()) {
+                JOptionPane.showMessageDialog(this,
+                        "Lỗi kết nối:\n" + response.getMessage(),
+                        "Connection Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            List<DoanhThu> data = (List<DoanhThu>) response.getData();
+            veBieuDoVaBangDuLieuTheoThang(data, nam);
         } else if (loaiThoiGian.equalsIgnoreCase("quý")) {
             int nam = Integer.parseInt(cbbNam.getSelectedItem().toString());
-//            List<DoanhThu> data = HoaDonDAO.getDoanhThuTungQuyTrongNam(nam);
-//            veBieuDoVaBangDuLieuTheoQuy(data, nam);
+            Request request = new Request(CommandType.GET_DOANH_THU_TUNG_QUY_TRONG_NAM, nam);
+            Response response = SocketClient.getInstance().sendRequest(request);
+            if(!response.isSuccess()) {
+                JOptionPane.showMessageDialog(this,
+                        "Lỗi kết nối:\n" + response.getMessage(),
+                        "Connection Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            List<DoanhThu> data = (List<DoanhThu>) response.getData();
+            veBieuDoVaBangDuLieuTheoQuy(data, nam);
         } else if (loaiThoiGian.equalsIgnoreCase("năm")) {
             int namBatDau = Integer.parseInt(cbbNamBatDau.getSelectedItem().toString());
             int namKetThuc = Integer.parseInt(cbbNamKetThuc.getSelectedItem().toString());            
@@ -312,9 +344,18 @@ public class ThongKeHoaDonGUI extends javax.swing.JPanel {
                 JOptionPane.showMessageDialog(this,
                         "Năm bắt đầu không được lớn hơn năm kết thúc");
                 return;
-            }           
-//            List<DoanhThu> data = HoaDonDAO.getDoanhThuTungNamTheoKhoang(namBatDau, namKetThuc);
-//            veBieuDoVaBangDuLieuTheoNam(data, namBatDau, namKetThuc);
+            }
+            Request request = new Request(CommandType.GET_DOANH_THU_TUNG_NAM_THEO_KHOANG, new Object[]{namBatDau, namKetThuc});
+            Response response = SocketClient.getInstance().sendRequest(request);
+            if(!response.isSuccess()) {
+                JOptionPane.showMessageDialog(this,
+                        "Lỗi kết nối:\n" + response.getMessage(),
+                        "Connection Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            List<DoanhThu> data = (List<DoanhThu>) response.getData();
+            veBieuDoVaBangDuLieuTheoNam(data, namBatDau, namKetThuc);
         }   
         renderTongDoanhThuVaTongHoaDon();
     }//GEN-LAST:event_btnThongKeActionPerformed

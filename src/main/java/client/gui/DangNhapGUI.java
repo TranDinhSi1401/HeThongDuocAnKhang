@@ -192,6 +192,7 @@ public class DangNhapGUI extends javax.swing.JFrame {
                     "Lỗi kết nối tới server",
                     "Đăng nhập thất bại",
                     javax.swing.JOptionPane.ERROR_MESSAGE);
+            return;
         }
         TaiKhoanDTO tk = loginResponse.isSuccess() ? (TaiKhoanDTO) loginResponse.getData() : null;
         if (tk != null) {
