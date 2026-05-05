@@ -74,7 +74,7 @@ public class MainForm extends JLayeredPane {
                     GiaoDienChinhGUI.showFormByKey("dashboardQuanLi", DashBoardQuanLi::new);
 
                 } else {
-                    //GiaoDienChinhGUI.showFormByKey("dashboardNhanVien", DashBoardNhanVien::new);
+                    GiaoDienChinhGUI.showFormByKey("dashboardNhanVien", DashBoardNhanVien::new);
                 }
             } else if (index == 1) {
                 GiaoDienChinhGUI.showFormByKey("banHang", BanHangGUI::new);
