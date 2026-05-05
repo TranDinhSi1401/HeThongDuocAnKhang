@@ -5,6 +5,8 @@ import server.dao.*;
 import server.entity.*;
 import server.mapper.EntityMapper;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,6 +17,7 @@ public class PhieuService {
     private final ChiTietPhieuNhapDAO ctpnDAO = new ChiTietPhieuNhapDAO();
     private final PhieuTraHangDAO phieuTraHangDAO = new PhieuTraHangDAO();
     private final ChiTietPhieuTraHangDAO ctpthDAO = new ChiTietPhieuTraHangDAO();
+    private final ChiTietHoaDonDAO cthDAO = new ChiTietHoaDonDAO();
 
     // ===== PhieuNhap =====
 
@@ -95,14 +98,30 @@ public class PhieuService {
     public int getSoPhieuTraHangCuoiCung() { return phieuTraHangDAO.getSoPhieuTraHangCuoiCung(); }
 
     public boolean addPhieuTraHang(PhieuTraHangDTO dto) {
+        // Server tự sinh mã (KHÔNG dùng dto.getMaPhieuTraHang())
+
+        String maMoi = sinhMaPhieuTraHang();
         PhieuTraHang e = new PhieuTraHang();
-        e.setMaPhieuTraHang(dto.getMaPhieuTraHang());
-        e.setNgayLapPhieuTraHang(dto.getNgayLapPhieuTraHang());
+
+        e.setMaPhieuTraHang(maMoi);
+        e.setNgayLapPhieuTraHang(LocalDateTime.now());
         e.setTongTienHoaTra(dto.getTongTienHoaTra());
         NhanVien nv = new NhanVien(); nv.setMaNV(dto.getMaNV()); e.setNhanVien(nv);
-        HoaDon hd = new HoaDon(); hd.setMaHoaDon(dto.getMaHoaDon()); e.setHoaDon(hd);
+        HoaDon   hd = new HoaDon();   hd.setMaHoaDon(dto.getMaHoaDon()); e.setHoaDon(hd);
         phieuTraHangDAO.create(e);
+
+        // Set lại mã thực tế vào DTO để client biết
+        dto.setMaPhieuTraHang(maMoi);
         return true;
+    }
+
+    private String sinhMaPhieuTraHang() {
+        LocalDate t = LocalDate.now();
+        String ddMMyy = String.format("%02d%02d%02d",
+                t.getDayOfMonth(), t.getMonthValue(), t.getYear() % 100);
+
+        int soCuoi = phieuTraHangDAO.getSoPTHCuoiCungTrongNgay(ddMMyy);   // dùng method có sẵn
+        return String.format("PTH-%s-%04d", ddMMyy, soCuoi + 1);
     }
 
     // ===== ChiTietPhieuTraHang =====
@@ -113,13 +132,14 @@ public class PhieuService {
 
     public boolean addChiTietPhieuTraHang(ChiTietPhieuTraHangDTO dto) {
         ChiTietPhieuTraHang e = new ChiTietPhieuTraHang();
-        e.setSoLuong(dto.getSoLuong()); e.setGiaTriHoanTra(dto.getGiaTriHoanTra());
+        e.setSoLuong(dto.getSoLuong());
+        e.setGiaTriHoanTra(dto.getGiaTriHoanTra());
         e.setThanhTienHoanTra(dto.getThanhTienHoanTra());
-        if (dto.getTruongHopDoiTra() != null) e.setTruongHopDoiTra(server.entity.TruongHopDoiTraEnum.valueOf(dto.getTruongHopDoiTra()));
-        if (dto.getTinhTrangSanPham() != null) e.setTinhTrangSanPham(server.entity.TinhTrangSanPhamEnum.valueOf(dto.getTinhTrangSanPham()));
-        PhieuTraHang pth = new PhieuTraHang(); pth.setMaPhieuTraHang(dto.getMaPhieuTraHang()); e.setPhieuTraHang(pth);
-        ChiTietHoaDon cthd = new ChiTietHoaDon(); cthd.setMaChiTietHoaDon(dto.getMaChiTietHoaDon()); e.setChiTietHoaDon(cthd);
-        ctpthDAO.create(e);
-        return true;
+        if (dto.getTruongHopDoiTra() != null)
+            e.setTruongHopDoiTra(TruongHopDoiTraEnum.valueOf(dto.getTruongHopDoiTra()));
+        if (dto.getTinhTrangSanPham() != null)
+            e.setTinhTrangSanPham(TinhTrangSanPhamEnum.valueOf(dto.getTinhTrangSanPham()));
+
+        return ctpthDAO.createWithRefs(e, dto.getMaPhieuTraHang(), dto.getMaChiTietHoaDon());
     }
 }

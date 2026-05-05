@@ -125,7 +125,7 @@ public class MainForm extends JLayeredPane {
             } else if (index == 6) {
                 GiaoDienChinhGUI.showFormByKey("thongKeHoaDon", ThongKeHoaDonGUI::new);
             } else if (index == 7) {
-                //GiaoDienChinhGUI.showFormByKey("baoCao", BaoCaoGUI::new);
+                GiaoDienChinhGUI.showFormByKey("baoCao", BaoCaoGUI::new);
             } else if (index == 8) {
                 switch (subIndex) {
                     case 1 -> {
