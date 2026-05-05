@@ -207,6 +207,10 @@ public class ClientHandler implements Runnable {
                     Object[] arr = (Object[]) data;
                     yield Response.ok(hoaDonService.timHDTheoKhoangNgay((LocalDate) arr[0], (LocalDate) arr[1]));
                 }
+                case GET_DOANH_THU_THEO_NGAY_TRONG_KHOANG_THOI_GIAN -> {
+                    Object[] arr = (Object[]) data;
+                    yield Response.ok(hoaDonService.getDoanhThuTungNgayTrongKhoangThoiGian((LocalDate) arr[0], (LocalDate) arr[1]));
+                }
 
                 // ===== CHI TIET HOA DON =====
                 case GET_CTHD_BY_MA_HD     -> Response.ok(hoaDonService.getCTHDByMaHD((String) data));

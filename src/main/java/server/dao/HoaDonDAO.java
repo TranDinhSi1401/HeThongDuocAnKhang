@@ -1,9 +1,11 @@
 package server.dao;
 
+import common.dto.DoanhThu;
 import server.entity.HoaDon;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -95,19 +97,25 @@ public class HoaDonDAO extends AbstractGenericDaoImpl<HoaDon, String> {
 
     /** Lấy số thứ tự HD cuối cùng trong ngày theo format "HD-YYYYMMDD-XXX". */
     public int getSoHDCuoiCungTrongNgay(LocalDate ngay) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-        String ngayFormatted = ngay.format(formatter);
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("ddMMyy");
+        String ngayStr = ngay.format(dtf);
+        String prefix = "HD-" + ngayStr + "-";
 
         return doInTransaction(em -> {
-            String prefix = "HD-" + ngay + "-";
             List<String> result = em.createQuery(
-                "SELECT hd.maHoaDon FROM HoaDon hd WHERE hd.maHoaDon LIKE :prefix ORDER BY hd.maHoaDon DESC",
-                String.class)
-                .setParameter("prefix", prefix + "%")
-                .setMaxResults(1)
-                .getResultList();
-            if (!result.isEmpty() && result.get(0) != null)
-                return Integer.parseInt(result.get(0).substring(prefix.length()));
+                            "SELECT hd.maHoaDon FROM HoaDon hd " +
+                                    "WHERE hd.maHoaDon LIKE :prefix " +
+                                    "ORDER BY hd.maHoaDon DESC", String.class)
+                    .setParameter("prefix", prefix + "%")
+                    .setMaxResults(1)
+                    .getResultList();
+
+            if (!result.isEmpty() && result.get(0) != null) {
+                String maCuoi = result.get(0);
+                // Cắt lấy 4 số cuối cùng
+                String soThuTuStr = maCuoi.substring(maCuoi.lastIndexOf("-") + 1);
+                return Integer.parseInt(soThuTuStr);
+            }
             return 0;
         });
     }
@@ -204,6 +212,35 @@ public class HoaDonDAO extends AbstractGenericDaoImpl<HoaDon, String> {
                 result.put("namMoiNhat", ((Number) row[1]).intValue());
             }
             return result;
+        });
+    }
+    // Lấy doanh từng ngày theo khoảng thời gian (dùng cho biểu đồ doanh thu theo ngày)
+    public List<DoanhThu> getDoanhThuTungNgayTrongKhoangThoiGian(LocalDate begin, LocalDate end) {
+        if (begin == null || end == null || begin.isAfter(end)) {
+            return new ArrayList<>();
+        }
+
+        return doInTransaction(em -> {
+            // Dùng inclusiveEnd để lấy trọn vẹn dữ liệu ngày cuối cùng
+            LocalDate inclusiveEnd = end.plusDays(1);
+
+            String jpql = """
+            SELECT new common.dto.DoanhThu(
+                CAST(hd.ngayLapHoaDon AS date), 
+                COUNT(hd.maHoaDon), 
+                SUM(hd.tongTien)
+            )
+            FROM HoaDon hd
+            WHERE hd.ngayLapHoaDon >= :begin 
+              AND hd.ngayLapHoaDon < :end
+            GROUP BY CAST(hd.ngayLapHoaDon AS date)
+            ORDER BY CAST(hd.ngayLapHoaDon AS date)
+            """;
+
+            return em.createQuery(jpql, DoanhThu.class)
+                    .setParameter("begin", begin.atStartOfDay())
+                    .setParameter("end", inclusiveEnd.atStartOfDay())
+                    .getResultList();
         });
     }
 }

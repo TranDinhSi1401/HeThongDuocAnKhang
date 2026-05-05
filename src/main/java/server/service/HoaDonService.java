@@ -1,9 +1,6 @@
 package server.service;
 
-import common.dto.HoaDonDTO;
-import common.dto.ChiTietHoaDonDTO;
-import common.dto.ChiTietXuatLoDTO;
-import common.dto.TaiKhoanDTO;
+import common.dto.*;
 import server.dao.*;
 import server.entity.*;
 import server.mapper.EntityMapper;
@@ -171,7 +168,7 @@ public class HoaDonService {
                 soThuTu);
     }
 
-    public Object thanhToan(List<Map<String, Object>> dsSP, String maKH, boolean chuyenKhoan, double tongTien, TaiKhoanDTO taiKhoan, double tienKhachDua, double tienThua) throws Exception {
+    public synchronized Object thanhToan(List<Map<String, Object>> dsSP, String maKH, boolean chuyenKhoan, double tongTien, TaiKhoanDTO taiKhoan, double tienKhachDua, double tienThua) throws Exception {
             try {
                 Map<String, Integer> tongYeuCauTheoSP = new HashMap<>();
                 DonViTinhDAO donViTinhDAO = new DonViTinhDAO();
@@ -233,6 +230,7 @@ public class HoaDonService {
 
                 // Tạo danh sách chi tiết hóa đơn
                 ArrayList<ChiTietHoaDon> dsCTHD = new ArrayList<>();
+                int soCTHDMoiNhat = chiTietHoaDonDAO.getSoCTHDCuoiCungTrongNgay(LocalDate.now()) + 1;
                 for (Map<String, Object> item : dsSP) {
                     String maDVT = item.get("maDVT").toString();
                     int heSoQuyDoi = donViTinhDAO.findById(maDVT).getHeSoQuyDoi();
@@ -243,12 +241,12 @@ public class HoaDonService {
 
                     String maSP = item.get("maSP").toString();
 
-                    int soCTHDMoiNhat = chiTietHoaDonDAO.getSoCTHDCuoiCungTrongNgay(LocalDate.now());
+
                     String maCTHDMoi;
                     if (soCTHDMoiNhat == 0) {
                         maCTHDMoi = taoMaChiTietHoaDonMoi(now.toLocalDate(), 1);
                     } else {
-                        maCTHDMoi = taoMaChiTietHoaDonMoi(now.toLocalDate(), soCTHDMoiNhat + 1);
+                        maCTHDMoi = taoMaChiTietHoaDonMoi(now.toLocalDate(), soCTHDMoiNhat++);
                     }
 
                     ChiTietHoaDon cthd = ChiTietHoaDon.builder()
@@ -473,5 +471,9 @@ public class HoaDonService {
     public List<ChiTietXuatLoDTO> getCTXLByMaCTHD(String maCTHD) {
         return chiTietXuatLoDAO.getChiTietXuatLoTheoMaCTHD(maCTHD)
                 .stream().map(EntityMapper::toDTO).collect(Collectors.toList());
+    }
+
+    public List<DoanhThu> getDoanhThuTungNgayTrongKhoangThoiGian(LocalDate begin, LocalDate end) {
+        return hoaDonDAO.getDoanhThuTungNgayTrongKhoangThoiGian(begin, end);
     }
 }
