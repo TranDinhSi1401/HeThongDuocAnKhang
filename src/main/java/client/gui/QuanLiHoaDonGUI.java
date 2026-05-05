@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package client.gui;
 
 import com.toedter.calendar.JDateChooser;
@@ -25,7 +21,6 @@ import java.beans.PropertyChangeListener;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -59,9 +54,10 @@ public class QuanLiHoaDonGUI extends JPanel {
         pnlNorthLeft.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 5));
         pnlNorthLeft.setBorder(new EmptyBorder(0, 0, 10, 0));
         
-        btnLamMoi = new JButton("Làm mới (F5)");
+        btnLamMoi = new JButton("Làm mới - F5");
         setupButton(btnLamMoi, new Color(255, 255, 255));
         
+        mapKeyToClickButton("F5", btnLamMoi);
         pnlNorthLeft.add(btnLamMoi);
         
         pnlNorth.add(pnlNorthLeft, BorderLayout.WEST);
@@ -139,8 +135,8 @@ public class QuanLiHoaDonGUI extends JPanel {
         String[] columnNames = {
             "STT",
             "Mã HĐ",
-            "Mã Nhân Viên",
-            "Mã Khách Hàng",
+            "Nhân viên",
+            "Khách hàng",
             "Ngày lập",
             "Tổng tiền",
             "Hình thức TT",
@@ -181,11 +177,8 @@ public class QuanLiHoaDonGUI extends JPanel {
         columnModel.getColumn(1).setMaxWidth(150);
         columnModel.getColumn(1).setCellRenderer(centerRenderer);
 
-        columnModel.getColumn(2).setPreferredWidth(120);
-        columnModel.getColumn(2).setCellRenderer(centerRenderer);
-
-        columnModel.getColumn(3).setPreferredWidth(120);
-        columnModel.getColumn(3).setCellRenderer(centerRenderer);
+        columnModel.getColumn(2).setPreferredWidth(150);
+        columnModel.getColumn(3).setPreferredWidth(150);
 
         columnModel.getColumn(4).setPreferredWidth(130);
         columnModel.getColumn(4).setCellRenderer(centerRenderer);
@@ -237,13 +230,11 @@ public class QuanLiHoaDonGUI extends JPanel {
         }
         int stt = 1;
         for (HoaDonDTO hd : dsHD) {
-            String tenKH = (hd.getTenKH() != null && !hd.getTenKH().isEmpty())
-                    ? hd.getTenKH() : (hd.getMaKH() != null ? hd.getMaKH() : "Khách lẻ");
             Object[] row = {
                 stt++,
                 hd.getMaHoaDon(),
-                hd.getMaNV(),
-                tenKH,
+                (hd.getTenNV() != null && !hd.getTenNV().isEmpty()) ? hd.getTenNV() : hd.getMaNV(),
+                (hd.getTenKH() != null && !hd.getTenKH().isEmpty()) ? hd.getTenKH() : "Khách lẻ",
                 hd.getNgayLapHoaDon() != null ? hd.getNgayLapHoaDon().format(formatter) : "",
                 String.format("%,.0f VND", hd.getTongTien()),
                 hd.isChuyenKhoan() ? "Chuyển khoản" : "Tiền mặt"
@@ -437,5 +428,18 @@ public class QuanLiHoaDonGUI extends JPanel {
         button.setFont(new Font("Segoe UI", Font.BOLD, 13));
         button.setFocusPainted(false);
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+    }
+
+    private void mapKeyToClickButton(String key, AbstractButton button) {
+        InputMap im = button.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap am = button.getActionMap();
+
+        im.put(KeyStroke.getKeyStroke(key), "click_" + key);
+        am.put("click_" + key, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                button.doClick();
+            }
+        });
     }
 }

@@ -33,7 +33,7 @@ public class LoSanPham {
     private LocalDate ngayHetHan;
 
     @Column(name = "da_huy")
-    private boolean daHuy;
+    private Boolean daHuy;
 
     @OneToMany(mappedBy = "loSanPham", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ChiTietPhieuNhap> chiTietPhieuNhaps;

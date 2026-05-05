@@ -49,6 +49,7 @@ public enum CommandType implements Serializable {
     DELETE_MA_VACH,
     GET_MA_VACH_BY_MA_SP,
     GET_ALL_MA_VACH,
+    XOA_HET_MA_VACH_BY_MA_SP,
 
     // ===== KhachHang =====
     GET_ALL_KHACH_HANG,
@@ -104,8 +105,6 @@ public enum CommandType implements Serializable {
     GET_DOANH_THU_TUNG_NGAY,
     GET_DOANH_THU_TUNG_THANG,
     GET_DOANH_THU_TUNG_NGAY_TRONG_KHOANG,
-    GET_DOANH_THU_TUNG_THANG_TRONG_NAM,
-    GET_DOANH_THU_TUNG_QUY_TRONG_NAM,
     GET_DOANH_THU_TUNG_NAM_TRONG_KHOANG,
     GET_NAM_HOA_DON,
     GET_HD_BY_NGAY_LAP,
@@ -172,6 +171,8 @@ public enum CommandType implements Serializable {
     SUA_KHUYEN_MAI,
     XOA_KHUYEN_MAI,
     GET_KHUYEN_MAI_BY_MA_SP,
+    GET_KHUYEN_MAI_BY_MOTA,
+    GET_KHUYEN_MAI_BY_LOAI,
 
     // ===== KhuyenMaiSanPham =====
     GET_KMSP_BY_MA_KM,
@@ -194,6 +195,9 @@ public enum CommandType implements Serializable {
 
     // ===== PhieuNhap =====
     GET_PHIEU_NHAP_BY_MA,
+    GET_PN_BY_MA_NV,
+    GET_PN_BY_NGAY,
+    GET_PN_BY_KHOANG_NGAY,
     GET_ALL_PHIEU_NHAP,
     GET_SO_PN_CUOI,
     ADD_PHIEU_NHAP,
@@ -229,6 +233,7 @@ public enum CommandType implements Serializable {
     XOA_CA_LAM,
 
     // ===== LichSuCaLam =====
+    GET_ALL_LICH_SU_CA_LAM,
     GET_LSCL_BY_MA_NV,
     GET_LSCL_BY_NGAY,
     GET_LSCL_DANG_LAM_BY_MA_NV,

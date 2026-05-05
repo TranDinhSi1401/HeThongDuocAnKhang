@@ -217,6 +217,11 @@ public class QuanLiPhieuTraHangGUI extends JPanel {
     }
 
     private void addEvents() {
+        txtTimKiem.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            @Override public void insertUpdate(javax.swing.event.DocumentEvent e) { xuLyTimKiem(); }
+            @Override public void removeUpdate(javax.swing.event.DocumentEvent e) { xuLyTimKiem(); }
+            @Override public void changedUpdate(javax.swing.event.DocumentEvent e) {}
+        });
         txtTimKiem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

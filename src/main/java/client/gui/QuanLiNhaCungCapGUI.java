@@ -21,6 +21,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import com.formdev.flatlaf.FlatClientProperties;
+import com.formdev.flatlaf.extras.FlatSVGIcon;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -75,15 +79,12 @@ public class QuanLiNhaCungCapGUI extends JPanel {
         cmbTieuChiTimKiem.setPreferredSize(new Dimension(150, 30));
 
         txtTimKiem = new JTextField(20);
+        txtTimKiem.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Tìm kiếm theo " + cmbTieuChiTimKiem.getSelectedItem().toString().toLowerCase() + "...");
+        txtTimKiem.putClientProperty(FlatClientProperties.TEXT_FIELD_LEADING_ICON, new FlatSVGIcon("images/search.svg", 16, 16));
         txtTimKiem.setFont(new Font("Arial", Font.PLAIN, 14));
-        txtTimKiem.setPreferredSize(new Dimension(200, 30));
-        txtTimKiem.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1),
-                new EmptyBorder(5, 5, 5, 5)
-        ));
+        txtTimKiem.setPreferredSize(new Dimension(250, 35));
 
         JPanel pnlTimKiem = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
-        pnlTimKiem.add(new JLabel("Tìm kiếm"));
         pnlTimKiem.add(txtTimKiem);
 
         pnlNorthRight.add(new JLabel("Tìm theo"));
@@ -213,11 +214,21 @@ public class QuanLiNhaCungCapGUI extends JPanel {
         btnThem.addActionListener(e -> xuLyThem());
         btnXoa.addActionListener(e -> xuLyXoa());
         btnSua.addActionListener(e -> xuLySua());
-        txtTimKiem.addActionListener(e -> xuLyTimKiem());
+        
+        txtTimKiem.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) { xuLyTimKiem(); }
+            @Override
+            public void removeUpdate(DocumentEvent e) { xuLyTimKiem(); }
+            @Override
+            public void changedUpdate(DocumentEvent e) { xuLyTimKiem(); }
+        });
 
         cmbTieuChiTimKiem.addActionListener(e -> {
+            txtTimKiem.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Tìm kiếm theo " + cmbTieuChiTimKiem.getSelectedItem().toString().toLowerCase() + "...");
             txtTimKiem.selectAll();
             txtTimKiem.requestFocus();
+            xuLyTimKiem();
         });
 
         table.addMouseListener(new MouseAdapter() {

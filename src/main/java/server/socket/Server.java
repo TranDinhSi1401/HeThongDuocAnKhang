@@ -15,20 +15,20 @@ import java.util.concurrent.Executors;
  */
 public class Server {
 
-    private static final int PORT          = 9090;
-    private static final int MAX_THREADS   = 50;
+    private static final int PORT = 9090;
+    private static final int MAX_THREADS = 50;
 
     public static void main(String[] args) {
         // Khởi tạo các Service (singleton, dùng chung cho mọi ClientHandler)
-        SanPhamService    sanPhamService    = new SanPhamService();
-        KhachHangService  khachHangService  = new KhachHangService();
-        NhanVienService   nhanVienService   = new NhanVienService();
-        HoaDonService     hoaDonService     = new HoaDonService();
-        LoSanPhamService  loSanPhamService  = new LoSanPhamService();
+        SanPhamService sanPhamService = new SanPhamService();
+        KhachHangService khachHangService = new KhachHangService();
+        NhanVienService nhanVienService = new NhanVienService();
+        HoaDonService hoaDonService = new HoaDonService();
+        LoSanPhamService loSanPhamService = new LoSanPhamService();
         NhaCungCapService nhaCungCapService = new NhaCungCapService();
-        KhuyenMaiService  khuyenMaiService  = new KhuyenMaiService();
-        PhieuService      phieuService      = new PhieuService();
-        CaLamService      caLamService      = new CaLamService();
+        KhuyenMaiService khuyenMaiService = new KhuyenMaiService();
+        PhieuService phieuService = new PhieuService();
+        CaLamService caLamService = new CaLamService();
 
         ExecutorService pool = Executors.newFixedThreadPool(MAX_THREADS);
 
@@ -50,8 +50,7 @@ public class Server {
                         clientSocket,
                         sanPhamService, khachHangService, nhanVienService,
                         hoaDonService, loSanPhamService, nhaCungCapService,
-                        khuyenMaiService, phieuService, caLamService
-                ));
+                        khuyenMaiService, phieuService, caLamService));
             }
         } catch (IOException e) {
             System.err.println("[Server] Lỗi khởi động server: " + e.getMessage());

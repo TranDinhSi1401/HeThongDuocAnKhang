@@ -1,10 +1,11 @@
 package client.gui;
 
-import common.dto.PhieuTraHangDTO;
+import common.dto.PhieuNhapDTO;
 import common.network.CommandType;
 import common.network.Request;
 import common.network.Response;
 import client.socket.SocketClient;
+import com.toedter.calendar.JDateChooser;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -12,7 +13,10 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
@@ -20,16 +24,18 @@ import java.util.List;
 import javax.swing.event.*;
 
 /**
- * GUI quản lý danh sách Phiếu Trả Hàng.
+ * GUI quản lý danh sách Phiếu Nhập.
  * (Đây là màn hình danh sách; không có thêm/xóa/sửa ở đây)
  */
 public class QuanLiPhieuNhapHangGUI extends JPanel {
 
     private JTextField txtTimKiem;
+    private JDateChooser dcsNgayTimKiem;
+    private JPanel pnlNhapLieu;
     private JTable table;
     private JComboBox<String> cmbTieuChiTimKiem;
     private DefaultTableModel model;
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private JLabel lblTongSoDong;
     private JLabel lblSoDongChon;
 
@@ -41,7 +47,7 @@ public class QuanLiPhieuNhapHangGUI extends JPanel {
         JPanel pnlNorthRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
 
         cmbTieuChiTimKiem = new JComboBox<>(new String[]{
-            "Mã Phiếu Trả", "Mã Hóa Đơn Gốc", "Mã Nhân Viên"});
+            "Mã Phiếu Nhập", "Mã Nhân Viên", "Ngày Tạo (yyyy-MM-dd)"});
         cmbTieuChiTimKiem.setFont(new Font("Arial", Font.PLAIN, 14));
         cmbTieuChiTimKiem.setPreferredSize(new Dimension(180, 30));
 
@@ -51,16 +57,25 @@ public class QuanLiPhieuNhapHangGUI extends JPanel {
         txtTimKiem.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1), new EmptyBorder(5,5,5,5)));
 
+        dcsNgayTimKiem = new JDateChooser();
+        dcsNgayTimKiem.setDateFormatString("yyyy-MM-dd");
+        dcsNgayTimKiem.setPreferredSize(new Dimension(200, 30));
+        dcsNgayTimKiem.setFont(new Font("Arial", Font.PLAIN, 14));
+
+        pnlNhapLieu = new JPanel(new CardLayout());
+        pnlNhapLieu.add(txtTimKiem, "text");
+        pnlNhapLieu.add(dcsNgayTimKiem, "date");
+
         JPanel pnlTimKiem = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
         pnlTimKiem.add(new JLabel("Tìm kiếm"));
-        pnlTimKiem.add(txtTimKiem);
+        pnlTimKiem.add(pnlNhapLieu);
         pnlNorthRight.add(new JLabel("Tìm theo"));
         pnlNorthRight.add(cmbTieuChiTimKiem);
         pnlNorthRight.add(pnlTimKiem);
         pnlNorth.add(pnlNorthRight, BorderLayout.EAST);
         this.add(pnlNorth, BorderLayout.NORTH);
 
-        String[] cols = {"STT", "Mã Phiếu Trả", "Mã Hóa Đơn Gốc", "Mã Nhân Viên", "Ngày Lập", "Tổng Tiền Hoàn Trả"};
+        String[] cols = {"STT", "Mã Phiếu Nhập", "Ngày Tạo", "Mã Nhân Viên", "Tổng Tiền", "Ghi Chú"};
         model = new DefaultTableModel(new Object[][]{}, cols) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
@@ -88,7 +103,7 @@ public class QuanLiPhieuNhapHangGUI extends JPanel {
         this.add(new JScrollPane(table), BorderLayout.CENTER);
 
         JPanel pnlSouth = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 5));
-        lblTongSoDong = new JLabel("Tổng số phiếu trả: 0");
+        lblTongSoDong = new JLabel("Tổng số phiếu nhập: 0");
         lblTongSoDong.setFont(new Font("Arial", Font.BOLD, 13));
         lblTongSoDong.setForeground(new Color(0, 102, 204));
         lblSoDongChon = new JLabel("Đang chọn: 0");
@@ -103,29 +118,48 @@ public class QuanLiPhieuNhapHangGUI extends JPanel {
         addEvents();
     }
 
-    private void updateTable(List<PhieuTraHangDTO> dsPTH) {
+    private void updateTable(List<PhieuNhapDTO> dsPN) {
         model.setRowCount(0);
-        if (dsPTH == null) { lblTongSoDong.setText("Tổng số phiếu trả: 0"); return; }
+        if (dsPN == null) { lblTongSoDong.setText("Tổng số phiếu nhập: 0"); return; }
         int stt = 1;
-        for (PhieuTraHangDTO pth : dsPTH) {
-            model.addRow(new Object[]{stt++, pth.getMaPhieuTraHang(), pth.getMaHoaDon(), pth.getMaNV(),
-                pth.getNgayLapPhieuTraHang() != null ? pth.getNgayLapPhieuTraHang().format(formatter) : "",
-                String.format("%,.0f VND", pth.getTongTienHoaTra())});
+        for (PhieuNhapDTO pn : dsPN) {
+            model.addRow(new Object[]{stt++, pn.getMaPhieuNhap(),
+                pn.getNgayTao() != null ? pn.getNgayTao().format(formatter) : "",
+                pn.getMaNV(),
+                String.format("%,.0f VND", pn.getTongTien()),
+                pn.getGhiChu()});
         }
-        lblTongSoDong.setText("Tổng số phiếu trả: " + dsPTH.size());
+        lblTongSoDong.setText("Tổng số phiếu nhập: " + dsPN.size());
     }
 
     private void updateTable() {
         Response res = SocketClient.getInstance().sendRequest(
-                new Request(CommandType.GET_ALL_PHIEU_TRA_HANG, null));
+                new Request(CommandType.GET_ALL_PHIEU_NHAP, null));
         if (res.isSuccess() && res.getData() != null)
-            updateTable((List<PhieuTraHangDTO>) res.getData());
-        else updateTable((List<PhieuTraHangDTO>) null);
+            updateTable((List<PhieuNhapDTO>) res.getData());
+        else updateTable((List<PhieuNhapDTO>) null);
     }
 
     private void addEvents() {
+        txtTimKiem.getDocument().addDocumentListener(new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) { xuLyTimKiem(); }
+            @Override public void removeUpdate(DocumentEvent e) { xuLyTimKiem(); }
+            @Override public void changedUpdate(DocumentEvent e) {}
+        });
         txtTimKiem.addActionListener(e -> xuLyTimKiem());
-        cmbTieuChiTimKiem.addActionListener(e -> { txtTimKiem.setText(""); txtTimKiem.requestFocus(); });
+        dcsNgayTimKiem.addPropertyChangeListener("date", e -> xuLyTimKiem());
+
+        cmbTieuChiTimKiem.addActionListener(e -> {
+            CardLayout cl = (CardLayout) pnlNhapLieu.getLayout();
+            if (cmbTieuChiTimKiem.getSelectedItem().toString().equals("Ngày Tạo (yyyy-MM-dd)")) {
+                cl.show(pnlNhapLieu, "date");
+                dcsNgayTimKiem.requestFocusInWindow();
+            } else {
+                cl.show(pnlNhapLieu, "text");
+                txtTimKiem.setText("");
+                txtTimKiem.requestFocus();
+            }
+        });
         table.addMouseListener(new MouseAdapter() {
             @Override public void mouseClicked(MouseEvent e) { hienThiChiTiet(e); }
         });
@@ -136,25 +170,41 @@ public class QuanLiPhieuNhapHangGUI extends JPanel {
     }
 
     private void xuLyTimKiem() {
-        String tuKhoa = txtTimKiem.getText().trim();
         String tieuChi = cmbTieuChiTimKiem.getSelectedItem().toString();
+        String tuKhoa = "";
+
+        if (tieuChi.equals("Ngày Tạo (yyyy-MM-dd)")) {
+            Date date = dcsNgayTimKiem.getDate();
+            if (date != null) {
+                LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                tuKhoa = localDate.toString();
+            }
+        } else {
+            tuKhoa = txtTimKiem.getText().trim();
+        }
+
         if (tuKhoa.isEmpty()) { updateTable(); return; }
 
-        List<PhieuTraHangDTO> ds = new ArrayList<>();
+        List<PhieuNhapDTO> ds = new ArrayList<>();
         Response res;
-        switch (tieuChi) {
-            case "Mã Phiếu Trả":
-                res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_PTH_BY_MA, tuKhoa));
-                if (res.isSuccess() && res.getData() != null) ds.add((PhieuTraHangDTO) res.getData());
-                break;
-            case "Mã Hóa Đơn Gốc":
-                res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_PTH_BY_MA_HD, tuKhoa));
-                if (res.isSuccess() && res.getData() != null) ds = (List<PhieuTraHangDTO>) res.getData();
-                break;
-            case "Mã Nhân Viên":
-                res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_PTH_BY_MA_NV, tuKhoa));
-                if (res.isSuccess() && res.getData() != null) ds = (List<PhieuTraHangDTO>) res.getData();
-                break;
+        try {
+            switch (tieuChi) {
+                case "Mã Phiếu Nhập":
+                    res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_PHIEU_NHAP_BY_MA, tuKhoa));
+                    if (res.isSuccess() && res.getData() != null) ds.add((PhieuNhapDTO) res.getData());
+                    break;
+                case "Mã Nhân Viên":
+                    res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_PN_BY_MA_NV, tuKhoa));
+                    if (res.isSuccess() && res.getData() != null) ds = (List<PhieuNhapDTO>) res.getData();
+                    break;
+                case "Ngày Tạo (yyyy-MM-dd)":
+                    LocalDate date = LocalDate.parse(tuKhoa);
+                    res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_PN_BY_NGAY, date));
+                    if (res.isSuccess() && res.getData() != null) ds = (List<PhieuNhapDTO>) res.getData();
+                    break;
+            }
+        } catch (DateTimeParseException e) {
+             JOptionPane.showMessageDialog(this, "Ngày nhập phải đúng định dạng YYYY-MM-DD.", "Lỗi định dạng", JOptionPane.ERROR_MESSAGE);
         }
         updateTable(ds);
     }
@@ -162,14 +212,14 @@ public class QuanLiPhieuNhapHangGUI extends JPanel {
     private void hienThiChiTiet(MouseEvent e) {
         int row = table.getSelectedRow();
         if (row != -1 && e.getClickCount() == 2) {
-            String maPTH = model.getValueAt(row, 1).toString();
-            Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_PTH_BY_MA, maPTH));
+            String maPN = model.getValueAt(row, 1).toString();
+            Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_PHIEU_NHAP_BY_MA, maPN));
             if (res.isSuccess() && res.getData() != null) {
-                PhieuTraHangDTO pthChon = (PhieuTraHangDTO) res.getData();
-                ChiTietPhieuTraHangGUI pnl = new ChiTietPhieuTraHangGUI();
-                pnl.loadData(pthChon);
+                PhieuNhapDTO pnChon = (PhieuNhapDTO) res.getData();
+                ChiTietPhieuNhapGUI pnl = new ChiTietPhieuNhapGUI();
+                pnl.loadData(pnChon);
                 JDialog dlg = new JDialog();
-                dlg.setTitle("Chi tiết Phiếu Trả Hàng: " + maPTH);
+                dlg.setTitle("Chi tiết Phiếu Nhập: " + maPN);
                 dlg.setModal(true); dlg.setResizable(true);
                 dlg.setContentPane(pnl);
                 dlg.setPreferredSize(new Dimension(900, 400));

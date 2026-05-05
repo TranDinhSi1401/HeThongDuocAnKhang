@@ -13,27 +13,33 @@ public class TaiKhoanDAO extends AbstractGenericDaoImpl<TaiKhoan, String> {
         super(TaiKhoan.class);
     }
 
-    /** Lấy tài khoản theo mã NV. */
     public TaiKhoan getTaiKhoanTheoMaNV(String maNV) {
-        return findById(maNV);
+        return doInTransaction(em -> {
+            List<TaiKhoan> result = em.createQuery(
+                "SELECT tk FROM TaiKhoan tk WHERE tk.maNV = :ma AND (tk.daXoa = false OR tk.daXoa IS NULL)", TaiKhoan.class)
+                .setParameter("ma", maNV)
+                .getResultList();
+            return result.isEmpty() ? null : result.get(0);
+        });
     }
 
     /** Lấy tài khoản theo email. */
     public TaiKhoan getTaiKhoanTheoEmail(String email) {
         return doInTransaction(em -> {
             List<TaiKhoan> result = em.createQuery(
-                "SELECT tk FROM TaiKhoan tk WHERE tk.email = :email AND tk.daXoa = false", TaiKhoan.class)
+                "SELECT tk FROM TaiKhoan tk WHERE tk.email = :email AND (tk.daXoa = false OR tk.daXoa IS NULL)", TaiKhoan.class)
                 .setParameter("email", email)
                 .getResultList();
             return result.isEmpty() ? null : result.get(0);
         });
     }
 
-    /** Khóa tài khoản (set biKhoa = true). */
+    /** Xóa mềm tài khoản (set daXoa = true và biKhoa = true). */
     public boolean xoaTaiKhoan(String maNV) {
         return doInTransaction(em -> {
             TaiKhoan tk = em.find(TaiKhoan.class, maNV);
             if (tk == null) return false;
+            tk.setDaXoa(true);
             tk.setBiKhoa(true);
             em.merge(tk);
             return true;
@@ -44,10 +50,10 @@ public class TaiKhoanDAO extends AbstractGenericDaoImpl<TaiKhoan, String> {
     public boolean capNhatTaiKhoan(TaiKhoan tk) {
         return doInTransaction(em -> {
             TaiKhoan existing = em.find(TaiKhoan.class, tk.getMaNV());
-            if (existing == null) return false;
-            existing.setQuanLy(tk.isQuanLy());
-            existing.setQuanLyLo(tk.isQuanLyLo());
-            existing.setBiKhoa(tk.isBiKhoa());
+            if (existing == null || Boolean.TRUE.equals(existing.getDaXoa())) return false;
+            existing.setQuanLy(tk.getQuanLy());
+            existing.setQuanLyLo(tk.getQuanLyLo());
+            existing.setBiKhoa(tk.getBiKhoa());
             existing.setEmail(tk.getEmail());
             em.merge(existing);
             return true;

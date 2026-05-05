@@ -49,7 +49,7 @@ public class SanPham {
     private Set<LoSanPham> loSanPhams;
 
     @Column(name = "da_xoa")
-    private boolean daXoa;
+    private Boolean daXoa;
 
     @OneToMany(mappedBy = "sanPham", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<DonViTinh> donViTinhs;

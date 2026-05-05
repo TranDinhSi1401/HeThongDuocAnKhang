@@ -201,18 +201,22 @@ public class QuanLiKhuyenMaiGUI extends JPanel {
         }
         int stt = 1;
         for (KhuyenMaiDTO km : dsKM) {
-            Object[] row = {
-                stt++,
-                km.getMaKhuyenMai(),
-                km.getMoTa(),
-                String.format("%.2f%%", km.getPhanTram()),
-                km.getLoaiKhuyenMai(),
-                km.getNgayBatDau().format(formatter),
-                km.getNgayKetThuc().format(formatter),
-                km.getSoLuongToiThieu(),
-                km.getSoLuongToiDa()
-            };
-            model.addRow(row);
+            try {
+                Object[] row = {
+                    stt++,
+                    km.getMaKhuyenMai(),
+                    km.getMoTa(),
+                    String.format("%.2f%%", km.getPhanTram()),
+                    km.getLoaiKhuyenMai(),
+                    km.getNgayBatDau() != null ? km.getNgayBatDau().format(formatter) : "",
+                    km.getNgayKetThuc() != null ? km.getNgayKetThuc().format(formatter) : "",
+                    km.getSoLuongToiThieu(),
+                    km.getSoLuongToiDa()
+                };
+                model.addRow(row);
+            } catch (Exception ex) {
+                System.err.println("Lỗi khi thêm dòng khuyến mãi: " + ex.getMessage());
+            }
         }
         lblTongSoDong.setText("Tổng số khuyến mãi: " + dsKM.size());
     }
@@ -222,6 +226,9 @@ public class QuanLiKhuyenMaiGUI extends JPanel {
         if (res.isSuccess() && res.getData() != null) {
             updateTable((List<KhuyenMaiDTO>) res.getData());
         } else {
+            if (!res.isSuccess()) {
+                JOptionPane.showMessageDialog(this, "Lỗi tải danh sách khuyến mãi: " + res.getMessage());
+            }
             updateTable((List<KhuyenMaiDTO>) null);
         }
     }
@@ -277,16 +284,9 @@ public class QuanLiKhuyenMaiGUI extends JPanel {
                     }
                     break;
                 case "Mô tả":
-                    // Server chưa có GET_KHUYEN_MAI_BY_MOTA, ta có thể lọc ở client hoặc thêm ở server sau.
-                    // Tạm thời lấy tất cả rồi lọc.
-                    res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_ALL_KHUYEN_MAI, null));
+                    res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_KHUYEN_MAI_BY_MOTA, tuKhoa));
                     if (res.isSuccess() && res.getData() != null) {
-                        List<KhuyenMaiDTO> all = (List<KhuyenMaiDTO>) res.getData();
-                        for (KhuyenMaiDTO km : all) {
-                            if (km.getMoTa().toLowerCase().contains(tuKhoa.toLowerCase())) {
-                                dsKetQua.add(km);
-                            }
-                        }
+                        dsKetQua = (List<KhuyenMaiDTO>) res.getData();
                     }
                     break;
             }
@@ -300,17 +300,11 @@ public class QuanLiKhuyenMaiGUI extends JPanel {
         if (boLoc.equals("Tất cả")) {
             updateTable();
         } else {
-            // Tương tự, lấy tất cả rồi lọc theo loại
-            Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_ALL_KHUYEN_MAI, null));
+            Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_KHUYEN_MAI_BY_LOAI, boLoc));
             if (res.isSuccess() && res.getData() != null) {
-                List<KhuyenMaiDTO> all = (List<KhuyenMaiDTO>) res.getData();
-                List<KhuyenMaiDTO> filtered = new ArrayList<>();
-                for (KhuyenMaiDTO km : all) {
-                    if (km.getLoaiKhuyenMai().equals(boLoc)) {
-                        filtered.add(km);
-                    }
-                }
-                updateTable(filtered);
+                updateTable((List<KhuyenMaiDTO>) res.getData());
+            } else {
+                updateTable((List<KhuyenMaiDTO>) null);
             }
         }
     }

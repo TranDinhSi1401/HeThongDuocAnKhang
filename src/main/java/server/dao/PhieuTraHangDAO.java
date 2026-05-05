@@ -33,6 +33,19 @@ public class PhieuTraHangDAO extends AbstractGenericDaoImpl<PhieuTraHang, String
         );
     }
 
+    /** Tìm phiếu trả hàng theo ngày lập. */
+    public List<PhieuTraHang> timPTHTheoNgay(java.time.LocalDate ngay) {
+        return doInTransaction(em -> {
+            java.time.LocalDateTime start = ngay.atStartOfDay();
+            java.time.LocalDateTime end = ngay.plusDays(1).atStartOfDay();
+            return em.createQuery(
+                "SELECT pth FROM PhieuTraHang pth WHERE pth.ngayLapPhieuTraHang >= :start AND pth.ngayLapPhieuTraHang < :end", PhieuTraHang.class)
+              .setParameter("start", start)
+              .setParameter("end", end)
+              .getResultList();
+        });
+    }
+
     /** Lấy số thứ tự PTH cuối cùng trong ngày theo format "PTH-YYYYMMDD-XXX". */
     public int getSoPTHCuoiCungTrongNgay(String ngay) {
         return doInTransaction(em -> {

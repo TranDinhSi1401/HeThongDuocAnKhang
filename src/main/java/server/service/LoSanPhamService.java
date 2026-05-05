@@ -60,6 +60,11 @@ public class LoSanPhamService {
         return loSanPhamDAO.demLoTheoTrangThai();
     }
 
+    public List<LoSanPhamDTO> getLoSapHetHan() {
+        return loSanPhamDAO.getLoSapHetHan()
+                .stream().map(EntityMapper::toDTO).collect(Collectors.toList());
+    }
+
     public boolean addLoSanPham(LoSanPhamDTO dto) {
         LoSanPham entity = EntityMapper.toEntity(dto);
         SanPham sp = new SanPham();

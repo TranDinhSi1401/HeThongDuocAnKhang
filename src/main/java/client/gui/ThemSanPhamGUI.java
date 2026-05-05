@@ -371,11 +371,21 @@ public class ThemSanPhamGUI extends JDialog {
         btnXoaDVT.addActionListener(e -> bus.xuLyXoaDVT(this));
 
         // --- NCC ---
+        txtTimNCC.getDocument().addDocumentListener(new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) { bus.xuLyTimNCC(ThemSanPhamGUI.this); }
+            @Override public void removeUpdate(DocumentEvent e) { bus.xuLyTimNCC(ThemSanPhamGUI.this); }
+            @Override public void changedUpdate(DocumentEvent e) {}
+        });
         btnTimNCC.addActionListener(e -> bus.xuLyTimNCC(this));
         btnThemNCC.addActionListener(e -> bus.xuLyThemNCC(this));
         btnXoaNCC.addActionListener(e -> bus.xuLyXoaNCC(this));
 
         // --- KM ---
+        txtTimKM.getDocument().addDocumentListener(new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) { bus.xuLyTimKM(ThemSanPhamGUI.this); }
+            @Override public void removeUpdate(DocumentEvent e) { bus.xuLyTimKM(ThemSanPhamGUI.this); }
+            @Override public void changedUpdate(DocumentEvent e) {}
+        });
         btnTimKM.addActionListener(e -> bus.xuLyTimKM(this));
         btnThemKM.addActionListener(e -> bus.xuLyThemKM(this));
         btnXoaKM.addActionListener(e -> bus.xuLyXoaKM(this));

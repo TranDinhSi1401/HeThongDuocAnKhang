@@ -26,10 +26,10 @@ public class TaiKhoan {
     private String matKhau;
 
     @Column(name = "quan_ly")
-    private boolean quanLy;
+    private Boolean quanLy;
 
     @Column(name = "bi_khoa")
-    private boolean biKhoa;
+    private Boolean biKhoa;
 
     @Column(name = "email")
     private String email;
@@ -38,8 +38,8 @@ public class TaiKhoan {
     private LocalDateTime ngayTao;
 
     @Column(name = "da_xoa")
-    private boolean daXoa;
+    private Boolean daXoa;
 
     @Column(name = "quan_ly_lo")
-    private boolean quanLyLo;
+    private Boolean quanLyLo;
 }

@@ -17,6 +17,7 @@ import java.awt.*;
 
 import java.text.NumberFormat;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -124,9 +125,10 @@ public class DashBoardNhanVien extends javax.swing.JPanel {
         }
 
         btnVaoCa.addActionListener(e -> {
-            // Lấy ca làm hiện tại
+            LocalTime gioHienTai = LocalTime.now();
+            String tenCaFilter = (gioHienTai.getHour() >= 6 && gioHienTai.getHour() < 14) ? "Ca Sáng" : "Ca Tối";
             Response resCa = SocketClient.getInstance().sendRequest(
-                    new Request(CommandType.GET_CA_LAM_BY_TEN, "Ca Sáng")); // tạm dùng ca sáng
+                    new Request(CommandType.GET_CA_LAM_BY_TEN, tenCaFilter));
             CaLamDTO caLam = (resCa.isSuccess() && resCa.getData() != null) ? (CaLamDTO) resCa.getData() : null;
             if (caLam == null) {
                 JOptionPane.showMessageDialog(this, "Không xác định được Ca Làm hiện tại!");
@@ -139,8 +141,14 @@ public class DashBoardNhanVien extends javax.swing.JPanel {
                         "Xác nhận vào ca", JOptionPane.YES_NO_OPTION);
                 if (confirm != JOptionPane.YES_OPTION) return;
 
+                LichSuCaLamDTO ls = LichSuCaLamDTO.builder()
+                        .maNV(maNV)
+                        .maCa(caLam.getMaCa())
+                        .ngayLamViec(LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                        .thoiGianVaoCa(LocalTime.now())
+                        .build();
                 Response resVao = SocketClient.getInstance().sendRequest(
-                        new Request(CommandType.ADD_LICH_SU_CA_LAM, new Object[]{maNV, caLam.getMaCa()}));
+                        new Request(CommandType.ADD_LICH_SU_CA_LAM, ls));
                 if (resVao.isSuccess()) {
                     JOptionPane.showMessageDialog(this, "Vào ca thành công!");
                     btnVaoCa.setText("Ra Ca");
@@ -169,8 +177,15 @@ public class DashBoardNhanVien extends javax.swing.JPanel {
                 int confirmRa = JOptionPane.showConfirmDialog(this,
                         "Kết thúc ca làm việc?", "Xác nhận ra ca", JOptionPane.YES_NO_OPTION);
                 if (confirmRa == JOptionPane.YES_OPTION) {
+                    LichSuCaLamDTO lsUpdate = LichSuCaLamDTO.builder()
+                            .maNV(maNV)
+                            .maCa(caLam.getMaCa())
+                            .ngayLamViec(LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                            .thoiGianRaCa(LocalTime.now())
+                            .ghiChu(ghiChu)
+                            .build();
                     Response resRa = SocketClient.getInstance().sendRequest(
-                            new Request(CommandType.UPDATE_LICH_SU_CA_LAM, new Object[]{maNV, caLam.getMaCa(), ghiChu}));
+                            new Request(CommandType.UPDATE_LICH_SU_CA_LAM, lsUpdate));
                     if (resRa.isSuccess()) {
                         JOptionPane.showMessageDialog(this, "Ra ca thành công!");
                         btnVaoCa.setText("Vào Ca");

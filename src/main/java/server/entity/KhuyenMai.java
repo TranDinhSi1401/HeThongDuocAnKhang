@@ -45,7 +45,7 @@ public class KhuyenMai {
     private LocalDateTime ngayChinhSua;
 
     @Column(name = "da_xoa")
-    private boolean daXoa;
+    private Boolean daXoa;
 
     @OneToMany(mappedBy = "khuyenMai", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<KhuyenMaiSanPham> khuyenMaiSanPhams;

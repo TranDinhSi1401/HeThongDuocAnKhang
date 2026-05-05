@@ -114,16 +114,19 @@ public class QuanLiLichSuCaLamGUI extends JPanel {
     }
 
     private void updateTable() {
-        LocalDate from = LocalDate.of(2000, 1, 1);
-        LocalDate to = LocalDate.now();
         Response res = SocketClient.getInstance().sendRequest(
-                new Request(CommandType.GET_LSCL_BY_NGAY, new Object[]{from, to}));
+                new Request(CommandType.GET_ALL_LICH_SU_CA_LAM, null));
         if (res.isSuccess() && res.getData() != null)
             updateTable((List<LichSuCaLamDTO>) res.getData());
         else updateTable((List<LichSuCaLamDTO>) null);
     }
 
     private void addEvents() {
+        txtTimKiem.getDocument().addDocumentListener(new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) { xuLyTimKiem(); }
+            @Override public void removeUpdate(DocumentEvent e) { xuLyTimKiem(); }
+            @Override public void changedUpdate(DocumentEvent e) {}
+        });
         txtTimKiem.addActionListener(e -> xuLyTimKiem());
         dcsNgayTimKiem.addPropertyChangeListener("date", e -> xuLyTimKiem());
         cmbTieuChiTimKiem.addActionListener(e -> {
@@ -162,8 +165,7 @@ public class QuanLiLichSuCaLamGUI extends JPanel {
                 res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_LSCL_BY_MA_NV, tuKhoa));
                 if (res.isSuccess() && res.getData() != null) ds = (List<LichSuCaLamDTO>) res.getData();
             } else {
-                LocalDate date = LocalDate.parse(tuKhoa);
-                res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_LSCL_BY_NGAY, date));
+                res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_LSCL_BY_NGAY, tuKhoa));
                 if (res.isSuccess() && res.getData() != null) ds = (List<LichSuCaLamDTO>) res.getData();
             }
         } catch (DateTimeParseException e) {

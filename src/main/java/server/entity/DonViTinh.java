@@ -32,10 +32,10 @@ public class DonViTinh {
     private double giaBanTheoDonVi;
 
     @Column(name = "don_vi_tinh_co_ban")
-    private boolean donViTinhCoBan;
+    private Boolean donViTinhCoBan;
 
     @Column(name = "da_xoa")
-    private boolean daXoa;
+    private Boolean daXoa;
 
     @OneToMany(mappedBy = "donViTinh", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ChiTietHoaDon> chiTietHoaDons;

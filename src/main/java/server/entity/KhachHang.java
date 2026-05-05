@@ -31,7 +31,7 @@ public class KhachHang {
     private int diemTichLuy;
 
     @Column(name = "da_xoa")
-    private boolean daXoa;
+    private Boolean daXoa;
 
     @OneToMany(mappedBy = "khachHang", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<HoaDon> hoaDons;

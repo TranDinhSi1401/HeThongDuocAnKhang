@@ -16,7 +16,7 @@ public class NhanVienDAO extends AbstractGenericDaoImpl<NhanVien, String> {
     /** Lấy tất cả nhân viên chưa nghỉ việc. */
     public List<NhanVien> getAllNhanVien() {
         return doInTransaction(em ->
-            em.createQuery("SELECT nv FROM NhanVien nv WHERE nv.nghiViec = false", NhanVien.class)
+            em.createQuery("SELECT nv FROM NhanVien nv WHERE (nv.nghiViec = false OR nv.nghiViec IS NULL)", NhanVien.class)
               .getResultList()
         );
     }
@@ -28,11 +28,12 @@ public class NhanVienDAO extends AbstractGenericDaoImpl<NhanVien, String> {
 
     /** Lấy nhân viên theo trạng thái nghỉ việc. */
     public List<NhanVien> timNVTheoTrangThai(boolean daNghiViec) {
-        return doInTransaction(em ->
-            em.createQuery("SELECT nv FROM NhanVien nv WHERE nv.nghiViec = :trangThai", NhanVien.class)
-              .setParameter("trangThai", daNghiViec)
-              .getResultList()
-        );
+        return doInTransaction(em -> {
+            String query = daNghiViec 
+                ? "SELECT nv FROM NhanVien nv WHERE nv.nghiViec = true"
+                : "SELECT nv FROM NhanVien nv WHERE (nv.nghiViec = false OR nv.nghiViec IS NULL)";
+            return em.createQuery(query, NhanVien.class).getResultList();
+        });
     }
 
     /** Xóa mềm nhân viên (set nghiViec = true). */
@@ -55,10 +56,10 @@ public class NhanVienDAO extends AbstractGenericDaoImpl<NhanVien, String> {
             nv.setTen(nvNew.getTen());
             nv.setSdt(nvNew.getSdt());
             nv.setCccd(nvNew.getCccd());
-            nv.setGioiTinh(nvNew.isGioiTinh());
+            nv.setGioiTinh(nvNew.getGioiTinh());
             nv.setNgaySinh(nvNew.getNgaySinh());
             nv.setDiaChi(nvNew.getDiaChi());
-            nv.setNghiViec(nvNew.isNghiViec());
+            nv.setNghiViec(nvNew.getNghiViec());
             em.merge(nv);
             return true;
         });
@@ -68,7 +69,7 @@ public class NhanVienDAO extends AbstractGenericDaoImpl<NhanVien, String> {
     public NhanVien timNVTheoMa(String ma) {
         return doInTransaction(em -> {
             List<NhanVien> result = em.createQuery(
-                "SELECT nv FROM NhanVien nv WHERE nv.maNV = :ma AND nv.nghiViec = false", NhanVien.class)
+                "SELECT nv FROM NhanVien nv WHERE nv.maNV = :ma AND (nv.nghiViec = false OR nv.nghiViec IS NULL)", NhanVien.class)
                 .setParameter("ma", ma)
                 .getResultList();
             return result.isEmpty() ? null : result.get(0);
@@ -79,7 +80,7 @@ public class NhanVienDAO extends AbstractGenericDaoImpl<NhanVien, String> {
     public List<NhanVien> timNVTheoTen(String tenNV) {
         return doInTransaction(em ->
             em.createQuery(
-                "SELECT nv FROM NhanVien nv WHERE CONCAT(nv.hoTenDem, ' ', nv.ten) LIKE :ten AND nv.nghiViec = false",
+                "SELECT nv FROM NhanVien nv WHERE CONCAT(nv.hoTenDem, ' ', nv.ten) LIKE :ten AND (nv.nghiViec = false OR nv.nghiViec IS NULL)",
                 NhanVien.class)
               .setParameter("ten", "%" + tenNV + "%")
               .getResultList()
@@ -89,7 +90,7 @@ public class NhanVienDAO extends AbstractGenericDaoImpl<NhanVien, String> {
     /** Tìm nhân viên theo SĐT (chưa nghỉ việc). */
     public List<NhanVien> timNVTheoSDT(String sdtNV) {
         return doInTransaction(em ->
-            em.createQuery("SELECT nv FROM NhanVien nv WHERE nv.sdt = :sdt AND nv.nghiViec = false", NhanVien.class)
+            em.createQuery("SELECT nv FROM NhanVien nv WHERE nv.sdt = :sdt AND (nv.nghiViec = false OR nv.nghiViec IS NULL)", NhanVien.class)
               .setParameter("sdt", sdtNV)
               .getResultList()
         );
@@ -98,7 +99,7 @@ public class NhanVienDAO extends AbstractGenericDaoImpl<NhanVien, String> {
     /** Tìm nhân viên theo CCCD (chưa nghỉ việc). */
     public List<NhanVien> timNVTheoCCCD(String cccdNV) {
         return doInTransaction(em ->
-            em.createQuery("SELECT nv FROM NhanVien nv WHERE nv.cccd = :cccd AND nv.nghiViec = false", NhanVien.class)
+            em.createQuery("SELECT nv FROM NhanVien nv WHERE nv.cccd = :cccd AND (nv.nghiViec = false OR nv.nghiViec IS NULL)", NhanVien.class)
               .setParameter("cccd", cccdNV)
               .getResultList()
         );

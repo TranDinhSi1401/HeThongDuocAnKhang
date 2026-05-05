@@ -7,11 +7,6 @@ import client.socket.SocketClient;
 import common.dto.*;
 import common.network.*;
 import java.awt.*;
-
-import org.jfree.chart3d.graphics2d.TextAnchor;
-import client.socket.SocketClient;
-import common.dto.*;
-import common.network.*;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -22,7 +17,6 @@ import java.awt.Font;
 import java.awt.Label;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.SQLException;
 import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -185,92 +179,7 @@ public class DashBoardQuanLi extends javax.swing.JPanel {
         }
 
         // SỰ KIỆN CLICK NÚT
-//        btnVaoCa.addActionListener(e -> {
-//            try {
-//                String maNV = GiaoDienChinhGUI.getTk().getTenDangNhap().trim();
-//                NhanVien nv = NhanVienDAO.getNhanVienTheoMaNV(maNV);
-//                LocalDate ngayHienTai = LocalDate.now();
-//                LocalTime gioHienTai = LocalTime.now();
-//
-//                String maCa = "";
-//                if (gioHienTai.getHour() >= 6 && gioHienTai.getHour() < 14) {
-//                    maCa = "SANG";
-//                } else {
-//                    maCa = "TOI";
-//                }
-//
-//                CaLam caLam = CaLamDAO.timCaLamTheoMa(maCa);
-//                if (caLam == null) {
-//                    JOptionPane.showMessageDialog(this, "Không xác định được Ca Làm hiện tại (Mã ca: " + maCa + " không tồn tại)!");
-//                    return;
-//                }
-//
-//                LichSuCaLamDAO lsDAO = new LichSuCaLamDAO();
-//
-//                if (btnVaoCa.getText().equals("Vào Ca")) {
-//                    // LOGIC VÀO CA
-//                    LichSuCaLam ls = new LichSuCaLam(nv, ngayHienTai, caLam, gioHienTai, null, "");
-//
-//                    if (lsDAO.themLichSuCaLam(ls)) {
-//                        JOptionPane.showMessageDialog(this, "Vào ca thành công lúc " + gioHienTai.format(DateTimeFormatter.ofPattern("HH:mm:ss")));
-//                        btnVaoCa.setText("Ra Ca");
-//                        btnVaoCa.setBackground(Color.RED);
-//                    } else {
-//                        JOptionPane.showMessageDialog(this, "Lỗi: Không thể vào ca (Có thể bạn đã chấm công rồi).");
-//                    }
-//
-//                } else {
-//                    // LOGIC RA CA
-//                    // Tạo giao diện nhập ghi chú
-//                    JPanel pnlGhiChu = new JPanel(new BorderLayout(5, 5));
-//                    pnlGhiChu.setPreferredSize(new Dimension(400, 150));
-//
-//                    JLabel lblLoiNhan = new JLabel("Nhập ghi chú ra ca (nếu có):");
-//                    lblLoiNhan.setFont(new Font("Segoe UI", Font.BOLD, 14));
-//
-//                    JTextArea txtGhiChu = new JTextArea(5, 20);
-//                    txtGhiChu.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-//                    txtGhiChu.setLineWrap(true);
-//                    txtGhiChu.setWrapStyleWord(true);
-//
-//                    JScrollPane scrollGhiChu = new JScrollPane(txtGhiChu);
-//
-//                    pnlGhiChu.add(lblLoiNhan, BorderLayout.NORTH);
-//                    pnlGhiChu.add(scrollGhiChu, BorderLayout.CENTER);
-//
-//                    // Hiển thị hộp thoại nhập
-//                    int inputResult = JOptionPane.showConfirmDialog(
-//                            this, pnlGhiChu, "Ghi chú Ra Ca",
-//                            JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE
-//                    );
-//
-//                    // Nếu bấm Cancel thì thoát
-//                    if (inputResult != JOptionPane.OK_OPTION) {
-//                        return;
-//                    }
-//
-//                    String ghiChu = txtGhiChu.getText().trim();
-//
-//                    // Hiện hộp thoại xác nhận cuối cùng
-//                    int confirm = JOptionPane.showConfirmDialog(this,
-//                            "Bạn có chắc chắn muốn kết thúc ca làm việc?",
-//                            "Xác nhận ra ca", JOptionPane.YES_NO_OPTION);
-//
-//                    if (confirm == JOptionPane.YES_OPTION) {
-//                        if (lsDAO.capNhatRaCa(maNV, maCa, ngayHienTai, gioHienTai, ghiChu)) {
-//                            JOptionPane.showMessageDialog(this, "Ra ca thành công!");
-//                            btnVaoCa.setText("Vào Ca");
-//                            btnVaoCa.setBackground(Color.GREEN);
-//                        } else {
-//                            JOptionPane.showMessageDialog(this, "Lỗi: Không tìm thấy phiên làm việc để ra ca.");
-//                        }
-//                    }
-//                }
-//            } catch (SQLException ex) {
-//                ex.printStackTrace();
-//                JOptionPane.showMessageDialog(this, "Lỗi kết nối cơ sở dữ liệu!");
-//            }
-//        });
+
     }
 
     private void configureBtnVaoCa() {
@@ -369,8 +278,14 @@ public class DashBoardQuanLi extends javax.swing.JPanel {
                             "Xác nhận ra ca", JOptionPane.YES_NO_OPTION);
 
                     if (confirmRaCa == JOptionPane.YES_OPTION) {
-                        // Gọi Server để xử lý dữ liệu
-                        Response resRa = SocketClient.getInstance().sendRequest(new Request(CommandType.UPDATE_LICH_SU_CA_LAM, new Object[]{maNV, caLam.getMaCa(), LocalDate.now(), LocalTime.now(), ghiChu}));
+                        LichSuCaLamDTO lsUpdate = LichSuCaLamDTO.builder()
+                                .maNV(maNV)
+                                .maCa(caLam.getMaCa())
+                                .ngayLamViec(LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                                .thoiGianRaCa(LocalTime.now())
+                                .ghiChu(ghiChu)
+                                .build();
+                        Response resRa = SocketClient.getInstance().sendRequest(new Request(CommandType.UPDATE_LICH_SU_CA_LAM, lsUpdate));
                         if (resRa.isSuccess()) {
                             JOptionPane.showMessageDialog(this, "Ra ca thành công!");
                             btnVaoCa.setText("Vào Ca");
@@ -610,19 +525,8 @@ public class DashBoardQuanLi extends javax.swing.JPanel {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
         // Load Dữ liệu
-        Response resLo = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_ALL_LO_SAN_PHAM, null));
-        java.util.List<LoSanPhamDTO> dsLo = (resLo.isSuccess()) ? (java.util.List<LoSanPhamDTO>) resLo.getData() : new java.util.ArrayList<>();
-        
-        // Lọc các lô sắp hết hạn (giả sử client tự lọc tạm)
-        java.util.List<LoSanPhamDTO> dsLoSapHetHan = new java.util.ArrayList<>();
-        if (dsLo != null) {
-            LocalDate threshold = LocalDate.now().plusMonths(6);
-            for(LoSanPhamDTO l : dsLo) {
-                if(l.getNgayHetHan().isBefore(threshold)) {
-                    dsLoSapHetHan.add(l);
-                }
-            }
-        }
+        Response resLo = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_LO_SAP_HET_HAN, null));
+        java.util.List<LoSanPhamDTO> dsLoSapHetHan = (resLo.isSuccess() && resLo.getData() != null) ? (java.util.List<LoSanPhamDTO>) resLo.getData() : new java.util.ArrayList<>();
 
         int stt = 0;
         for (LoSanPhamDTO i : dsLoSapHetHan) {
@@ -1216,7 +1120,7 @@ public class DashBoardQuanLi extends javax.swing.JPanel {
                 // Đặt neo của bảng ở giữa category
                 annotation.setCategoryAnchor(CategoryAnchor.MIDDLE);
                 // Đặt text ở vị trí BOTTOM_CENTER (để cái bảng xuất hiện BÊN TRÊN điểm dữ liệu)
-                annotation.setTextAnchor(org.jfree.ui.TextAnchor.BASELINE_CENTER.BOTTOM_CENTER);
+                annotation.setTextAnchor(org.jfree.ui.TextAnchor.BOTTOM_CENTER);
 
                 // Thêm bảng nhỏ vào biểu đồ
                 plot.addAnnotation(annotation);

@@ -33,7 +33,7 @@ public class QuanLiSanPhamGUI extends JPanel {
 
         // Khởi tạo BUS và load dữ liệu
         sanPhamBUS = new SanPhamBUS();
-        sanPhamBUS.loadDataToTable(table, null);
+        sanPhamBUS.loadDataToTable(this, null);
 
         // Gắn sự kiện
         initEvents();
@@ -159,7 +159,7 @@ public class QuanLiSanPhamGUI extends JPanel {
             ThemSanPhamGUI dialog = new ThemSanPhamGUI(sanPhamBUS, false, "");
             dialog.setVisible(true);
             // Sau khi dialog đóng -> load lại bảng
-            sanPhamBUS.loadDataToTable(table, null);
+            sanPhamBUS.loadDataToTable(this, null);
         });
 
         // Sự kiện SỬA
@@ -172,7 +172,7 @@ public class QuanLiSanPhamGUI extends JPanel {
             String maSP = model.getValueAt(selectedRow, 1).toString();
             ThemSanPhamGUI dialog = new ThemSanPhamGUI(sanPhamBUS, true, maSP);
             dialog.setVisible(true);
-            sanPhamBUS.loadDataToTable(table, null);
+            sanPhamBUS.loadDataToTable(this, null);
         });
 
         // Sự kiện XÓA

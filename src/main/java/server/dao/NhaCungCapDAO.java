@@ -16,7 +16,7 @@ public class NhaCungCapDAO extends AbstractGenericDaoImpl<NhaCungCap, String> {
     /** Lấy tất cả nhà cung cấp chưa bị xóa. */
     public List<NhaCungCap> getAllNhaCungCap() {
         return doInTransaction(em ->
-            em.createQuery("SELECT ncc FROM NhaCungCap ncc WHERE ncc.daXoa = false", NhaCungCap.class)
+            em.createQuery("SELECT ncc FROM NhaCungCap ncc WHERE (ncc.daXoa = false OR ncc.daXoa IS NULL)", NhaCungCap.class)
               .getResultList()
         );
     }
@@ -50,7 +50,7 @@ public class NhaCungCapDAO extends AbstractGenericDaoImpl<NhaCungCap, String> {
     public NhaCungCap timNCCTheoMa(String ma) {
         return doInTransaction(em -> {
             List<NhaCungCap> result = em.createQuery(
-                "SELECT ncc FROM NhaCungCap ncc WHERE ncc.maNCC = :ma AND ncc.daXoa = false", NhaCungCap.class)
+                "SELECT ncc FROM NhaCungCap ncc WHERE ncc.maNCC = :ma AND (ncc.daXoa = false OR ncc.daXoa IS NULL)", NhaCungCap.class)
                 .setParameter("ma", ma).getResultList();
             return result.isEmpty() ? null : result.get(0);
         });
@@ -60,7 +60,7 @@ public class NhaCungCapDAO extends AbstractGenericDaoImpl<NhaCungCap, String> {
     public List<NhaCungCap> timNCCTheoTen(String tenNCCInput) {
         return doInTransaction(em ->
             em.createQuery(
-                "SELECT ncc FROM NhaCungCap ncc WHERE ncc.tenNCC LIKE :ten AND ncc.daXoa = false", NhaCungCap.class)
+                "SELECT ncc FROM NhaCungCap ncc WHERE ncc.tenNCC LIKE :ten AND (ncc.daXoa = false OR ncc.daXoa IS NULL)", NhaCungCap.class)
               .setParameter("ten", "%" + tenNCCInput + "%")
               .getResultList()
         );
@@ -70,7 +70,7 @@ public class NhaCungCapDAO extends AbstractGenericDaoImpl<NhaCungCap, String> {
     public List<NhaCungCap> timNCCTheoSDT(String sdtInput) {
         return doInTransaction(em ->
             em.createQuery(
-                "SELECT ncc FROM NhaCungCap ncc WHERE ncc.sdt = :sdt AND ncc.daXoa = false", NhaCungCap.class)
+                "SELECT ncc FROM NhaCungCap ncc WHERE ncc.sdt = :sdt AND (ncc.daXoa = false OR ncc.daXoa IS NULL)", NhaCungCap.class)
               .setParameter("sdt", sdtInput)
               .getResultList()
         );
@@ -80,7 +80,7 @@ public class NhaCungCapDAO extends AbstractGenericDaoImpl<NhaCungCap, String> {
     public List<NhaCungCap> timNCCTheoEmail(String emailInput) {
         return doInTransaction(em ->
             em.createQuery(
-                "SELECT ncc FROM NhaCungCap ncc WHERE ncc.email LIKE :email AND ncc.daXoa = false", NhaCungCap.class)
+                "SELECT ncc FROM NhaCungCap ncc WHERE ncc.email LIKE :email AND (ncc.daXoa = false OR ncc.daXoa IS NULL)", NhaCungCap.class)
               .setParameter("email", "%" + emailInput + "%")
               .getResultList()
         );
@@ -105,7 +105,7 @@ public class NhaCungCapDAO extends AbstractGenericDaoImpl<NhaCungCap, String> {
     public NhaCungCap getNhaCungCapTheoTen(String ten) {
         return doInTransaction(em -> {
             List<NhaCungCap> result = em.createQuery(
-                "SELECT ncc FROM NhaCungCap ncc WHERE ncc.tenNCC LIKE :ten AND ncc.daXoa = false", NhaCungCap.class)
+                "SELECT ncc FROM NhaCungCap ncc WHERE ncc.tenNCC LIKE :ten AND (ncc.daXoa = false OR ncc.daXoa IS NULL)", NhaCungCap.class)
                 .setParameter("ten", ten).setMaxResults(1).getResultList();
             return result.isEmpty() ? new NhaCungCap() : result.get(0);
         });
@@ -115,7 +115,7 @@ public class NhaCungCapDAO extends AbstractGenericDaoImpl<NhaCungCap, String> {
     public NhaCungCap timMotNCCTheoTen(String tenNCCInput) {
         return doInTransaction(em -> {
             List<NhaCungCap> result = em.createQuery(
-                "SELECT ncc FROM NhaCungCap ncc WHERE ncc.tenNCC LIKE :ten AND ncc.daXoa = false", NhaCungCap.class)
+                "SELECT ncc FROM NhaCungCap ncc WHERE ncc.tenNCC LIKE :ten AND (ncc.daXoa = false OR ncc.daXoa IS NULL)", NhaCungCap.class)
                 .setParameter("ten", "%" + tenNCCInput + "%").setMaxResults(1).getResultList();
             return result.isEmpty() ? new NhaCungCap() : result.get(0);
         });

@@ -58,8 +58,10 @@ public class NhaCungCapService {
         SanPhamCungCap e = new SanPhamCungCap();
         e.setTrangThaiHopTac(dto.isTrangThaiHopTac());
         e.setGiaNhap(dto.getGiaNhap());
-        SanPham sp = new SanPham(); sp.setMaSP(dto.getMaSP()); e.setSanPham(sp);
-        NhaCungCap ncc = new NhaCungCap(); ncc.setMaNCC(dto.getMaNCC()); e.setNhaCungCap(ncc);
+        SanPham sp = new server.dao.SanPhamDAO().findById(dto.getMaSP());
+        NhaCungCap ncc = nhaCungCapDAO.findById(dto.getMaNCC());
+        e.setSanPham(sp);
+        e.setNhaCungCap(ncc);
         sanPhamCungCapDAO.create(e);
         return true;
     }

@@ -337,7 +337,7 @@ public class HoaDonService {
         sb.append(String.format("Ngày lập   : %s\n", hd.getNgayLapHoaDon().format(fmt)));
         sb.append(String.format("Nhân viên  : %s\n", hd.getNhanVien().getMaNV()));
         sb.append(String.format("Khách hàng : %s\n", hd.getKhachHang().getMaKH()));
-        sb.append(String.format("Hình thức  : %s\n", hd.isChuyenKhoan() ? "Chuyển khoản" : "Tiền mặt"));
+        sb.append(String.format("Hình thức  : %s\n", Boolean.TRUE.equals(hd.getChuyenKhoan()) ? "Chuyển khoản" : "Tiền mặt"));
 
         sb.append("\n").append(SEPARATOR).append("\n");
 
@@ -377,7 +377,7 @@ public class HoaDonService {
         sb.append(SEPARATOR).append("\n");
         String tongCongStr = "TỔNG CỘNG: " + df.format(tongTien) + " VND";
         sb.append(alignRight(tongCongStr, WIDTH)).append("\n");
-        if(hd.isChuyenKhoan()) {
+        if(Boolean.TRUE.equals(hd.getChuyenKhoan())) {
             String tienKhachDuaStr = "KHÁCH CHUYỂN KHOẢN: " + df.format(tongTien) + " VND";
             sb.append(alignRight(tienKhachDuaStr, WIDTH)).append("\n");
             sb.append(LINE).append("\n");

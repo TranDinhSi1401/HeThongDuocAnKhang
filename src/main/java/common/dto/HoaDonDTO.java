@@ -19,5 +19,6 @@ public class HoaDonDTO implements Serializable {
     
     // Thêm các trường hiển thị
     private String tenKH;
+    private String tenNV;
     private int diemTichLuyKH;
 }

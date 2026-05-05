@@ -14,6 +14,26 @@ import java.time.LocalDateTime;
 
 public class SanPhamBUS {
 
+    private String mapLoaiToEnumStr(String loai) {
+        if (loai == null) return null;
+        return switch (loai) {
+            case "Thuốc kê đơn" -> "THUOC_KE_DON";
+            case "Thuốc không kê đơn" -> "THUOC_KHONG_KE_DON";
+            case "Thực phẩm chức năng" -> "THUC_PHAM_CHUC_NANG";
+            default -> "THUOC_KE_DON";
+        };
+    }
+
+    private String mapEnumStrToLoai(String enumStr) {
+        if (enumStr == null) return "Thuốc kê đơn";
+        return switch (enumStr) {
+            case "THUOC_KE_DON" -> "Thuốc kê đơn";
+            case "THUOC_KHONG_KE_DON" -> "Thuốc không kê đơn";
+            case "THUC_PHAM_CHUC_NANG" -> "Thực phẩm chức năng";
+            default -> "Thuốc kê đơn";
+        };
+    }
+
     public List<SanPhamDTO> getAllSanPham() {
         Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_ALL_SAN_PHAM, null));
         return (res.isSuccess()) ? (List<SanPhamDTO>) res.getData() : new ArrayList<>();
@@ -44,8 +64,8 @@ public class SanPhamBUS {
         return (res.isSuccess()) ? (List<KhuyenMaiSanPhamDTO>) res.getData() : new ArrayList<>();
     }
 
-    public void loadDataToTable(JTable table, List<SanPhamDTO> ds) {
-        DefaultTableModel model = (DefaultTableModel) table.getModel();
+    public void loadDataToTable(QuanLiSanPhamGUI gui, List<SanPhamDTO> ds) {
+        DefaultTableModel model = (DefaultTableModel) gui.getTable().getModel();
         model.setRowCount(0);
         List<SanPhamDTO> list = (ds != null) ? ds : getAllSanPham();
         int stt = 1;
@@ -56,18 +76,23 @@ public class SanPhamBUS {
                     sp.getTen(),
                     sp.getMoTa(),
                     sp.getThanhPhan(),
-                    sp.getLoaiSanPham(),
+                    mapEnumStrToLoai(sp.getLoaiSanPham()),
                     sp.getTonToiThieu(),
                     sp.getTonToiDa(),
                     sp.isDaXoa() ? "Đã xóa" : "Đang bán"
             });
         }
+        gui.getLblTongSoDong().setText("Tổng số sản phẩm: " + list.size());
     }
 
     public void chuanBiFormThem(ThemSanPhamGUI gui) {
         Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_MA_SP_CUOI, null));
         int maCuoi = (res.isSuccess()) ? (int) res.getData() : 0;
         gui.getTxtMaSanPham().setText(String.format("SP-%05d", maCuoi + 1));
+        
+        // Tự động load danh sách NCC và KM để người dùng chọn
+        xuLyTimNCC(gui);
+        xuLyTimKM(gui);
     }
 
     public void chuanBiFormSua(ThemSanPhamGUI gui, String maSP) {
@@ -79,7 +104,7 @@ public class SanPhamBUS {
         gui.getTxtTenSanPham().setText(sp.getTen());
         gui.getTxtMoTa().setText(sp.getMoTa());
         gui.getTxtThanhPhan().setText(sp.getThanhPhan());
-        gui.getCmbLoaiSanPham().setSelectedItem(sp.getLoaiSanPham());
+        gui.getCmbLoaiSanPham().setSelectedItem(mapEnumStrToLoai(sp.getLoaiSanPham()));
         gui.getTxtTonToiThieu().setText(String.valueOf(sp.getTonToiThieu()));
         gui.getTxtTonToiDa().setText(String.valueOf(sp.getTonToiDa()));
 
@@ -120,6 +145,10 @@ public class SanPhamBUS {
                         kmsp.getNgayChinhSua() });
             }
         }
+
+        // Tự động load danh sách NCC và KM để người dùng chọn thêm nếu muốn
+        xuLyTimNCC(gui);
+        xuLyTimKM(gui);
     }
 
     public boolean luuSanPham(ThemSanPhamGUI gui, boolean isUpdate) {
@@ -129,7 +158,7 @@ public class SanPhamBUS {
                     .ten(gui.getTxtTenSanPham().getText())
                     .moTa(gui.getTxtMoTa().getText())
                     .thanhPhan(gui.getTxtThanhPhan().getText())
-                    .loaiSanPham(gui.getCmbLoaiSanPham().getSelectedItem().toString())
+                    .loaiSanPham(mapLoaiToEnumStr(gui.getCmbLoaiSanPham().getSelectedItem().toString()))
                     .tonToiThieu(Integer.parseInt(gui.getTxtTonToiThieu().getText()))
                     .tonToiDa(Integer.parseInt(gui.getTxtTonToiDa().getText()))
                     .daXoa(false)
@@ -152,8 +181,7 @@ public class SanPhamBUS {
             if (isUpdate) {
                 SocketClient.getInstance().sendRequest(new Request(CommandType.XOA_DVT_BY_MA_SP, sp.getMaSP()));
                 SocketClient.getInstance().sendRequest(new Request(CommandType.XOA_HET_SPCC_BY_MA_SP, sp.getMaSP()));
-                // MaVach thì khó xóa hết vì primary key là maVach, nhưng tạm thời bỏ qua hoặc
-                // xử lý sau
+                SocketClient.getInstance().sendRequest(new Request(CommandType.XOA_HET_MA_VACH_BY_MA_SP, sp.getMaSP()));
             }
 
             // Lưu Barcodes
@@ -187,8 +215,18 @@ public class SanPhamBUS {
                 SocketClient.getInstance().sendRequest(new Request(CommandType.ADD_SAN_PHAM_CUNG_CAP, spcc));
             }
 
-            // Lưu KM (Tạm thời bỏ qua hoặc xử lý đơn giản)
-            // ...
+            // Lưu KM
+            if (isUpdate) {
+                SocketClient.getInstance().sendRequest(new Request(CommandType.XOA_HET_KMSP_BY_MA_SP, sp.getMaSP()));
+            }
+            for (int i = 0; i < gui.getModelKMChon().getRowCount(); i++) {
+                KhuyenMaiSanPhamDTO kmsp = KhuyenMaiSanPhamDTO.builder()
+                        .maKhuyenMai(gui.getModelKMChon().getValueAt(i, 0).toString())
+                        .maSP(sp.getMaSP())
+                        .ngayChinhSua(java.time.LocalDateTime.now())
+                        .build();
+                SocketClient.getInstance().sendRequest(new Request(CommandType.ADD_KHUYEN_MAI_SAN_PHAM, kmsp));
+            }
 
             JOptionPane.showMessageDialog(gui, "Lưu sản phẩm thành công!");
             return true;
@@ -199,22 +237,52 @@ public class SanPhamBUS {
     }
 
     public void xuLyThemDVT(ThemSanPhamGUI gui) {
-        String ten = gui.getCboTenDonVi().getSelectedItem().toString().trim();
-        if (ten.isEmpty())
+        String ten = gui.getCboTenDonVi().getSelectedItem() != null ? gui.getCboTenDonVi().getSelectedItem().toString().trim() : "";
+        if (ten.isEmpty()) {
+            JOptionPane.showMessageDialog(gui, "Vui lòng chọn hoặc nhập tên đơn vị tính.");
             return;
+        }
+
+        // Kiểm tra trùng trong bảng tạm
+        for (int i = 0; i < gui.getModelDVT().getRowCount(); i++) {
+            if (gui.getModelDVT().getValueAt(i, 1).toString().equalsIgnoreCase(ten)) {
+                JOptionPane.showMessageDialog(gui, "Đơn vị tính này đã có trong danh sách.");
+                return;
+            }
+        }
 
         int heSo = 1;
         if (!gui.getChkDonViCoBan().isSelected()) {
             try {
-                heSo = Integer.parseInt(gui.getTxtHeSoQuyDoi().getText());
-            } catch (Exception e) {
+                heSo = Integer.parseInt(gui.getTxtHeSoQuyDoi().getText().trim());
+                if (heSo <= 1) {
+                    JOptionPane.showMessageDialog(gui, "Hệ số quy đổi của đơn vị phụ phải > 1.");
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(gui, "Hệ số quy đổi phải là số nguyên.");
                 return;
             }
+        } else {
+            // Nếu là cơ bản, kiểm tra xem đã có đơn vị cơ bản nào chưa
+            for (int i = 0; i < gui.getModelDVT().getRowCount(); i++) {
+                if ((boolean) gui.getModelDVT().getValueAt(i, 4)) {
+                    JOptionPane.showMessageDialog(gui, "Sản phẩm chỉ được phép có một đơn vị tính cơ bản.");
+                    return;
+                }
+            }
         }
+
         double gia = 0;
         try {
-            gia = Double.parseDouble(gui.getTxtGiaBanDonVi().getText().replaceAll("[^\\d.]", ""));
-        } catch (Exception e) {
+            String giaStr = gui.getTxtGiaBanDonVi().getText().replaceAll("[^\\d]", "");
+            if (giaStr.isEmpty()) {
+                JOptionPane.showMessageDialog(gui, "Vui lòng nhập giá bán.");
+                return;
+            }
+            gia = Double.parseDouble(giaStr);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(gui, "Giá bán không hợp lệ.");
             return;
         }
 
@@ -223,6 +291,12 @@ public class SanPhamBUS {
         String maDVT = String.format("DVT-%05d", maCuoi + 1 + gui.getModelDVT().getRowCount());
 
         gui.getModelDVT().addRow(new Object[] { maDVT, ten, heSo, gia, gui.getChkDonViCoBan().isSelected() });
+        
+        // Clear fields
+        gui.getTxtHeSoQuyDoi().setText("");
+        gui.getTxtGiaBanDonVi().setText("");
+        gui.getChkDonViCoBan().setSelected(false);
+        gui.getTxtHeSoQuyDoi().setEnabled(true);
     }
 
     public void xuLyXoaDVT(ThemSanPhamGUI gui) {
@@ -246,18 +320,37 @@ public class SanPhamBUS {
 
     public void xuLyThemNCC(ThemSanPhamGUI gui) {
         int row = gui.getTableKQTimKiemNCC().getSelectedRow();
-        if (row < 0)
+        if (row < 0) {
+            JOptionPane.showMessageDialog(gui, "Vui lòng chọn một nhà cung cấp từ kết quả tìm kiếm.");
             return;
+        }
+        
         String ma = gui.getModelTimKiemNCC().getValueAt(row, 0).toString();
+        
+        // Kiểm tra trùng
+        for (int i = 0; i < gui.getModelNCCChon().getRowCount(); i++) {
+            if (gui.getModelNCCChon().getValueAt(i, 0).toString().equals(ma)) {
+                JOptionPane.showMessageDialog(gui, "Nhà cung cấp này đã có trong danh sách.");
+                return;
+            }
+        }
+        
         String ten = gui.getModelTimKiemNCC().getValueAt(row, 1).toString();
         double gia = 0;
         try {
-            gia = Double.parseDouble(gui.getTxtGiaNhap().getText().replaceAll("[^\\d.]", ""));
+            String giaStr = gui.getTxtGiaNhap().getText().replaceAll("[^\\d]", "");
+            if (giaStr.isEmpty()) {
+                JOptionPane.showMessageDialog(gui, "Vui lòng nhập giá nhập.");
+                return;
+            }
+            gia = Double.parseDouble(giaStr);
         } catch (Exception e) {
+            JOptionPane.showMessageDialog(gui, "Giá nhập không hợp lệ.");
             return;
         }
 
         gui.getModelNCCChon().addRow(new Object[] { ma, ten, gia });
+        gui.getTxtGiaNhap().setText("");
     }
 
     public void xuLyXoaNCC(ThemSanPhamGUI gui) {
@@ -267,7 +360,8 @@ public class SanPhamBUS {
     }
 
     public void xuLyTimKM(ThemSanPhamGUI gui) {
-        Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_ALL_KHUYEN_MAI, null));
+        // Chỉ lấy khuyến mãi đang hoạt động để gán cho sản phẩm
+        Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_KHUYEN_MAI_DANG_HOAT_DONG, null));
         if (res.isSuccess()) {
             List<KhuyenMaiDTO> list = (List<KhuyenMaiDTO>) res.getData();
             gui.getModelKQTimKiemKM().setRowCount(0);
@@ -280,9 +374,21 @@ public class SanPhamBUS {
 
     public void xuLyThemKM(ThemSanPhamGUI gui) {
         int row = gui.getTblTimKiemKM().getSelectedRow();
-        if (row < 0)
+        if (row < 0) {
+            JOptionPane.showMessageDialog(gui, "Vui lòng chọn một chương trình khuyến mãi.");
             return;
+        }
+        
         String ma = gui.getModelKQTimKiemKM().getValueAt(row, 0).toString();
+        
+        // Kiểm tra trùng
+        for (int i = 0; i < gui.getModelKMChon().getRowCount(); i++) {
+            if (gui.getModelKMChon().getValueAt(i, 0).toString().equals(ma)) {
+                JOptionPane.showMessageDialog(gui, "Chương trình khuyến mãi này đã có trong danh sách.");
+                return;
+            }
+        }
+        
         String desc = gui.getModelKQTimKiemKM().getValueAt(row, 1).toString();
         double tile = Double.parseDouble(gui.getModelKQTimKiemKM().getValueAt(row, 2).toString());
 
@@ -306,7 +412,7 @@ public class SanPhamBUS {
             Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.XOA_SAN_PHAM, ma));
             if (res.isSuccess()) {
                 JOptionPane.showMessageDialog(gui, "Đã xóa thành công!");
-                loadDataToTable(gui.getTable(), null);
+                loadDataToTable(gui, null);
             } else {
                 JOptionPane.showMessageDialog(gui, "Lỗi: " + res.getMessage());
             }
@@ -328,20 +434,23 @@ public class SanPhamBUS {
                 Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_SAN_PHAM_BY_TEN, kw));
                 if (res.isSuccess())
                     result = (List<SanPhamDTO>) res.getData();
+            } else if (criteria.equals("Mã nhà cung cấp")) {
+                Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_SAN_PHAM_BY_MA_NCC, kw));
+                if (res.isSuccess())
+                    result = (List<SanPhamDTO>) res.getData();
             }
-            // NCC search placeholder
         }
-        loadDataToTable(gui.getTable(), result);
+        loadDataToTable(gui, result);
     }
 
     public void xuLyLoc(QuanLiSanPhamGUI gui) {
         String loc = gui.getCmbBoLoc().getSelectedItem().toString();
         if (loc.equals("Tất cả")) {
-            loadDataToTable(gui.getTable(), null);
+            loadDataToTable(gui, null);
         } else {
             Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_SAN_PHAM_BY_LOAI, loc));
             if (res.isSuccess())
-                loadDataToTable(gui.getTable(), (List<SanPhamDTO>) res.getData());
+                loadDataToTable(gui, (List<SanPhamDTO>) res.getData());
         }
     }
 }
