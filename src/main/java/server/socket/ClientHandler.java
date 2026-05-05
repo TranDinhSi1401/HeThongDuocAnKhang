@@ -7,10 +7,12 @@ import common.network.Response;
 import server.dao.TaiKhoanDAO;
 import server.service.*;
 
+import javax.swing.*;
 import java.io.*;
 import java.net.Socket;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Xử lý một kết nối Client trong Thread riêng.
@@ -100,7 +102,7 @@ public class ClientHandler implements Runnable {
                 case XOA_SAN_PHAM                 -> Response.ok(sanPhamService.xoaSanPham((String) data));
                 case GET_SP_BAN_CHAY_THANG        -> Response.ok(sanPhamService.getSPBanChayTrongThang((LocalDate) data));
                 case GET_SP_BAN_CHAY_NAM          -> Response.ok(sanPhamService.getSPBanChayTrongNam((LocalDate) data));
-
+                case GET_CHI_TIET_SP -> Response.ok(sanPhamService.getChiTietSpBangMaSp((String) data));
                 // SUA_SAN_PHAM: data = Object[]{maSP, SanPhamDTO}
                 case SUA_SAN_PHAM -> {
                     Object[] arr = (Object[]) data;
@@ -181,6 +183,10 @@ public class ClientHandler implements Runnable {
                 }
 
                 // ===== HOA DON =====
+                case THANH_TOAN -> {
+                    Object[] arr = (Object[]) data;
+                    yield Response.ok(hoaDonService.thanhToan((List<Map<String, Object>>) arr[0], (String) arr[1], (boolean) arr[2], (double) arr[3], (TaiKhoanDTO) arr[4], (double) arr[5], (double) arr[6]));
+                }
                 case GET_HOA_DON_MOI_NHAT_TRONG_NGAY -> Response.ok(hoaDonService.getHoaDonMoiNhatTrongNgay());
                 case GET_HOA_DON_BY_MA               -> Response.ok(hoaDonService.getHoaDonTheoMaHD((String) data));
                 case GET_HOA_DON_BY_MA_NV            -> Response.ok(hoaDonService.timHDTheoMaNV((String) data));
@@ -188,7 +194,7 @@ public class ClientHandler implements Runnable {
                 case GET_HOA_DON_BY_NGAY             -> Response.ok(hoaDonService.timHDTheoNgayLap((LocalDate) data));
                 case GET_HOA_DON_BY_SDT_KH           -> Response.ok(hoaDonService.timHDTheoSDTKH((String) data));
                 case GET_HOA_DON_BY_HINH_THUC        -> Response.ok(hoaDonService.timHDTheoHinhThuc((Boolean) data));
-                case GET_SO_HD_CUOI_TRONG_NGAY       -> Response.ok(hoaDonService.getSoHDCuoiCungTrongNgay((String) data));
+                case GET_SO_HD_CUOI_TRONG_NGAY       -> Response.ok(hoaDonService.getSoHDCuoiCungTrongNgay((LocalDate) data));
                 case GET_SO_PTH                      -> Response.ok(hoaDonService.getSoPTH((String) data));
                 case GET_TONG_TIEN_CAC_PTH           -> Response.ok(hoaDonService.getTongTienCacPTH((String) data));
                 case ADD_HOA_DON                     -> Response.ok(hoaDonService.addHoaDon((HoaDonDTO) data));

@@ -2,6 +2,8 @@ package server.dao;
 
 import server.entity.ChiTietHoaDon;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
@@ -40,7 +42,10 @@ public class ChiTietHoaDonDAO extends AbstractGenericDaoImpl<ChiTietHoaDon, Stri
     }
 
     /** Lấy số thứ tự CTHD cuối cùng trong ngày theo format "CTHD-YYYYMMDD-XXX". */
-    public int getSoCTHDCuoiCungTrongNgay(String ngay) {
+    public int getSoCTHDCuoiCungTrongNgay(LocalDate ngay) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        String ngayFormatted = ngay.format(formatter);
+
         return doInTransaction(em -> {
             String prefix = "CTHD-" + ngay + "-";
             List<String> result = em.createQuery(

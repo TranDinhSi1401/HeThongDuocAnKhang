@@ -70,7 +70,7 @@ public class MainForm extends JLayeredPane {
                     //GiaoDienChinhGUI.showFormByKey("dashboardNhanVien", DashBoardNhanVien::new);
                 }
             } else if (index == 1) {
-                //GiaoDienChinhGUI.showFormByKey("banHang", BanHangGUI::new);
+                GiaoDienChinhGUI.showFormByKey("banHang", BanHangGUI::new);
             } else if (index == 2) {
                 //GiaoDienChinhGUI.showFormByKey("traHang", TraHangGUI::new);
             } else if (index == 3) {
