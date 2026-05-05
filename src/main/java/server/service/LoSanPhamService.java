@@ -139,4 +139,9 @@ public class LoSanPhamService {
         lichSuLoDAO.create(entity);
         return true;
     }
+
+    public LoSanPhamDTO getLoSanPhamByMa(String maLo) {
+        LoSanPham lo = loSanPhamDAO.findById(maLo);
+        return lo != null ? EntityMapper.toDTO(lo) : null;
+    }
 }

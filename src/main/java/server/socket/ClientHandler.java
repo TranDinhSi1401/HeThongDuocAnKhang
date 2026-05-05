@@ -1,44 +1,17 @@
 package server.socket;
 
+import common.dto.*;
+import common.network.CommandType;
+import common.network.Request;
+import common.network.Response;
+import server.service.*;
+
+import javax.swing.table.DefaultTableModel;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.time.LocalDate;
-
-import common.dto.CaLamDTO;
-import common.dto.ChiTietHoaDonDTO;
-import common.dto.ChiTietPhieuNhapDTO;
-import common.dto.ChiTietPhieuTraHangDTO;
-import common.dto.ChiTietXuatLoDTO;
-import common.dto.DonViTinhDTO;
-import common.dto.HoaDonDTO;
-import common.dto.KhachHangDTO;
-import common.dto.KhuyenMaiDTO;
-import common.dto.KhuyenMaiSanPhamDTO;
-import common.dto.LichSuCaLamDTO;
-import common.dto.LichSuLoDTO;
-import common.dto.LoSanPhamDTO;
-import common.dto.MaVachSanPhamDTO;
-import common.dto.NhaCungCapDTO;
-import common.dto.NhanVienDTO;
-import common.dto.PhieuNhapDTO;
-import common.dto.PhieuTraHangDTO;
-import common.dto.SanPhamCungCapDTO;
-import common.dto.SanPhamDTO;
-import common.dto.TaiKhoanDTO;
-import common.network.CommandType;
-import common.network.Request;
-import common.network.Response;
-import server.service.CaLamService;
-import server.service.HoaDonService;
-import server.service.KhachHangService;
-import server.service.KhuyenMaiService;
-import server.service.LoSanPhamService;
-import server.service.NhaCungCapService;
-import server.service.NhanVienService;
-import server.service.PhieuService;
-import server.service.SanPhamService;
 
 /**
  * Xử lý một kết nối Client trong Thread riêng.
@@ -96,7 +69,6 @@ public class ClientHandler implements Runnable {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private Response handle(Request req) {
         CommandType cmd  = req.getCommand();
         Object      data = req.getData();
@@ -199,7 +171,7 @@ public class ClientHandler implements Runnable {
                 case XOA_TAI_KHOAN          -> Response.ok(nhanVienService.xoaTaiKhoan((String) data));
                 case KIEM_TRA_EMAIL_TON_TAI  -> Response.ok(nhanVienService.kiemTraEmailTonTai((String) data));
                 case UPDATE_MAT_KHAU -> {
-                    // arr[0]=maNV, arr[1]=matKhauCuTho, arr[2]=matKhauMoiTho
+                    // arr[0]=maNV, arr[1]=matKhauCu, arr[2]=matKhauMoi
                     Object[] arr = (Object[]) data;
                     yield Response.ok(nhanVienService.doiMatKhau((String) arr[0], (String) arr[1], (String) arr[2]));
                 }
@@ -216,7 +188,7 @@ public class ClientHandler implements Runnable {
                 case GET_HOA_DON_BY_NGAY             -> Response.ok(hoaDonService.timHDTheoNgayLap((LocalDate) data));
                 case GET_HOA_DON_BY_SDT_KH           -> Response.ok(hoaDonService.timHDTheoSDTKH((String) data));
                 case GET_HOA_DON_BY_HINH_THUC        -> Response.ok(hoaDonService.timHDTheoHinhThuc((Boolean) data));
-                case GET_SO_HD_CUOI_TRONG_NGAY       -> Response.ok(hoaDonService.getSoHDCuoiCungTrongNgay((String) data));
+                case GET_SO_HD_CUOI_TRONG_NGAY       -> Response.ok(hoaDonService.getSoHDCuoiCungTrongNgay(LocalDate.parse((String) data)));
                 case GET_SO_PTH                      -> Response.ok(hoaDonService.getSoPTH((String) data));
                 case GET_TONG_TIEN_CAC_PTH           -> Response.ok(hoaDonService.getTongTienCacPTH((String) data));
                 case ADD_HOA_DON                     -> Response.ok(hoaDonService.addHoaDon((HoaDonDTO) data));
@@ -224,6 +196,15 @@ public class ClientHandler implements Runnable {
                 case GET_DOANH_THU_THANG             -> Response.ok(hoaDonService.getDoanhThuTheoThang((LocalDate) data));
                 case GET_DOANH_THU_TUNG_NGAY         -> Response.ok(hoaDonService.getDoanhThuTungNgayTrongThang((LocalDate) data));
                 case GET_DOANH_THU_TUNG_THANG        -> Response.ok(hoaDonService.getDoanhThuTungThangTrongNam((LocalDate) data));
+                case GET_DOANH_THU_TUNG_QUY_TRONG_NAM -> Response.ok(hoaDonService.getDoanhThuTungQuyTrongNam(((LocalDate) data).getYear()));
+                case GET_DOANH_THU_TUNG_NAM_THEO_KHOANG -> {
+                    Object[] arr = (Object[]) data;
+                    yield Response.ok(hoaDonService.getDoanhThuTungNamTheoKhoang((int) arr[0], (int) arr[1]));
+                }
+                case GET_DOANH_THU_THEO_NGAY_TRONG_KHOANG_THOI_GIAN -> {
+                    Object[] arr = (Object[]) data;
+                    yield Response.ok(hoaDonService.getDoanhThuTheoNgayTrongKhoangThoiGian((LocalDate) arr[0], (LocalDate) arr[1]));
+                }
                 case GET_NAM_HOA_DON                 -> Response.ok(hoaDonService.getNamHoaDonCuNhatVaMoiNhat());
                 case GET_HOA_DON_BY_KHOANG_NGAY -> {
                     Object[] arr = (Object[]) data;
@@ -238,11 +219,15 @@ public class ClientHandler implements Runnable {
                 // ===== CHI TIET XUAT LO =====
                 case ADD_CHI_TIET_XUAT_LO -> Response.ok(hoaDonService.addChiTietXuatLo((ChiTietXuatLoDTO) data));
                 case GET_CTXL_BY_MA_CTHD  -> Response.ok(hoaDonService.getCTXLByMaCTHD((String) data));
+                case THANH_TOAN -> {
+                    Object[] arr = (Object[]) data;
+                    yield Response.ok(hoaDonService.thanhToan((HoaDonDTO) arr[0], (DefaultTableModel) arr[1]));
+                }
 
                 // ===== LO SAN PHAM =====
-                case GET_ALL_LO_SAN_PHAM      -> Response.ok(loSanPhamService.getAllLoSanPham());
+                case GET_ALL_LO_SAN_PHAM -> Response.ok(loSanPhamService.getAllLoSanPham());
                 case GET_ALL_LO_SAN_PHAM_KHONG_HUY -> Response.ok(loSanPhamService.getAllLoSanPhamKhongHuy());
-                case GET_LO_SAN_PHAM_BY_MA    -> Response.ok(loSanPhamService.timLoSanPham((String) data));
+                case GET_LO_SAN_PHAM_BY_MA -> Response.ok(loSanPhamService.getLoSanPhamByMa((String) data));
                 case GET_LO_BY_MA_SP       -> Response.ok(loSanPhamService.getLoSanPhamTheoMaSP((String) data));
                 case GET_LO_BY_MA          -> Response.ok(loSanPhamService.timLoSanPham((String) data));
                 case GET_LO_BY_MA_CTHD     -> Response.ok(loSanPhamService.getLoSanPhamTheoMaCTHD((String) data));
@@ -266,8 +251,8 @@ public class ClientHandler implements Runnable {
                 }
 
                 // ===== LICH SU LO =====
+                case GET_ALL_LICH_SU_LO -> Response.ok(loSanPhamService.getAllLichSuLo());
                 case GET_LICH_SU_LO_BY_MA_LO -> Response.ok(loSanPhamService.getLichSuLoTheoMaLo((String) data));
-                case GET_ALL_LICH_SU_LO      -> Response.ok(loSanPhamService.getAllLichSuLo());
                 case ADD_LICH_SU_LO           -> Response.ok(loSanPhamService.addLichSuLo((LichSuLoDTO) data));
 
                 // ===== NHA CUNG CAP =====
@@ -339,7 +324,8 @@ public class ClientHandler implements Runnable {
                 case GET_LSCL_DANG_LAM_BY_MA_NV -> Response.ok(caLamService.getLSCLDangLamTheoMaNV((String) data));
                 case ADD_LICH_SU_CA_LAM      -> Response.ok(caLamService.addLichSuCaLam((LichSuCaLamDTO) data));
                 case UPDATE_LICH_SU_CA_LAM   -> Response.ok(caLamService.updateLichSuCaLam((LichSuCaLamDTO) data));
-                default -> Response.fail("Không hỗ trợ command: " + cmd);
+
+                default -> Response.fail("Lệnh không xác định!");
             };
         } catch (Exception e) {
             return Response.fail("Lỗi server: " + e.getMessage());

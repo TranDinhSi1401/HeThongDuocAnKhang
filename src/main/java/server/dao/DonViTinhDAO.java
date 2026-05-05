@@ -24,6 +24,11 @@ public class DonViTinhDAO extends AbstractGenericDaoImpl<DonViTinh, String> {
         );
     }
 
+    @Override
+    public  DonViTinh findById(String s) {
+        return super.findById(s);
+    }
+
     /** Tìm đơn vị tính cơ bản của sản phẩm. */
     public DonViTinh getDVTCoBanTheoMaSP(String maSP) {
         return doInTransaction(em -> {

@@ -11,6 +11,8 @@ import common.dto.*;
 import common.network.CommandType;
 import common.network.Request;
 import common.network.Response;
+import server.entity.KhuyenMai;
+import server.entity.TaiKhoan;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -24,9 +26,7 @@ import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -44,6 +44,9 @@ public class BanHangPane extends javax.swing.JPanel {
     private Object oldSoLuong = null;
     private Object oldDonViTinh = null;
     private final BanHangGUI parent;
+    private static boolean keDon = false;
+    private static final String LINE = "=".repeat(120);
+    private static final String SEPARATOR = "-".repeat(120);
     /**
      * Creates new form BanHangGUI
      */
@@ -147,11 +150,11 @@ public class BanHangPane extends javax.swing.JPanel {
                 }
                 
                 try {
-//                    Object[] updatedInfo = bus.thayDoiChiTietHoaDon(masp, soLuong, tenDVT);
-//                    model.setValueAt(updatedInfo[0], row, 3);
-//                    model.setValueAt(updatedInfo[1], row, 5);
-//                    model.setValueAt(updatedInfo[2], row, 6);
-//                    model.setValueAt(updatedInfo[3], row, 7);
+                    Object[] updatedInfo = thayDoiChiTietHoaDon(masp, soLuong, tenDVT);
+                    model.setValueAt(updatedInfo[0], row, 3);
+                    model.setValueAt(updatedInfo[1], row, 5);
+                    model.setValueAt(updatedInfo[2], row, 6);
+                    model.setValueAt(updatedInfo[3], row, 7);
                     capNhatTongTien(model);
                 } catch (Exception ex) {
                     String msg = ex.getMessage().trim();
@@ -927,7 +930,7 @@ public class BanHangPane extends javax.swing.JPanel {
         // Thêm sản phẩm vào table cthd
         try {
             String maSP = txtTimKiem.getText().trim();
-            if(maSP.isEmpty() || maSP.equalsIgnoreCase("Nhập mã sản phẩm [F1]")) {
+            if(maSP.isEmpty() || maSP.equalsIgnoreCase("Nhập mã sản phẩm [F3]")) {
                 JOptionPane.showMessageDialog(this, "Vui lòng nhập mã sản phẩm hoặc mã vạch", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
                 return;
             }
@@ -946,6 +949,10 @@ public class BanHangPane extends javax.swing.JPanel {
 
     private void txtSdtKHActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSdtKHActionPerformed
         String sdt = txtSdtKH.getText().trim();
+        if(sdt.isEmpty() || sdt.equalsIgnoreCase("Nhập sđt khách hàng [F4]")) {
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập số điện thoại khách hàng", "Warning Message", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
         Request request = new Request(CommandType.GET_KHACH_HANG_BY_SDT, sdt);
         Response response = SocketClient.getInstance().sendRequest(request);
         if(!response.isSuccess()) {
@@ -974,24 +981,24 @@ public class BanHangPane extends javax.swing.JPanel {
     }//GEN-LAST:event_txtTienKhachDuaActionPerformed
  
     private void btnThanhToanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnThanhToanActionPerformed
-//        try {
-//            String maKH = lblMaKH1.getText().trim();
-//            boolean chuyenKhoan = radChuyenKhoan.isSelected();
-//            double tongTien = getTongTien();
-//            double tienKhachDua = Double.parseDouble(txtTienKhachDua.getText().replaceAll("\\s", ""));
-//            double tienThua = Double.parseDouble(lblTienThua1.getText().replaceAll("[^\\d]", ""));
-//            if(bus.thanhToan(tblCTHD, maKH, chuyenKhoan, tongTien, tienKhachDua, tienThua)) {
-//                parent.dongTabHienTai(this);
-//            }
-//        } catch(Exception e) {
-//            if(e.getMessage().equalsIgnoreCase("For input string: \"Nhậptiềnkháchđưa[F7]\"")) {
-//                JOptionPane.showMessageDialog(this, "tiền khách đưa phải là số dương", "Error Message", JOptionPane.ERROR_MESSAGE);
-//            } else if (e.getMessage().equalsIgnoreCase("empty String")){
-//                JOptionPane.showMessageDialog(this, "Ô tiền thừa bị trống", "Error Message", JOptionPane.ERROR_MESSAGE);
-//            } else {
-//                JOptionPane.showMessageDialog(this, e.getMessage(), "Error Message", JOptionPane.ERROR_MESSAGE);
-//            }
-//        }
+        try {
+            String maKH = lblMaKH1.getText().trim();
+            boolean chuyenKhoan = radChuyenKhoan.isSelected();
+            double tongTien = getTongTien();
+            double tienKhachDua = Double.parseDouble(txtTienKhachDua.getText().replaceAll("\\s", ""));
+            double tienThua = Double.parseDouble(lblTienThua1.getText().replaceAll("[^\\d]", ""));
+            if(thanhToan(tblCTHD, maKH, chuyenKhoan, tongTien, tienKhachDua, tienThua)) {
+                parent.dongTabHienTai(this);
+            }
+        } catch(Exception e) {
+            if(e.getMessage().equalsIgnoreCase("For input string: \"Nhậptiềnkháchđưa[F7]\"")) {
+                JOptionPane.showMessageDialog(this, "tiền khách đưa phải là số dương", "Error Message", JOptionPane.ERROR_MESSAGE);
+            } else if (e.getMessage().equalsIgnoreCase("empty String")){
+                JOptionPane.showMessageDialog(this, "Ô tiền thừa bị trống", "Error Message", JOptionPane.ERROR_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, e.getMessage(), "Error Message", JOptionPane.ERROR_MESSAGE);
+            }
+        }
     }//GEN-LAST:event_btnThanhToanActionPerformed
 
     private void txtTimKiemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtTimKiemActionPerformed
@@ -1159,7 +1166,7 @@ public class BanHangPane extends javax.swing.JPanel {
     public void xoaTrang() {
         DefaultTableModel model = (DefaultTableModel)tblCTHD.getModel();
         model.setRowCount(0);
-
+        keDon = false;
         lblTongTien1.setText("0 ₫");
         txtTienKhachDua.setText("Nhập tiền khách đưa [F7]");
         lblTienThua1.setText("");
@@ -1278,6 +1285,7 @@ public class BanHangPane extends javax.swing.JPanel {
 
         if(sp.getLoaiSanPham().equalsIgnoreCase("THUOC_KE_DON")) {
             JOptionPane.showMessageDialog(this, "Thuốc bạn vừa tìm kiếm là thuốc kê đơn \n Vui lòng kiểm tra đơn kê rõ ràng và lưu thông tin khách hàng", "Cảnh báo kê đơn", JOptionPane.WARNING_MESSAGE);
+            keDon = true;
         }
 
         // Bắt lỗi các trường hợp có thể xảy ra
@@ -1337,49 +1345,121 @@ public class BanHangPane extends javax.swing.JPanel {
         return Integer.parseInt(str);
     }
 
-    private static double parseDoubleFromTable(Object value) {
-        if (value == null) return 0.0;
-        String str = value.toString()
-                .replaceAll("[^0-9.]", "")  // Chỉ giữ số và dấu chấm
-                .trim();
-        if (str.isEmpty()) return 0.0;
-
-        // Xử lý dấu chấm: loại bỏ tất cả dấu chấm ngoại trừ dấu chấm cuối (nếu có)
-        // Pattern: nếu có dấu chấm ở vị trí thứ n từ cuối với đúng 3 chữ số, đó là dấu phân cách
-        int countDot = (int) str.chars().filter(c -> c == '.').count();
-
-        if (countDot == 0) {
-            // Không có dấu chấm → là số nguyên
-            return Double.parseDouble(str);
-        } else if (countDot == 1) {
-            // Một dấu chấm: có thể là dấu thập phân hoặc dấu phân cách
-            int dotIndex = str.indexOf('.');
-            int digitsAfterDot = str.length() - dotIndex - 1;
-
-            if (digitsAfterDot == 3) {
-                // 3 chữ số sau dấu chấm → là dấu phân cách, loại bỏ nó
-                str = str.replace(".", "");
+    public Object[] thayDoiChiTietHoaDon(String maSP, int soLuong, String tenDVT) throws Exception{
+        // Chi tiết của sản phẩm
+        Request request = new Request(CommandType.GET_CHI_TIET_SP, maSP);
+        Response response = SocketClient.getInstance().sendRequest(request);
+        if(!response.isSuccess()) {
+            JOptionPane.showMessageDialog(this, response.getMessage(), "Warning Message", JOptionPane.WARNING_MESSAGE);
+            return null;
+        }
+        ChiTietSanPhamDTO chiTietSanPhamDTO = (ChiTietSanPhamDTO) response.getData();
+        // Lấy khuyến mãi đủ điều kiện
+        List<KhuyenMaiDTO> dskm = chiTietSanPhamDTO.getDsKM();
+        dskm.sort((b, a) -> Double.compare(a.getPhanTram(), b.getPhanTram()));
+        double giamGia = 0;
+        for(KhuyenMaiDTO km : dskm) {
+            if(soLuong >= km.getSoLuongToiThieu() && soLuong <= km.getSoLuongToiDa()) {
+                giamGia = km.getPhanTram();
+                break;
             }
-            // Còn lại là dấu thập phân, giữ nguyên
-        } else {
-            // Nhiều dấu chấm: đó là dấu phân cách hàng nghìn, loại bỏ tất cả trừ dấu chấm cuối
-            // Ví dụ: "1.234.567,89" → giữ dấu chấm cuối nếu 2 chữ số sau, nếu không loại bỏ tất cả
-            int lastDotIndex = str.lastIndexOf('.');
-            int digitsAfterLastDot = str.length() - lastDotIndex - 1;
+        }
+        // Lấy số lượng trong kho
+        List<LoSanPhamDTO> dsLSP = chiTietSanPhamDTO.getDsLSP();
+        int tongSoLuong = 0;
+        for(LoSanPhamDTO lsp : dsLSP) {
+            tongSoLuong += lsp.getSoLuong();
+        }
 
-            if (digitsAfterLastDot == 3) {
-                // Dấu chấm cuối là dấu phân cách → loại bỏ tất cả dấu chấm
-                str = str.replaceAll("\\.", "");
-            } else if (digitsAfterLastDot == 2 || digitsAfterLastDot == 1) {
-                // Dấu chấm cuối là dấu thập phân → loại bỏ các dấu chấm khác
-                str = str.substring(0, lastDotIndex).replaceAll("\\.", "") + str.substring(lastDotIndex);
-            } else {
-                // Loại bỏ tất cả dấu chấm
-                str = str.replaceAll("\\.", "");
+        List<DonViTinhDTO> dsDVT = chiTietSanPhamDTO.getDsDVT();
+        dsDVT.sort((a, b) -> Double.compare(a.getHeSoQuyDoi(), b.getHeSoQuyDoi()));
+        for (DonViTinhDTO dvt : dsDVT) {
+            if (dvt.getTenDonViTinh().equals(tenDVT)) {
+                int heSoQuyDoi = dvt.getHeSoQuyDoi();
+                double donGia = dvt.getGiaBanTheoDonVi();
+                double thanhTien = soLuong * donGia * (1 - giamGia / 100);
+                String maDVT = dvt.getMaDonViTinh();
+                int tonTheoDonVi = tongSoLuong / heSoQuyDoi;
+                if(soLuong * heSoQuyDoi > tongSoLuong) {
+                    throw new Exception("Không đủ số lượng\nTổng số lượng còn lại: " + tonTheoDonVi + " " + tenDVT);
+                }
+                if(soLuong < 1) {
+                    throw new Exception("Số lượng phải lớn hơn bằng 1");
+                }
+                Object[] updatedInfo = {donGia, giamGia, thanhTien, maDVT};
+                return updatedInfo;
+            }
+        }
+        return null;
+    }
+
+    public boolean thanhToan(JTable tblCTHD, String maKH, boolean chuyenKhoan, double tongTien, double tienKhachDua, double tienThua) throws Exception{
+        if (tblCTHD.isEditing()) {
+            tblCTHD.getCellEditor().stopCellEditing();
+        }
+
+        int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc muốn thanh toán không?", "Xác nhận", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE
+        );
+        // Xác nhận thanh toán
+        if (confirm == JOptionPane.YES_OPTION) {
+            TaiKhoanDTO tk = GiaoDienChinhGUI.getTk();
+            // Bắt lỗi
+            if (tk == null) {
+                throw new Exception("Vui lòng nhấn vào ca làm trước khi thanh toán");
+            }
+            if (tblCTHD.getRowCount() == 0) {
+                throw new Exception("Vui lòng thêm sản phẩm cần thanh toán");
+            }
+            if (tienThua != tienKhachDua - tongTien) {
+                throw new Exception("Tiền thừa phải bằng tiền khách đưa trừ tổng tiền");
+            }
+            for (int i = 0; i < tblCTHD.getRowCount(); i++) {
+                String maSP = tblCTHD.getValueAt(i, 8).toString();
+                if (keDon && maKH.equalsIgnoreCase("KH-00000")) {
+                    throw new Exception("Vui lòng lưu thông tin khách hàng trước khi thanh toán vì có thuốc kê đơn");
+                }
+            }
+            if (tongTien > tienKhachDua) {
+                throw new Exception("Tiền khách đưa phải lớn hơn hoặc bằng tổng tiền");
             }
         }
 
-        return Double.parseDouble(str);
+        List<Map<String, Object>> dsSanPham = new ArrayList<>();
+        for (int i = 0; i < tblCTHD.getRowCount(); i++) {
+            Map<String, Object> item = new HashMap<>();
+            item.put("maSP", tblCTHD.getValueAt(i, 8));
+            item.put("maDVT", tblCTHD.getValueAt(i, 7));
+            item.put("soLuong", tblCTHD.getValueAt(i, 4));
+            item.put("donGia", tblCTHD.getValueAt(i, 3));
+            item.put("giamGia", tblCTHD.getValueAt(i, 5));
+            item.put("thanhTien", tblCTHD.getValueAt(i, 6));
+            dsSanPham.add(item);
+        }
+
+        Request request = new Request(CommandType.THANH_TOAN, new Object[]{dsSanPham, maKH, chuyenKhoan, tongTien, GiaoDienChinhGUI.getTk(), tienKhachDua, tienThua});
+        Response response = SocketClient.getInstance().sendRequest(request);
+        if(!response.isSuccess()) {
+            System.out.println("Thanh toán thất bại: " + response.getMessage());
+            throw new Exception(response.getMessage());
+        }
+        Object[] data = (Object[]) response.getData();
+
+        SwingUtilities.invokeLater(() -> {
+            JDialog dialog = new JDialog();
+            dialog.setTitle("Hoá đơn tạo thành công");
+            dialog.setSize(1000, 600);
+            dialog.setLocationRelativeTo(null);
+            dialog.setModal(true);
+
+            JTextArea area = new JTextArea(data[1].toString());
+            area.setEditable(false);
+            area.setFont(new Font("Courier New", Font.PLAIN, 13));
+
+            dialog.add(new JScrollPane(area));
+            dialog.setVisible(true);
+        });
+
+        return (boolean) data[0];
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
