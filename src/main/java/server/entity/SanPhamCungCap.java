@@ -20,11 +20,11 @@ public class SanPhamCungCap {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "ma_sp", insertable = false, updatable = false)
+    @JoinColumn(name = "ma_sp")
     private SanPham sanPham;
 
     @ManyToOne
-    @JoinColumn(name = "ma_ncc", insertable = false, updatable = false)
+    @JoinColumn(name = "ma_ncc")
     private NhaCungCap nhaCungCap;
 
     @Column(name = "trang_thai_hop_tac", nullable = false, columnDefinition = "BOOLEAN DEFAULT true")

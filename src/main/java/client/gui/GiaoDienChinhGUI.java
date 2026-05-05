@@ -9,6 +9,9 @@ import com.formdev.flatlaf.FlatClientProperties;
 import common.dto.TaiKhoanDTO;
 import common.network.CommandType;
 import common.network.Request;
+import common.network.Response;
+import client.gui.*;
+import client.menu.Menu;
 import lombok.Getter;
 
 import java.awt.Component;
@@ -34,6 +37,10 @@ import javax.swing.KeyStroke;
 
 /**
  *
+ * Nhận {@link TaiKhoanDTO} từ Server và lưu làm phiên làm việc.
+ * Các panel màn hình (BanHangGUI, QuanLiNhanVienGUI, …) vẫn được
+ * dùng lại từ package {@code client.gui},
+ * trong khi tầng auth / đổi mật khẩu đã chuyển sang SocketClient.
  * @author trand
  */
 @Getter
@@ -45,6 +52,20 @@ public class GiaoDienChinhGUI extends JFrame{
     private static final Map<String, JPanel> cachedPanels = new HashMap<>();
     private static String currentKey = null;
     private static Supplier<JPanel> currentSupplier = null;
+    
+    public static TaiKhoanDTO getTkDTO() {
+        return tk;
+    }
+
+    public static boolean isQuanLy() {
+        return tk != null && tk.isQuanLy();
+    }
+
+    public static boolean isQuanLyLo() {
+        return tk != null && tk.isQuanLyLo();
+    }
+
+
 
     public static void setCurrentForm(String key, Supplier<JPanel> supplier) {
        currentKey = key;
@@ -72,11 +93,9 @@ public class GiaoDienChinhGUI extends JFrame{
         setResizable(false);
         getRootPane().putClientProperty(FlatClientProperties.FULL_WINDOW_CONTENT, true);
         if(GiaoDienChinhGUI.getTk() != null && GiaoDienChinhGUI.getTk().isQuanLy()) {
-            // TODO: Hiển thị dashboard quản lý
-            //GiaoDienChinhGUI.showFormByKey("dashboarQuanLi", DashBoardQuanLi::new);
+            GiaoDienChinhGUI.showFormByKey("dashboardQuanLi", DashBoardQuanLi::new);
         } else {
-            // TODO: Hiển thị dashboard nhân viên
-            //GiaoDienChinhGUI.showFormByKey("dashboardNhanVien", DashBoardNhanVien::new);
+            GiaoDienChinhGUI.showFormByKey("dashboardNhanVien", DashBoardNhanVien::new);
         } 
         mainForm.setSelectedMenu(0, 0);
         // Phím tắt F1 mở hướng dẫn sử dụng và chọn menu tương ứng
@@ -86,7 +105,7 @@ public class GiaoDienChinhGUI extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 mainForm.setSelectedMenu(8, 2);
-                //GiaoDienChinhGUI.showFormByKey("huongDanSuDung", HuongDanSuDungGUI::new);
+                GiaoDienChinhGUI.showFormByKey("huongDanSuDung", HuongDanSuDungGUI::new);
             }
         });
         // Phím tắt F5 để reload trang hiện tại
@@ -143,6 +162,10 @@ public class GiaoDienChinhGUI extends JFrame{
                 cachedPanels.clear();
                 new DangNhapGUI().setVisible(true);
         }
+    }
+
+    public static void showAboutDialog() {
+        new AboutGUI(app).setVisible(true);
     }
 
     public static void setSelectedMenu(int index, int subIndex) {

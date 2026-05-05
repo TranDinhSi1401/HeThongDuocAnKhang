@@ -82,15 +82,18 @@ public class DonViTinhDAO extends AbstractGenericDaoImpl<DonViTinh, String> {
     public int getMaDVTCuoiCung() {
         return doInTransaction(em -> {
             List<String> result = em.createQuery(
-                "SELECT dvt.maDonViTinh FROM DonViTinh dvt ORDER BY dvt.maDonViTinh DESC", String.class)
-                .setMaxResults(1)
+                "SELECT dvt.maDonViTinh FROM DonViTinh dvt", String.class)
                 .getResultList();
-            if (!result.isEmpty()) {
-                String maMax = result.get(0);
-                if (maMax != null && maMax.matches("^DVT-\\d{4}$"))
-                    return Integer.parseInt(maMax.substring(4));
+            int max = 0;
+            for(String ma : result) {
+                if(ma != null && ma.startsWith("DVT-")) {
+                    try {
+                        int num = Integer.parseInt(ma.substring(4));
+                        if(num > max) max = num;
+                    } catch(Exception ignored){}
+                }
             }
-            return 0;
+            return max;
         });
     }
 }

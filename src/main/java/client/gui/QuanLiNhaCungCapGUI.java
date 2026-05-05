@@ -1,0 +1,500 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package client.gui;
+
+import common.dto.NhaCungCapDTO;
+import common.network.CommandType;
+import common.network.Request;
+import common.network.Response;
+import client.socket.SocketClient;
+import java.util.List;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import com.formdev.flatlaf.FlatClientProperties;
+import com.formdev.flatlaf.extras.FlatSVGIcon;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+public class QuanLiNhaCungCapGUI extends JPanel {
+
+    private JButton btnThem, btnXoa, btnSua;
+    private JTextField txtTimKiem;
+    private JTable table;
+    private JComboBox<String> cmbTieuChiTimKiem;
+    private DefaultTableModel model;
+
+    // Label hiển thị số lượng (Footer)
+    private JLabel lblTongSoDong;
+    private JLabel lblSoDongChon;
+
+    public QuanLiNhaCungCapGUI() {
+        this.setLayout(new BorderLayout(10, 10));
+        this.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        // PANEL NORTH
+        JPanel pnlNorth = new JPanel();
+        pnlNorth.setLayout(new BorderLayout());
+
+        // Chức năng
+        JPanel pnlNorthLeft = new JPanel();
+        pnlNorthLeft.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        pnlNorthLeft.setBorder(new EmptyBorder(0, 0, 10, 0));
+
+        btnThem = new JButton("Thêm - F6");
+        btnXoa = new JButton("Xóa - Del");
+        btnSua = new JButton("Sửa - F2");
+
+        mapKeyToClickButton("F6", btnThem);
+        mapKeyToClickButton("DELETE", btnXoa);
+        mapKeyToClickButton("F2", btnSua);
+
+        setupTopButton(btnThem, new Color(25, 118, 210)); // Xanh dương đậm
+        setupTopButton(btnXoa, new Color(255, 51, 51));   // Đỏ tươi
+        setupTopButton(btnSua, new Color(0, 203, 0));     // Xanh lá
+
+        pnlNorthLeft.add(btnThem);
+        pnlNorthLeft.add(btnXoa);
+        pnlNorthLeft.add(btnSua);
+
+        pnlNorth.add(pnlNorthLeft, BorderLayout.WEST);
+
+        JPanel pnlNorthRight = new JPanel();
+        pnlNorthRight.setLayout(new FlowLayout(FlowLayout.RIGHT, 10, 5));
+
+        cmbTieuChiTimKiem = new JComboBox<>(new String[]{"Mã NCC", "Tên NCC", "Số điện thoại", "Email"});
+        cmbTieuChiTimKiem.setFont(new Font("Arial", Font.PLAIN, 14));
+        cmbTieuChiTimKiem.setPreferredSize(new Dimension(150, 30));
+
+        txtTimKiem = new JTextField(20);
+        txtTimKiem.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Tìm kiếm theo " + cmbTieuChiTimKiem.getSelectedItem().toString().toLowerCase() + "...");
+        txtTimKiem.putClientProperty(FlatClientProperties.TEXT_FIELD_LEADING_ICON, new FlatSVGIcon("images/search.svg", 16, 16));
+        txtTimKiem.setFont(new Font("Arial", Font.PLAIN, 14));
+        txtTimKiem.setPreferredSize(new Dimension(250, 35));
+
+        JPanel pnlTimKiem = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
+        pnlTimKiem.add(txtTimKiem);
+
+        pnlNorthRight.add(new JLabel("Tìm theo"));
+        pnlNorthRight.add(cmbTieuChiTimKiem);
+        pnlNorthRight.add(pnlTimKiem);
+
+        pnlNorth.add(pnlNorthRight, BorderLayout.EAST);
+        this.add(pnlNorth, BorderLayout.NORTH);
+
+        // PANEL CENTER (TABLE)
+        JPanel centerPanel = new JPanel(new BorderLayout(0, 10));
+
+        String[] columnNames = {"STT", "Mã NCC", "Tên NCC", "Địa chỉ", "Số điện thoại", "Email"};
+        Object[][] data = {};
+
+        model = new DefaultTableModel(data, columnNames) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
+        table = new JTable(model);
+        table.setRowHeight(25);
+        table.setFont(new Font("Arial", Font.PLAIN, 12));
+        table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
+        table.getTableHeader().setBackground(new Color(220, 220, 220));
+        table.getTableHeader().setReorderingAllowed(false);
+        table.setShowGrid(true);
+        table.setGridColor(Color.LIGHT_GRAY);
+
+        // CẤU HÌNH KÍCH THƯỚC & CĂN CHỈNH CỘT
+        TableColumnModel columnModel = table.getColumnModel();
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+
+        // 0. STT
+        columnModel.getColumn(0).setPreferredWidth(40);
+        columnModel.getColumn(0).setMaxWidth(40);
+        columnModel.getColumn(0).setCellRenderer(centerRenderer);
+
+        // 1. Mã NCC
+        columnModel.getColumn(1).setPreferredWidth(100);
+        columnModel.getColumn(1).setMaxWidth(120);
+        columnModel.getColumn(1).setCellRenderer(centerRenderer);
+
+        // 2. Tên NCC
+        columnModel.getColumn(2).setPreferredWidth(200);
+
+        // 3. Địa chỉ
+        columnModel.getColumn(3).setPreferredWidth(250);
+
+        // 4. Số điện thoại
+        columnModel.getColumn(4).setPreferredWidth(100);
+        columnModel.getColumn(4).setCellRenderer(centerRenderer);
+
+        // 5. Email
+        columnModel.getColumn(5).setPreferredWidth(150);
+
+        JScrollPane scrollPane = new JScrollPane(table);
+        centerPanel.add(scrollPane, BorderLayout.CENTER);
+        this.add(centerPanel, BorderLayout.CENTER);
+
+        // PANEL SOUTH (FOOTER)
+        JPanel pnlSouth = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 5));
+        pnlSouth.setBorder(new EmptyBorder(5, 0, 0, 0));
+
+        Font fontFooter = new Font("Arial", Font.BOLD, 13);
+
+        lblTongSoDong = new JLabel("Tổng số nhà cung cấp: 0");
+        lblTongSoDong.setFont(fontFooter);
+        lblTongSoDong.setForeground(new Color(0, 102, 204));
+
+        lblSoDongChon = new JLabel("Đang chọn: 0");
+        lblSoDongChon.setFont(fontFooter);
+        lblSoDongChon.setForeground(new Color(204, 0, 0));
+
+        pnlSouth.add(lblTongSoDong);
+        pnlSouth.add(new JSeparator(JSeparator.VERTICAL));
+        pnlSouth.add(lblSoDongChon);
+
+        this.add(pnlSouth, BorderLayout.SOUTH);
+
+        updateTable();
+        addEvents();
+    }
+
+    private void setupTopButton(JButton button, Color bgColor) {
+        button.setBackground(bgColor);
+        button.setForeground(Color.BLACK);
+        button.setFont(new Font("Arial", Font.PLAIN, 14));
+        button.setMargin(new Insets(5, 10, 5, 10));
+        button.setPreferredSize(new Dimension(100, 30));
+    }
+
+    private void updateTable(List<NhaCungCapDTO> dsNCC) {
+        model.setRowCount(0);
+        if (dsNCC == null) {
+            lblTongSoDong.setText("Tổng số nhà cung cấp: 0");
+            return;
+        }
+        int stt = 1;
+        for (NhaCungCapDTO ncc : dsNCC) {
+            Object[] row = {
+                stt++, // STT
+                ncc.getMaNCC(),
+                ncc.getTenNCC(),
+                ncc.getDiaChi(),
+                ncc.getSdt(),
+                ncc.getEmail()
+            };
+            model.addRow(row);
+        }
+        lblTongSoDong.setText("Tổng số nhà cung cấp: " + dsNCC.size());
+    }
+
+    private void updateTable() {
+        Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_ALL_NHA_CUNG_CAP, null));
+        if (res.isSuccess() && res.getData() != null) {
+            updateTable((List<NhaCungCapDTO>) res.getData());
+        } else {
+            updateTable((List<NhaCungCapDTO>) null);
+        }
+    }
+
+    private void addEvents() {
+        btnThem.addActionListener(e -> xuLyThem());
+        btnXoa.addActionListener(e -> xuLyXoa());
+        btnSua.addActionListener(e -> xuLySua());
+        
+        txtTimKiem.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) { xuLyTimKiem(); }
+            @Override
+            public void removeUpdate(DocumentEvent e) { xuLyTimKiem(); }
+            @Override
+            public void changedUpdate(DocumentEvent e) { xuLyTimKiem(); }
+        });
+
+        cmbTieuChiTimKiem.addActionListener(e -> {
+            txtTimKiem.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Tìm kiếm theo " + cmbTieuChiTimKiem.getSelectedItem().toString().toLowerCase() + "...");
+            txtTimKiem.selectAll();
+            txtTimKiem.requestFocus();
+            xuLyTimKiem();
+        });
+
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                hienThiChiTietNhaCungCap(e);
+            }
+        });
+
+        // Sự kiện đếm dòng chọn
+        table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    lblSoDongChon.setText("Đang chọn: " + table.getSelectedRowCount());
+                }
+            }
+        });
+    }
+
+    private void xuLyTimKiem() {
+        String tuKhoa = txtTimKiem.getText().trim();
+        String tieuChi = cmbTieuChiTimKiem.getSelectedItem().toString();
+        List<NhaCungCapDTO> dsKetQua = new ArrayList<>();
+
+        if (tuKhoa.isEmpty()) {
+            Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_ALL_NHA_CUNG_CAP, null));
+            if (res.isSuccess() && res.getData() != null) {
+                dsKetQua = (List<NhaCungCapDTO>) res.getData();
+            }
+        } else {
+            Request req = null;
+            switch (tieuChi) {
+                case "Mã NCC":
+                    req = new Request(CommandType.GET_NCC_BY_MA, tuKhoa);
+                    break;
+                case "Tên NCC":
+                    req = new Request(CommandType.GET_NCC_BY_TEN, tuKhoa);
+                    break;
+                case "Số điện thoại":
+                    req = new Request(CommandType.GET_NCC_BY_SDT, tuKhoa);
+                    break;
+                case "Email":
+                    req = new Request(CommandType.GET_NCC_BY_EMAIL, tuKhoa);
+                    break;
+            }
+            if (req != null) {
+                Response res = SocketClient.getInstance().sendRequest(req);
+                if (res.isSuccess() && res.getData() != null) {
+                    if (tieuChi.equals("Mã NCC")) {
+                        dsKetQua.add((NhaCungCapDTO) res.getData());
+                    } else {
+                        dsKetQua = (List<NhaCungCapDTO>) res.getData();
+                    }
+                }
+            }
+        }
+        updateTable(dsKetQua);
+    }
+
+    private void xuLyThem() {
+        ThemNhaCungCapGUI pnlThemNCC = new ThemNhaCungCapGUI();
+        JDialog dialog = new JDialog();
+        dialog.setTitle("Thêm Nhà Cung Cấp Mới");
+        dialog.setModal(true);
+        dialog.setResizable(false);
+        dialog.setContentPane(pnlThemNCC);
+        dialog.pack();
+        dialog.setLocationRelativeTo(null);
+
+        Response resMa = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_MA_NCC_CUOI, null));
+        int maNCCCUoiCung = 0;
+        if (resMa.isSuccess() && resMa.getData() != null) {
+            maNCCCUoiCung = (int) resMa.getData();
+        }
+        maNCCCUoiCung++;
+        String maNCCNew = String.format("NCC-%04d", maNCCCUoiCung);
+        pnlThemNCC.setTxtMaNCC(maNCCNew);
+
+        boolean isSuccess = false;
+
+        while (!isSuccess) {
+            dialog.setVisible(true);
+
+            NhaCungCapDTO nccNew = pnlThemNCC.getNhaCungCapMoi();
+
+            if (nccNew == null) {
+                break;
+            }
+
+            Response resAdd = SocketClient.getInstance().sendRequest(new Request(CommandType.ADD_NHA_CUNG_CAP, nccNew));
+            if (resAdd.isSuccess()) {
+                JOptionPane.showMessageDialog(this, "Thêm nhà cung cấp thành công!");
+                updateTable();
+                isSuccess = true;
+                dialog.dispose();
+            } else {
+                JOptionPane.showMessageDialog(this,
+                        "Thêm nhà cung cấp thất bại: " + resAdd.getMessage(),
+                        "Lỗi",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void xuLyXoa() {
+        int selectedRows[] = table.getSelectedRows();
+        if (selectedRows.length == 0) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn nhà cung cấp cần xóa.");
+            return;
+        }
+
+        String message;
+        if (selectedRows.length == 1) {
+            String tenNCC = model.getValueAt(selectedRows[0], 2).toString();
+            message = "Bạn có chắc muốn xóa nhà cung cấp '" + tenNCC + "' không?";
+        } else {
+            message = "Bạn có chắc muốn xóa " + selectedRows.length + " nhà cung cấp đã chọn không?";
+        }
+
+        int confirm = JOptionPane.showConfirmDialog(this, message, "Xác nhận xóa", JOptionPane.YES_NO_OPTION);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            int soLuongXoaThanhCong = 0;
+            for (int i = selectedRows.length - 1; i >= 0; i--) {
+                int row = selectedRows[i];
+                String maNCC = model.getValueAt(row, 1).toString();
+                Response resDel = SocketClient.getInstance().sendRequest(new Request(CommandType.XOA_NHA_CUNG_CAP, maNCC));
+                if (resDel.isSuccess()) {
+                    soLuongXoaThanhCong++;
+                }
+            }
+
+            if (soLuongXoaThanhCong > 0) {
+                JOptionPane.showMessageDialog(this, "Đã xóa thành công " + soLuongXoaThanhCong + " nhà cung cấp.");
+                updateTable();
+                lblSoDongChon.setText("Đang chọn: 0");
+            } else {
+                JOptionPane.showMessageDialog(this, "Xóa nhà cung cấp thất bại (có thể do nhà cung cấp đang cung cấp sản phẩm).", "Lỗi xóa", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+        table.clearSelection();
+    }
+
+    private void xuLySua() {
+        int selectedRow = table.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn nhà cung cấp cần sửa.");
+            return;
+        }
+
+        String maNCC = model.getValueAt(selectedRow, 1).toString();
+        Response resGet = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_NCC_BY_MA, maNCC));
+        if (!resGet.isSuccess() || resGet.getData() == null) {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy nhà cung cấp để sửa.");
+            return;
+        }
+        NhaCungCapDTO nccCanSua = (NhaCungCapDTO) resGet.getData();
+
+        ThemNhaCungCapGUI pnlThemNCC = new ThemNhaCungCapGUI();
+        JDialog dialog = new JDialog();
+        dialog.setTitle("Sửa thông tin Nhà Cung Cấp");
+        dialog.setModal(true);
+        dialog.setResizable(false);
+        dialog.setContentPane(pnlThemNCC);
+        dialog.pack();
+        dialog.setLocationRelativeTo(null);
+
+        pnlThemNCC.setTxtMaNCC(nccCanSua.getMaNCC());
+        pnlThemNCC.setTxtTenNCC(nccCanSua.getTenNCC());
+        pnlThemNCC.setTxtDiaChi(nccCanSua.getDiaChi());
+        pnlThemNCC.setTxtSDT(nccCanSua.getSdt());
+        pnlThemNCC.setTxtEmail(nccCanSua.getEmail());
+
+        boolean isSuccess = false;
+
+        while (!isSuccess) {
+            dialog.setVisible(true);
+
+            NhaCungCapDTO nccNew = pnlThemNCC.getNhaCungCapMoi();
+
+            if (nccNew == null) {
+                break;
+            }
+
+            Response resSua = SocketClient.getInstance().sendRequest(new Request(CommandType.SUA_NHA_CUNG_CAP, new Object[]{maNCC, nccNew}));
+            if (resSua.isSuccess()) {
+                JOptionPane.showMessageDialog(this, "Sửa thông tin nhà cung cấp thành công!");
+                updateTable();
+                isSuccess = true;
+                dialog.dispose();
+            } else {
+                JOptionPane.showMessageDialog(this,
+                        "Sửa thông tin nhà cung cấp thất bại: " + resSua.getMessage(),
+                        "Lỗi",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    public void hienThiChiTietNhaCungCap(MouseEvent e) {
+        int selectRow = table.getSelectedRow();
+        if (selectRow != -1) {
+            String maNCC = model.getValueAt(selectRow, 1).toString();
+            Response resGet = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_NCC_BY_MA, maNCC));
+            NhaCungCapDTO nccDaChon = null;
+            if (resGet.isSuccess()) {
+                nccDaChon = (NhaCungCapDTO) resGet.getData();
+            }
+
+            if (nccDaChon != null && e.getClickCount() == 2) {
+                ThemNhaCungCapGUI pnlThemNCC = new ThemNhaCungCapGUI();
+                JDialog dialog = new JDialog();
+                dialog.setTitle("Thông tin chi tiết Nhà Cung Cấp");
+                dialog.setModal(true);
+                dialog.setResizable(false);
+                dialog.setContentPane(pnlThemNCC);
+                dialog.pack();
+                dialog.setLocationRelativeTo(null);
+
+                pnlThemNCC.getBtnHuy().setVisible(false);
+                pnlThemNCC.getBtnXacNhan().setText("Đóng");
+                pnlThemNCC.getBtnXacNhan().addActionListener(l -> dialog.dispose());
+
+                pnlThemNCC.getTxtTenNCC().setEditable(false);
+                pnlThemNCC.getTxtDiaChi().setEditable(false);
+                pnlThemNCC.getTxtSDT().setEditable(false);
+                pnlThemNCC.getTxtEmail().setEditable(false);
+
+                pnlThemNCC.setTxtMaNCC(nccDaChon.getMaNCC());
+                pnlThemNCC.setTxtTenNCC(nccDaChon.getTenNCC());
+                pnlThemNCC.setTxtDiaChi(nccDaChon.getDiaChi());
+                pnlThemNCC.setTxtSDT(nccDaChon.getSdt());
+                pnlThemNCC.setTxtEmail(nccDaChon.getEmail());
+
+                dialog.setVisible(true);
+            }
+        }
+    }
+
+    private void mapKeyToFocus(String key, JComponent component) {
+        InputMap im = component.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap am = component.getActionMap();
+
+        im.put(KeyStroke.getKeyStroke(key), "focus_" + key);
+        am.put("focus_" + key, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                component.requestFocus();
+                if (component instanceof JTextField jTextField) {
+                    jTextField.selectAll();
+                }
+            }
+        });
+    }
+
+    private void mapKeyToClickButton(String key, AbstractButton button) {
+        InputMap im = button.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap am = button.getActionMap();
+
+        im.put(KeyStroke.getKeyStroke(key), "click_" + key);
+        am.put("click_" + key, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                button.doClick(); // kích hoạt sự kiện button
+            }
+        });
+    }
+}

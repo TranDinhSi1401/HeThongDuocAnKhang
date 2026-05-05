@@ -22,11 +22,11 @@ public class KhuyenMaiSanPham {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "ma_khuyen_mai", insertable = false, updatable = false)
+    @JoinColumn(name = "ma_khuyen_mai")
     private KhuyenMai khuyenMai;
 
     @ManyToOne
-    @JoinColumn(name = "ma_sp", insertable = false, updatable = false)
+    @JoinColumn(name = "ma_sp")
     private SanPham sanPham;
 
     @Column(name = "ngay_chinh_sua")

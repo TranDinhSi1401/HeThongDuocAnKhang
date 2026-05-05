@@ -14,4 +14,8 @@ public class ChiTietHoaDonDTO implements Serializable {
     private double donGia;
     private double giamGia;
     private double thanhTien;
+    
+    // Thêm các trường hiển thị (không lưu DB trực tiếp trong bảng này nhưng cần cho GUI)
+    private String tenSP;
+    private String tenDVT;
 }

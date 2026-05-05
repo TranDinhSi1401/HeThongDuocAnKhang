@@ -22,8 +22,21 @@ public class KhuyenMaiService {
         return khuyenMaiDAO.getKhuyenMaiDangHoatDong().stream().map(EntityMapper::toDTO).collect(Collectors.toList());
     }
 
+    public KhuyenMaiDTO timKMTheoMa(String maKM) {
+        KhuyenMai km = khuyenMaiDAO.findById(maKM);
+        return km != null ? EntityMapper.toDTO(km) : null;
+    }
+
     public List<KhuyenMaiDTO> getKhuyenMaiTheoMaSp(String maSP) {
         return khuyenMaiDAO.getKhuyenMaiTheoMaSP(maSP).stream().map(EntityMapper::toDTO).collect(Collectors.toList());
+    }
+
+    public List<KhuyenMaiDTO> timKhuyenMaiTheoMoTa(String moTa) {
+        return khuyenMaiDAO.timKhuyenMaiTheoMoTa(moTa).stream().map(EntityMapper::toDTO).collect(Collectors.toList());
+    }
+
+    public List<KhuyenMaiDTO> timKhuyenMaiTheoLoai(String loai) {
+        return khuyenMaiDAO.timKhuyenMaiTheoLoai(loai).stream().map(EntityMapper::toDTO).collect(Collectors.toList());
     }
 
     public int getMaKMCuoiCung() { return khuyenMaiDAO.getMaKMCuoiCung(); }
@@ -52,11 +65,17 @@ public class KhuyenMaiService {
     public boolean addKhuyenMaiSanPham(KhuyenMaiSanPhamDTO dto) {
         KhuyenMaiSanPham e = new KhuyenMaiSanPham();
         e.setNgayChinhSua(dto.getNgayChinhSua());
-        KhuyenMai km = new KhuyenMai(); km.setMaKhuyenMai(dto.getMaKhuyenMai()); e.setKhuyenMai(km);
-        SanPham sp = new SanPham(); sp.setMaSP(dto.getMaSP()); e.setSanPham(sp);
+        KhuyenMai km = khuyenMaiDAO.findById(dto.getMaKhuyenMai());
+        SanPham sp = new server.dao.SanPhamDAO().findById(dto.getMaSP());
+        e.setKhuyenMai(km);
+        e.setSanPham(sp);
         kmspDAO.create(e);
         return true;
     }
 
     public boolean deleteKhuyenMaiSanPham(Long id) { return kmspDAO.delete(id); }
+
+    public boolean deleteKMSPByMaSP(String maSP) {
+        return kmspDAO.xoaHetKMCuaSP(maSP);
+    }
 }
