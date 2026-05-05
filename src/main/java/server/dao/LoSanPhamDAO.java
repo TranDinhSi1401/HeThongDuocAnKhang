@@ -152,4 +152,17 @@ public class LoSanPhamDAO extends AbstractGenericDaoImpl<LoSanPham, String> {
             return counts;
         });
     }
+
+    /** Lấy danh sách lô sắp hết hạn (trong vòng 6 tháng tới). */
+    public List<LoSanPham> getLoSapHetHan() {
+        return doInTransaction(em -> {
+            LocalDate threshold = LocalDate.now().plusMonths(6);
+            return em.createQuery(
+                "SELECT lsp FROM LoSanPham lsp WHERE lsp.daHuy = false " +
+                "AND lsp.ngayHetHan >= CURRENT_DATE AND lsp.ngayHetHan <= :threshold " +
+                "ORDER BY lsp.ngayHetHan ASC", LoSanPham.class)
+                .setParameter("threshold", threshold)
+                .getResultList();
+        });
+    }
 }

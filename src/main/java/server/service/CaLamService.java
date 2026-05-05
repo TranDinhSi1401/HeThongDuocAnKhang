@@ -32,6 +32,10 @@ public class CaLamService {
 
     // ===== LichSuCaLam =====
 
+    public List<LichSuCaLamDTO> getAllLichSuCaLam() {
+        return lichSuCaLamDAO.loadAll().stream().map(EntityMapper::toDTO).collect(Collectors.toList());
+    }
+
     public List<LichSuCaLamDTO> getLSCLTheoMaNV(String maNV) {
         return lichSuCaLamDAO.getLichSuCaLamTheoMaNV(maNV).stream().map(EntityMapper::toDTO).collect(Collectors.toList());
     }

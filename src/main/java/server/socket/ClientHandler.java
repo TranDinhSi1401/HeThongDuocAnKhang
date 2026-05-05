@@ -124,6 +124,8 @@ public class ClientHandler implements Runnable {
                 // ===== MA VACH =====
                 case ADD_MA_VACH    -> Response.ok(sanPhamService.addMaVach((MaVachSanPhamDTO) data));
                 case DELETE_MA_VACH -> Response.ok(sanPhamService.deleteMaVach((String) data));
+                case GET_MA_VACH_BY_MA_SP -> Response.ok(sanPhamService.getMaVachByMaSP((String) data));
+                case XOA_HET_MA_VACH_BY_MA_SP -> Response.ok(sanPhamService.xoaMaVachTheoMaSP((String) data));
 
                 // ===== KHACH HANG =====
                 case GET_ALL_KHACH_HANG      -> Response.ok(khachHangService.getAllKhachHang());
@@ -145,6 +147,7 @@ public class ClientHandler implements Runnable {
                     Object[] arr = (Object[]) data;
                     yield Response.ok(khachHangService.truDiemTichLuy((Integer) arr[0], (String) arr[1]));
                 }
+                case SEARCH_KHACH_HANG_BY_SDT -> Response.ok(khachHangService.timKHTheoSDT((String) data));
 
                 // ===== NHAN VIEN =====
                 case GET_ALL_NHAN_VIEN        -> Response.ok(nhanVienService.getAllNhanVien());
@@ -198,6 +201,7 @@ public class ClientHandler implements Runnable {
                 case GET_SO_PTH                      -> Response.ok(hoaDonService.getSoPTH((String) data));
                 case GET_TONG_TIEN_CAC_PTH           -> Response.ok(hoaDonService.getTongTienCacPTH((String) data));
                 case ADD_HOA_DON                     -> Response.ok(hoaDonService.addHoaDon((HoaDonDTO) data));
+                case GET_ALL_HOA_DON                 -> Response.ok(hoaDonService.getAllHoaDon());
                 case GET_DOANH_THU_NGAY              -> Response.ok(hoaDonService.getDoanhThuTheoNgay((LocalDate) data));
                 case GET_DOANH_THU_THANG             -> Response.ok(hoaDonService.getDoanhThuTheoThang((LocalDate) data));
                 case GET_DOANH_THU_TUNG_NGAY         -> Response.ok(hoaDonService.getDoanhThuTungNgayTrongThang((LocalDate) data));
@@ -227,6 +231,7 @@ public class ClientHandler implements Runnable {
                 case GET_CTXL_BY_MA_CTHD  -> Response.ok(hoaDonService.getCTXLByMaCTHD((String) data));
 
                 // ===== LO SAN PHAM =====
+                case GET_ALL_LO_SAN_PHAM   -> Response.ok(loSanPhamService.getAllLoSanPham());
                 case GET_LO_BY_MA_SP       -> Response.ok(loSanPhamService.getLoSanPhamTheoMaSP((String) data));
                 case GET_LO_BY_MA          -> Response.ok(loSanPhamService.timLoSanPham((String) data));
                 case GET_LO_BY_MA_CTHD     -> Response.ok(loSanPhamService.getLoSanPhamTheoMaCTHD((String) data));
@@ -248,8 +253,15 @@ public class ClientHandler implements Runnable {
                     Object[] arr = (Object[]) data;
                     yield Response.ok(loSanPhamService.capNhatSoLuongLo((LoSanPhamDTO) arr[0], (Integer) arr[1]));
                 }
+                case UPDATE_LO_SAN_PHAM -> {
+                    Object[] arr = (Object[]) data;
+                    yield Response.ok(loSanPhamService.capNhatSoLuongLo((LoSanPhamDTO) arr[0], (Integer) arr[1]));
+                }
+                case DELETE_LO_SAN_PHAM -> Response.ok(loSanPhamService.huyLoSanPham((LoSanPhamDTO) data));
+                case GET_LO_SAP_HET_HAN -> Response.ok(loSanPhamService.getLoSapHetHan());
 
                 // ===== LICH SU LO =====
+                case GET_ALL_LICH_SU_LO      -> Response.ok(loSanPhamService.getAllLichSuLo());
                 case GET_LICH_SU_LO_BY_MA_LO -> Response.ok(loSanPhamService.getLichSuLoTheoMaLo((String) data));
                 case ADD_LICH_SU_LO           -> Response.ok(loSanPhamService.addLichSuLo((LichSuLoDTO) data));
 
@@ -271,9 +283,11 @@ public class ClientHandler implements Runnable {
                 case GET_SPCC_BY_MA_SP         -> Response.ok(nhaCungCapService.getSPCCTheoMaSP((String) data));
                 case ADD_SAN_PHAM_CUNG_CAP     -> Response.ok(nhaCungCapService.addSanPhamCungCap((SanPhamCungCapDTO) data));
                 case DELETE_SAN_PHAM_CUNG_CAP  -> Response.ok(nhaCungCapService.deleteSanPhamCungCap((Long) data));
+                case XOA_HET_SPCC_BY_MA_SP -> Response.ok(nhaCungCapService.deleteSPCCByMaSP((String) data));
 
                 // ===== KHUYEN MAI =====
                 case GET_ALL_KHUYEN_MAI          -> Response.ok(khuyenMaiService.getAllKhuyenMai());
+                case GET_KHUYEN_MAI_BY_MA        -> Response.ok(khuyenMaiService.timKMTheoMa((String) data));
                 case GET_KHUYEN_MAI_DANG_HOAT_DONG -> Response.ok(khuyenMaiService.getKhuyenMaiDangHoatDong());
                 case GET_MA_KM_CUOI              -> Response.ok(khuyenMaiService.getMaKMCuoiCung());
                 case ADD_KHUYEN_MAI              -> Response.ok(khuyenMaiService.addKhuyenMai((KhuyenMaiDTO) data));
@@ -282,15 +296,24 @@ public class ClientHandler implements Runnable {
                     Object[] arr = (Object[]) data;
                     yield Response.ok(khuyenMaiService.suaKhuyenMai((String) arr[0], (KhuyenMaiDTO) arr[1]));
                 }
+                case GET_KHUYEN_MAI_BY_MOTA -> Response.ok(khuyenMaiService.timKhuyenMaiTheoMoTa((String) data));
+                case GET_KHUYEN_MAI_BY_LOAI -> Response.ok(khuyenMaiService.timKhuyenMaiTheoLoai((String) data));
 
                 // ===== KHUYEN MAI SAN PHAM =====
                 case GET_KMSP_BY_MA_KM         -> Response.ok(khuyenMaiService.getKMSPTheoMaKM((String) data));
                 case GET_KMSP_BY_MA_SP         -> Response.ok(khuyenMaiService.getKMSPTheoMaSP((String) data));
                 case ADD_KHUYEN_MAI_SAN_PHAM   -> Response.ok(khuyenMaiService.addKhuyenMaiSanPham((KhuyenMaiSanPhamDTO) data));
                 case DELETE_KHUYEN_MAI_SAN_PHAM-> Response.ok(khuyenMaiService.deleteKhuyenMaiSanPham((Long) data));
+                case XOA_HET_KMSP_BY_MA_SP -> Response.ok(khuyenMaiService.deleteKMSPByMaSP((String) data));
 
                 // ===== PHIEU NHAP =====
                 case GET_PHIEU_NHAP_BY_MA -> Response.ok(phieuService.getPhieuNhapTheoMa((String) data));
+                case GET_PN_BY_MA_NV      -> Response.ok(phieuService.getPNTheoMaNV((String) data));
+                case GET_PN_BY_NGAY       -> Response.ok(phieuService.getPNTheoNgay((java.time.LocalDate) data));
+                case GET_PN_BY_KHOANG_NGAY-> {
+                    Object[] arr = (Object[]) data;
+                    yield Response.ok(phieuService.getPNTheoKhoangNgay((java.time.LocalDate) arr[0], (java.time.LocalDate) arr[1]));
+                }
                 case GET_ALL_PHIEU_NHAP   -> Response.ok(phieuService.getAllPhieuNhap());
                 case GET_SO_PN_CUOI       -> Response.ok(phieuService.getSoPhieuNhapCuoiCung());
                 case ADD_PHIEU_NHAP       -> Response.ok(phieuService.addPhieuNhap((PhieuNhapDTO) data));
@@ -302,6 +325,9 @@ public class ClientHandler implements Runnable {
                 // ===== PHIEU TRA HANG =====
                 case GET_PTH_BY_MA    -> Response.ok(phieuService.getPhieuTraHangTheoMa((String) data));
                 case GET_PTH_BY_MA_HD -> Response.ok(phieuService.getPTHTheoMaHD((String) data));
+                case GET_PTH_BY_MA_NV -> Response.ok(phieuService.getPTHTheoMaNV((String) data));
+                case GET_PTH_BY_NGAY  -> Response.ok(phieuService.getPTHTheoNgay((java.time.LocalDate) data));
+                case GET_ALL_PHIEU_TRA_HANG -> Response.ok(phieuService.getAllPhieuTraHang());
                 case GET_SO_PTH_CUOI  -> Response.ok(phieuService.getSoPhieuTraHangCuoiCung());
                 case ADD_PHIEU_TRA_HANG -> Response.ok(phieuService.addPhieuTraHang((PhieuTraHangDTO) data));
 
@@ -317,11 +343,16 @@ public class ClientHandler implements Runnable {
                 case XOA_CA_LAM        -> Response.ok(caLamService.xoaCaLam((String) data));
 
                 // ===== LICH SU CA LAM =====
+                case GET_ALL_LICH_SU_CA_LAM -> Response.ok(caLamService.getAllLichSuCaLam());
                 case GET_LSCL_BY_MA_NV      -> Response.ok(caLamService.getLSCLTheoMaNV((String) data));
                 case GET_LSCL_BY_NGAY        -> Response.ok(caLamService.getLSCLTheoNgay((String) data));
                 case GET_LSCL_DANG_LAM_BY_MA_NV -> Response.ok(caLamService.getLSCLDangLamTheoMaNV((String) data));
                 case ADD_LICH_SU_CA_LAM      -> Response.ok(caLamService.addLichSuCaLam((LichSuCaLamDTO) data));
                 case UPDATE_LICH_SU_CA_LAM   -> Response.ok(caLamService.updateLichSuCaLam((LichSuCaLamDTO) data));
+
+                default -> Response.fail("Lệnh không hợp lệ hoặc chưa được hỗ trợ: " + cmd);
+
+
             };
         } catch (Exception e) {
             return Response.fail("Lỗi server: " + e.getMessage());

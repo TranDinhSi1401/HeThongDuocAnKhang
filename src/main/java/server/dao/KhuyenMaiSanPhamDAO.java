@@ -42,6 +42,17 @@ public class KhuyenMaiSanPhamDAO extends AbstractGenericDaoImpl<KhuyenMaiSanPham
         });
     }
 
+    /** Xóa tất cả khuyến mãi của một sản phẩm. */
+    public boolean xoaHetKMCuaSP(String maSP) {
+        return doInTransaction(em -> {
+            em.createQuery(
+                    "DELETE FROM KhuyenMaiSanPham kmsp WHERE kmsp.sanPham.maSP = :maSP")
+                    .setParameter("maSP", maSP)
+                    .executeUpdate();
+            return true;
+        });
+    }
+
     public List<KhuyenMaiSanPham> getKhuyenMaiSanPhamTheoMaKM(String maKM) { return getTheoMaKM(maKM); }
     public List<KhuyenMaiSanPham> getKhuyenMaiSanPhamTheoMaSP(String maSP) { return getTheoMaSP(maSP); }
 }

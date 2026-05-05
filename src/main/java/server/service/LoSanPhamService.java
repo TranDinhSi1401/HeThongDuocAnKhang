@@ -18,6 +18,14 @@ public class LoSanPhamService {
     private final LoSanPhamDAO loSanPhamDAO = new LoSanPhamDAO();
     private final LichSuLoDAO lichSuLoDAO = new LichSuLoDAO();
 
+    public List<LoSanPhamDTO> getAllLoSanPham() {
+        return loSanPhamDAO.loadAll().stream().map(EntityMapper::toDTO).collect(Collectors.toList());
+    }
+
+    public List<LichSuLoDTO> getAllLichSuLo() {
+        return lichSuLoDAO.loadAll().stream().map(EntityMapper::toDTO).collect(Collectors.toList());
+    }
+
     public List<LoSanPhamDTO> getLoSanPhamTheoMaSP(String maSP) {
         return loSanPhamDAO.getLoSanPhamTheoMaSP(maSP)
                 .stream().map(EntityMapper::toDTO).collect(Collectors.toList());
@@ -50,6 +58,11 @@ public class LoSanPhamService {
 
     public int[] demLoTheoTrangThai() {
         return loSanPhamDAO.demLoTheoTrangThai();
+    }
+
+    public List<LoSanPhamDTO> getLoSapHetHan() {
+        return loSanPhamDAO.getLoSapHetHan()
+                .stream().map(EntityMapper::toDTO).collect(Collectors.toList());
     }
 
     public boolean addLoSanPham(LoSanPhamDTO dto) {

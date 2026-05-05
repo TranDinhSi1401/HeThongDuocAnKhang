@@ -17,4 +17,7 @@ public class ChiTietPhieuTraHangDTO implements Serializable {
     private String tinhTrangSanPham;
     private String giaTriHoanTra;
     private double thanhTienHoanTra;
+    // Trường hiển thị
+    private String tenSP;
+    private String tenDVT;
 }

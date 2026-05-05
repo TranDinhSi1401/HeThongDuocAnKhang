@@ -136,10 +136,9 @@ public class SanPhamService {
 
     public boolean addDonViTinh(DonViTinhDTO dto) {
         DonViTinh entity = EntityMapper.toEntity(dto);
-        // Gắn SanPham reference (lazy proxy) — dùng getReference để không load toàn bộ entity
-        entity.setSanPham(new SanPham());
-        entity.getSanPham().setMaSP(dto.getMaSP());
-        donViTinhDAO.create(entity);
+        SanPham sp = sanPhamDAO.findById(dto.getMaSP());
+        entity.setSanPham(sp);
+        donViTinhDAO.update(entity); // Use update (merge) instead of create to handle soft-deleted DVTs
         return true;
     }
 
@@ -169,5 +168,16 @@ public class SanPhamService {
 
     public boolean deleteMaVach(String maVach) {
         return maVachSanPhamDAO.delete(maVach);
+    }
+
+    public List<MaVachSanPhamDTO> getMaVachByMaSP(String maSP) {
+        return maVachSanPhamDAO.getMaVachTheoMaSP(maSP)
+                .stream()
+                .map(code -> new MaVachSanPhamDTO(code.getMaVach(), maSP))
+                .collect(Collectors.toList());
+    }
+
+    public boolean xoaMaVachTheoMaSP(String maSP) {
+        return maVachSanPhamDAO.xoaMaVachTheoMaSP(maSP);
     }
 }

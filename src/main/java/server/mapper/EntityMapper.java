@@ -60,7 +60,7 @@ public class EntityMapper {
                 .ten(entity.getTen())
                 .sdt(entity.getSdt())
                 .diemTichLuy(entity.getDiemTichLuy())
-                .daXoa(entity.isDaXoa())
+                .daXoa(Boolean.TRUE.equals(entity.getDaXoa()))
                 .build();
     }
 
@@ -88,10 +88,10 @@ public class EntityMapper {
                 .ten(entity.getTen())
                 .sdt(entity.getSdt())
                 .cccd(entity.getCccd())
-                .gioiTinh(entity.isGioiTinh())
+                .gioiTinh(Boolean.TRUE.equals(entity.getGioiTinh()))
                 .ngaySinh(entity.getNgaySinh())
                 .diaChi(entity.getDiaChi())
-                .nghiViec(entity.isNghiViec())
+                .nghiViec(Boolean.TRUE.equals(entity.getNghiViec()))
                 .build();
     }
 
@@ -102,12 +102,12 @@ public class EntityMapper {
         return TaiKhoanDTO.builder()
                 .maNV(entity.getMaNV())
                 .matKhau(entity.getMatKhau())
-                .quanLy(entity.isQuanLy())
-                .biKhoa(entity.isBiKhoa())
+                .quanLy(Boolean.TRUE.equals(entity.getQuanLy()))
+                .biKhoa(Boolean.TRUE.equals(entity.getBiKhoa()))
                 .email(entity.getEmail())
                 .ngayTao(entity.getNgayTao())
-                .daXoa(entity.isDaXoa())
-                .quanLyLo(entity.isQuanLyLo())
+                .daXoa(Boolean.TRUE.equals(entity.getDaXoa()))
+                .quanLyLo(Boolean.TRUE.equals(entity.getQuanLyLo()))
                 .build();
     }
 
@@ -154,7 +154,7 @@ public class EntityMapper {
                         ? entity.getLoaiSanPham().name() : null)
                 .tonToiThieu(entity.getTonToiThieu())
                 .tonToiDa(entity.getTonToiDa())
-                .daXoa(entity.isDaXoa())
+                .daXoa(Boolean.TRUE.equals(entity.getDaXoa()))
                 .build();
     }
 
@@ -182,8 +182,8 @@ public class EntityMapper {
                 .tenDonViTinh(entity.getTenDonViTinh())
                 .heSoQuyDoi(entity.getHeSoQuyDoi())
                 .giaBanTheoDonVi(entity.getGiaBanTheoDonVi())
-                .donViTinhCoBan(entity.isDonViTinhCoBan())
-                .daXoa(entity.isDaXoa())
+                .donViTinhCoBan(Boolean.TRUE.equals(entity.getDonViTinhCoBan()))
+                .daXoa(Boolean.TRUE.equals(entity.getDaXoa()))
                 .build();
     }
 
@@ -225,7 +225,7 @@ public class EntityMapper {
                 .soLuong(entity.getSoLuong())
                 .ngaySanXuat(entity.getNgaySanXuat())
                 .ngayHetHan(entity.getNgayHetHan())
-                .daHuy(entity.isDaHuy())
+                .daHuy(Boolean.TRUE.equals(entity.getDaHuy()))
                 .build();
     }
 
@@ -250,7 +250,7 @@ public class EntityMapper {
                 .diaChi(entity.getDiaChi())
                 .sdt(entity.getSdt())
                 .email(entity.getEmail())
-                .daXoa(entity.isDaXoa())
+                .daXoa(Boolean.TRUE.equals(entity.getDaXoa()))
                 .build();
     }
 
@@ -298,7 +298,7 @@ public class EntityMapper {
                 .soLuongToiThieu(entity.getSoLuongToiThieu())
                 .soLuongToiDa(entity.getSoLuongToiDa())
                 .ngayChinhSua(entity.getNgayChinhSua())
-                .daXoa(entity.isDaXoa())
+                .daXoa(Boolean.TRUE.equals(entity.getDaXoa()))
                 .build();
     }
 
@@ -318,13 +318,32 @@ public class EntityMapper {
     //  HoaDon
     // ============================================================
     public static HoaDonDTO toDTO(HoaDon entity) {
+        String tenKH = "Khách lẻ";
+        if (entity.getKhachHang() != null) {
+            String hoTenDem = entity.getKhachHang().getHoTenDem();
+            String ten = entity.getKhachHang().getTen();
+            tenKH = (hoTenDem != null ? hoTenDem : "") + " " + (ten != null ? ten : "");
+            tenKH = tenKH.trim();
+            if (tenKH.isEmpty()) {
+                tenKH = "Khách lẻ";
+            }
+        }
+        String tenNV = "Không xác định";
+        if (entity.getNhanVien() != null) {
+            String hoTenDem = entity.getNhanVien().getHoTenDem();
+            String ten = entity.getNhanVien().getTen();
+            tenNV = (hoTenDem != null ? hoTenDem : "") + " " + (ten != null ? ten : "");
+            tenNV = tenNV.trim();
+        }
         return HoaDonDTO.builder()
                 .maHoaDon(entity.getMaHoaDon())
                 .maNV(entity.getNhanVien() != null ? entity.getNhanVien().getMaNV() : null)
                 .maKH(entity.getKhachHang() != null ? entity.getKhachHang().getMaKH() : null)
                 .ngayLapHoaDon(entity.getNgayLapHoaDon())
-                .chuyenKhoan(entity.isChuyenKhoan())
+                .chuyenKhoan(Boolean.TRUE.equals(entity.getChuyenKhoan()))
                 .tongTien(entity.getTongTien())
+                .tenKH(tenKH)
+                .tenNV(tenNV)
                 .build();
     }
 
@@ -332,6 +351,14 @@ public class EntityMapper {
     //  ChiTietHoaDon
     // ============================================================
     public static ChiTietHoaDonDTO toDTO(ChiTietHoaDon entity) {
+        String tenSP = "";
+        String tenDVT = "";
+        if (entity.getDonViTinh() != null) {
+            tenDVT = entity.getDonViTinh().getTenDonViTinh();
+            if (entity.getDonViTinh().getSanPham() != null) {
+                tenSP = entity.getDonViTinh().getSanPham().getTen();
+            }
+        }
         return ChiTietHoaDonDTO.builder()
                 .maChiTietHoaDon(entity.getMaChiTietHoaDon())
                 .maHoaDon(entity.getHoaDon() != null ? entity.getHoaDon().getMaHoaDon() : null)
@@ -340,6 +367,8 @@ public class EntityMapper {
                 .donGia(entity.getDonGia())
                 .giamGia(entity.getGiamGia())
                 .thanhTien(entity.getThanhTien())
+                .tenSP(tenSP)
+                .tenDVT(tenDVT)
                 .build();
     }
 

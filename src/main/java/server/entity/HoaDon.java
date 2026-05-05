@@ -30,7 +30,7 @@ public class HoaDon {
     private LocalDateTime ngayLapHoaDon;
 
     @Column(name = "chuyen_khoan")
-    private boolean chuyenKhoan;
+    private Boolean chuyenKhoan;
 
     @Column(name = "tong_tien")
     private double tongTien;

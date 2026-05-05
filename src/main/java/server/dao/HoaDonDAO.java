@@ -22,10 +22,12 @@ public class HoaDonDAO extends AbstractGenericDaoImpl<HoaDon, String> {
     /** Lấy hóa đơn mới nhất trong ngày hôm nay. */
     public HoaDon getHoaDonMoiNhatTrongNgay() {
         return doInTransaction(em -> {
+            LocalDate today = LocalDate.now();
             List<HoaDon> result = em.createQuery(
-                "SELECT hd FROM HoaDon hd WHERE FUNCTION('DATE', hd.ngayLapHoaDon) = :today ORDER BY hd.maHoaDon DESC",
+                "SELECT hd FROM HoaDon hd WHERE hd.ngayLapHoaDon >= :start AND hd.ngayLapHoaDon < :end ORDER BY hd.maHoaDon DESC",
                 HoaDon.class)
-                .setParameter("today", LocalDate.now())
+                .setParameter("start", today.atStartOfDay())
+                .setParameter("end", today.plusDays(1).atStartOfDay())
                 .setMaxResults(1)
                 .getResultList();
             return result.isEmpty() ? null : result.get(0);
@@ -59,8 +61,9 @@ public class HoaDonDAO extends AbstractGenericDaoImpl<HoaDon, String> {
     public List<HoaDon> timHDTheoNgayLap(LocalDate date) {
         return doInTransaction(em ->
             em.createQuery(
-                "SELECT hd FROM HoaDon hd WHERE FUNCTION('DATE', hd.ngayLapHoaDon) = :ngay", HoaDon.class)
-              .setParameter("ngay", date)
+                "SELECT hd FROM HoaDon hd WHERE hd.ngayLapHoaDon >= :start AND hd.ngayLapHoaDon < :end", HoaDon.class)
+              .setParameter("start", date.atStartOfDay())
+              .setParameter("end", date.plusDays(1).atStartOfDay())
               .getResultList()
         );
     }
@@ -69,10 +72,10 @@ public class HoaDonDAO extends AbstractGenericDaoImpl<HoaDon, String> {
     public List<HoaDon> timHDTheoKhoangNgay(LocalDate startDate, LocalDate endDate) {
         return doInTransaction(em ->
             em.createQuery(
-                "SELECT hd FROM HoaDon hd WHERE FUNCTION('DATE', hd.ngayLapHoaDon) BETWEEN :start AND :end",
+                "SELECT hd FROM HoaDon hd WHERE hd.ngayLapHoaDon >= :start AND hd.ngayLapHoaDon < :end",
                 HoaDon.class)
-              .setParameter("start", startDate)
-              .setParameter("end", endDate)
+              .setParameter("start", startDate.atStartOfDay())
+              .setParameter("end", endDate.plusDays(1).atStartOfDay())
               .getResultList()
         );
     }

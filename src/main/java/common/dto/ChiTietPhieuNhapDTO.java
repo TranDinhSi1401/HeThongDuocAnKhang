@@ -16,4 +16,7 @@ public class ChiTietPhieuNhapDTO implements Serializable {
     private double donGia;
     private double thanhTien;
     private String ghiChu;
+    // Trường hiển thị
+    private String tenSP;
+    private String tenNCC;
 }

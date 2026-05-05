@@ -30,6 +30,7 @@ public enum CommandType implements Serializable {
     ADD_SAN_PHAM,
     SUA_SAN_PHAM,
     XOA_SAN_PHAM,
+    GET_SP_SAP_HET_HANG,
     GET_SP_BAN_CHAY_THANG,
     GET_SP_BAN_CHAY_NAM,
     GET_CHI_TIET_SP,
@@ -41,10 +42,14 @@ public enum CommandType implements Serializable {
     SUA_DON_VI_TINH,
     XOA_DON_VI_TINH,
     XOA_DVT_BY_MA_SP,
+    GET_DVT_BY_MA,
 
     // ===== MaVachSanPham =====
     ADD_MA_VACH,
     DELETE_MA_VACH,
+    GET_MA_VACH_BY_MA_SP,
+    GET_ALL_MA_VACH,
+    XOA_HET_MA_VACH_BY_MA_SP,
 
     // ===== KhachHang =====
     GET_ALL_KHACH_HANG,
@@ -57,6 +62,7 @@ public enum CommandType implements Serializable {
     XOA_KHACH_HANG,
     UPDATE_DIEM_TICH_LUY,
     TRU_DIEM_TICH_LUY,
+    SEARCH_KHACH_HANG_BY_SDT,
 
     // ===== NhanVien =====
     GET_ALL_NHAN_VIEN,
@@ -93,22 +99,31 @@ public enum CommandType implements Serializable {
     GET_SO_PTH,
     GET_TONG_TIEN_CAC_PTH,
     ADD_HOA_DON,
+    GET_ALL_HOA_DON,
     GET_DOANH_THU_NGAY,
     GET_DOANH_THU_THANG,
     GET_DOANH_THU_TUNG_NGAY,
     GET_DOANH_THU_TUNG_THANG,
+    GET_DOANH_THU_TUNG_NGAY_TRONG_KHOANG,
+    GET_DOANH_THU_TUNG_NAM_TRONG_KHOANG,
     GET_NAM_HOA_DON,
+    GET_HD_BY_NGAY_LAP,
 
     // ===== ChiTietHoaDon =====
     GET_CTHD_BY_MA_HD,
+    GET_CTHD_DA_TRU_PTH_BY_MA_HD,
+    GET_CTHD_BY_MA,
+    GET_CTHD_DA_TUNG_TRA_ROI_BY_MA,
     ADD_CHI_TIET_HOA_DON,
     XOA_CTHD_BY_MA_HD,
+    GET_CTHD_MOI_NHAT_TRONG_NGAY,
 
     // ===== ChiTietXuatLo =====
     ADD_CHI_TIET_XUAT_LO,
     GET_CTXL_BY_MA_CTHD,
 
     // ===== LoSanPham =====
+    GET_ALL_LO_SAN_PHAM,
     GET_LO_BY_MA_SP,
     GET_LO_BY_MA,
     GET_LO_BY_MA_CTHD,
@@ -120,9 +135,13 @@ public enum CommandType implements Serializable {
     TRU_SO_LUONG_LO,
     CONG_SO_LUONG_LO,
     CAP_NHAT_SO_LUONG_LO,
+    UPDATE_LO_SAN_PHAM,
     HUY_LO_SAN_PHAM,
+    DELETE_LO_SAN_PHAM,
+    GET_LO_SAP_HET_HAN,
 
     // ===== LichSuLo =====
+    GET_ALL_LICH_SU_LO,
     GET_LICH_SU_LO_BY_MA_LO,
     ADD_LICH_SU_LO,
 
@@ -141,23 +160,44 @@ public enum CommandType implements Serializable {
     GET_SPCC_BY_MA_SP,
     ADD_SAN_PHAM_CUNG_CAP,
     DELETE_SAN_PHAM_CUNG_CAP,
+    XOA_HET_SPCC_BY_MA_SP,
 
     // ===== KhuyenMai =====
     GET_ALL_KHUYEN_MAI,
+    GET_KHUYEN_MAI_BY_MA,
     GET_KHUYEN_MAI_DANG_HOAT_DONG,
     GET_MA_KM_CUOI,
     ADD_KHUYEN_MAI,
     SUA_KHUYEN_MAI,
     XOA_KHUYEN_MAI,
+    GET_KHUYEN_MAI_BY_MA_SP,
+    GET_KHUYEN_MAI_BY_MOTA,
+    GET_KHUYEN_MAI_BY_LOAI,
 
     // ===== KhuyenMaiSanPham =====
     GET_KMSP_BY_MA_KM,
     GET_KMSP_BY_MA_SP,
     ADD_KHUYEN_MAI_SAN_PHAM,
     DELETE_KHUYEN_MAI_SAN_PHAM,
+    XOA_HET_KMSP_BY_MA_SP,
+
+    // ===== PhieuDatHang =====
+    GET_ALL_PHIEU_DAT_HANG,
+    GET_PHIEU_DAT_BY_MA,
+    GET_PHIEU_DAT_BY_MA_NCC,
+    GET_PHIEU_DAT_BY_MA_NV,
+    GET_PHIEU_DAT_BY_NGAY,
+    ADD_PHIEU_DAT_HANG,
+
+    // ===== ChiTietPhieuDatHang =====
+    GET_CT_PHIEU_DAT_BY_MA_PDH,
+    ADD_CHI_TIET_PHIEU_DAT_HANG,
 
     // ===== PhieuNhap =====
     GET_PHIEU_NHAP_BY_MA,
+    GET_PN_BY_MA_NV,
+    GET_PN_BY_NGAY,
+    GET_PN_BY_KHOANG_NGAY,
     GET_ALL_PHIEU_NHAP,
     GET_SO_PN_CUOI,
     ADD_PHIEU_NHAP,
@@ -169,12 +209,21 @@ public enum CommandType implements Serializable {
     // ===== PhieuTraHang =====
     GET_PTH_BY_MA_HD,
     GET_PTH_BY_MA,
+    GET_PTH_BY_MA_NV,
+    GET_PTH_BY_NGAY,
+    GET_PTH_CUOI_CUNG,
+    GET_ALL_PHIEU_TRA_HANG,
     ADD_PHIEU_TRA_HANG,
     GET_SO_PTH_CUOI,
 
     // ===== ChiTietPhieuTraHang =====
     GET_CTPTH_BY_MA_PTH,
     ADD_CHI_TIET_PHIEU_TRA_HANG,
+    GET_SO_LUONG_PHIEU_TRA_BY_MA_HD,
+    GET_TONG_TIEN_TRA_BY_MA_HD,
+    GET_CTHD_CHUA_TRA_BY_MA_HD,
+    GENERATE_MA_PHIEU_TRA_HANG,
+    ADD_PHIEU_TRA_HANG_FULL,
 
     // ===== CaLam =====
     GET_ALL_CA_LAM,
@@ -184,9 +233,11 @@ public enum CommandType implements Serializable {
     XOA_CA_LAM,
 
     // ===== LichSuCaLam =====
+    GET_ALL_LICH_SU_CA_LAM,
     GET_LSCL_BY_MA_NV,
     GET_LSCL_BY_NGAY,
     GET_LSCL_DANG_LAM_BY_MA_NV,
     ADD_LICH_SU_CA_LAM,
-    UPDATE_LICH_SU_CA_LAM
+    UPDATE_LICH_SU_CA_LAM,
+
 }

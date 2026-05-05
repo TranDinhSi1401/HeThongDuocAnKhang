@@ -23,6 +23,18 @@ public class PhieuService {
         return pn != null ? EntityMapper.toDTO(pn) : null;
     }
 
+    public List<PhieuNhapDTO> getPNTheoMaNV(String maNV) {
+        return phieuNhapDAO.timPNTheoMaNV(maNV).stream().map(EntityMapper::toDTO).collect(Collectors.toList());
+    }
+
+    public List<PhieuNhapDTO> getPNTheoNgay(java.time.LocalDate ngay) {
+        return phieuNhapDAO.timPNTheoNgay(ngay).stream().map(EntityMapper::toDTO).collect(Collectors.toList());
+    }
+
+    public List<PhieuNhapDTO> getPNTheoKhoangNgay(java.time.LocalDate start, java.time.LocalDate end) {
+        return phieuNhapDAO.timPNTheoKhoangNgay(start, end).stream().map(EntityMapper::toDTO).collect(Collectors.toList());
+    }
+
     public List<PhieuNhapDTO> getAllPhieuNhap() {
         return phieuNhapDAO.loadAll().stream().map(EntityMapper::toDTO).collect(Collectors.toList());
     }
@@ -66,6 +78,18 @@ public class PhieuService {
 
     public List<PhieuTraHangDTO> getPTHTheoMaHD(String maHD) {
         return phieuTraHangDAO.getPhieuTraHangTheoMaHoaDon(maHD).stream().map(EntityMapper::toDTO).collect(Collectors.toList());
+    }
+
+    public List<PhieuTraHangDTO> getPTHTheoMaNV(String maNV) {
+        return phieuTraHangDAO.timPTHTheoMaNV(maNV).stream().map(EntityMapper::toDTO).collect(Collectors.toList());
+    }
+
+    public List<PhieuTraHangDTO> getPTHTheoNgay(java.time.LocalDate ngay) {
+        return phieuTraHangDAO.timPTHTheoNgay(ngay).stream().map(EntityMapper::toDTO).collect(Collectors.toList());
+    }
+
+    public List<PhieuTraHangDTO> getAllPhieuTraHang() {
+        return phieuTraHangDAO.loadAll().stream().map(EntityMapper::toDTO).collect(Collectors.toList());
     }
 
     public int getSoPhieuTraHangCuoiCung() { return phieuTraHangDAO.getSoPhieuTraHangCuoiCung(); }

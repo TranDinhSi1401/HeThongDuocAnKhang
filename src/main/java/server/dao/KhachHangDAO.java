@@ -16,7 +16,7 @@ public class KhachHangDAO extends AbstractGenericDaoImpl<KhachHang, String> {
     /** Lấy tất cả khách hàng chưa bị xóa. */
     public List<KhachHang> getAllKhachHang() {
         return doInTransaction(em ->
-            em.createQuery("SELECT kh FROM KhachHang kh WHERE kh.daXoa = false", KhachHang.class)
+            em.createQuery("SELECT kh FROM KhachHang kh WHERE (kh.daXoa = false OR kh.daXoa IS NULL)", KhachHang.class)
               .getResultList()
         );
     }
@@ -25,7 +25,7 @@ public class KhachHangDAO extends AbstractGenericDaoImpl<KhachHang, String> {
     public KhachHang getKhachHangTheoSdt(String sdt) {
         return doInTransaction(em -> {
             List<KhachHang> result = em.createQuery(
-                "SELECT kh FROM KhachHang kh WHERE kh.sdt = :sdt AND kh.daXoa = false", KhachHang.class)
+                "SELECT kh FROM KhachHang kh WHERE kh.sdt = :sdt AND (kh.daXoa = false OR kh.daXoa IS NULL)", KhachHang.class)
                 .setParameter("sdt", sdt)
                 .getResultList();
             return result.isEmpty() ? null : result.get(0);
@@ -36,7 +36,7 @@ public class KhachHangDAO extends AbstractGenericDaoImpl<KhachHang, String> {
     public KhachHang timKHTheoMa(String ma) {
         return doInTransaction(em -> {
             List<KhachHang> result = em.createQuery(
-                "SELECT kh FROM KhachHang kh WHERE kh.maKH = :ma AND kh.daXoa = false", KhachHang.class)
+                "SELECT kh FROM KhachHang kh WHERE kh.maKH = :ma AND (kh.daXoa = false OR kh.daXoa IS NULL)", KhachHang.class)
                 .setParameter("ma", ma)
                 .getResultList();
             return result.isEmpty() ? null : result.get(0);
@@ -72,7 +72,7 @@ public class KhachHangDAO extends AbstractGenericDaoImpl<KhachHang, String> {
     public boolean updateDiemTichLuy(int diem, String maKH) {
         return doInTransaction(em -> {
             int rows = em.createQuery(
-                "UPDATE KhachHang kh SET kh.diemTichLuy = kh.diemTichLuy + :diem WHERE kh.maKH = :ma AND kh.daXoa = false")
+                "UPDATE KhachHang kh SET kh.diemTichLuy = kh.diemTichLuy + :diem WHERE kh.maKH = :ma")
                 .setParameter("diem", diem)
                 .setParameter("ma", maKH)
                 .executeUpdate();
@@ -84,7 +84,7 @@ public class KhachHangDAO extends AbstractGenericDaoImpl<KhachHang, String> {
     public boolean truDiemTichLuy(int diem, String maKH) {
         return doInTransaction(em -> {
             int rows = em.createQuery(
-                "UPDATE KhachHang kh SET kh.diemTichLuy = kh.diemTichLuy - :diem WHERE kh.maKH = :ma AND kh.daXoa = false")
+                "UPDATE KhachHang kh SET kh.diemTichLuy = kh.diemTichLuy - :diem WHERE kh.maKH = :ma")
                 .setParameter("diem", diem)
                 .setParameter("ma", maKH)
                 .executeUpdate();
@@ -96,18 +96,18 @@ public class KhachHangDAO extends AbstractGenericDaoImpl<KhachHang, String> {
     public List<KhachHang> timKHTheoTen(String tenKH) {
         return doInTransaction(em ->
             em.createQuery(
-                "SELECT kh FROM KhachHang kh WHERE CONCAT(kh.hoTenDem, ' ', kh.ten) LIKE :ten AND kh.daXoa = false",
+                "SELECT kh FROM KhachHang kh WHERE CONCAT(kh.hoTenDem, ' ', kh.ten) LIKE :ten AND (kh.daXoa = false OR kh.daXoa IS NULL)",
                 KhachHang.class)
               .setParameter("ten", "%" + tenKH + "%")
               .getResultList()
         );
     }
 
-    /** Tìm khách hàng theo SĐT (danh sách, chưa bị xóa). */
+    /** Tìm khách hàng theo SĐT (danh sách, LIKE, chưa bị xóa). */
     public List<KhachHang> timKHTheoSDT(String sdtKH) {
         return doInTransaction(em ->
-            em.createQuery("SELECT kh FROM KhachHang kh WHERE kh.sdt = :sdt AND kh.daXoa = false", KhachHang.class)
-              .setParameter("sdt", sdtKH)
+            em.createQuery("SELECT kh FROM KhachHang kh WHERE kh.sdt LIKE :sdt AND (kh.daXoa = false OR kh.daXoa IS NULL)", KhachHang.class)
+              .setParameter("sdt", "%" + sdtKH + "%")
               .getResultList()
         );
     }

@@ -1,18 +1,13 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package common.utils;
-import java.security.SecureRandom;
 
 import client.socket.SocketClient;
 import common.network.CommandType;
 import common.network.Request;
+import java.security.SecureRandom;
+
 import org.mindrot.jbcrypt.BCrypt;
-/**
- *
- * @author trand
- */
+import java.security.SecureRandom;
+
 public class PasswordUtil {
     private static final String LOWER = "abcdefghijklmnopqrstuvwxyz";
     private static final String UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -25,18 +20,15 @@ public class PasswordUtil {
     public static String generateTempPassword() {
         StringBuilder password = new StringBuilder();
 
-        // đảm bảo có ít nhất 1 ký tự của mỗi loại
         password.append(LOWER.charAt(random.nextInt(LOWER.length())));
         password.append(UPPER.charAt(random.nextInt(UPPER.length())));
         password.append(DIGITS.charAt(random.nextInt(DIGITS.length())));
         password.append(SPECIAL.charAt(random.nextInt(SPECIAL.length())));
 
-        // sinh thêm cho đủ độ dài 8
         for (int i = 4; i < 8; i++) {
             password.append(ALL.charAt(random.nextInt(ALL.length())));
         }
 
-        // xáo trộn vị trí các ký tự để tránh dự đoán
         return shuffleString(password.toString());
     }
 
@@ -52,14 +44,13 @@ public class PasswordUtil {
     }
     
     public static String hashPassword(String plainPassword) {
-        String salt = BCrypt.gensalt(12); // 12 là cost factor (độ mạnh)
+        String salt = BCrypt.gensalt(12);
         return BCrypt.hashpw(plainPassword, salt);
     }
     
     public static boolean checkPassword(String plainPassword, String hashedPassword) {
         return BCrypt.checkpw(plainPassword, hashedPassword);
     }
-
     public static boolean quenMatKhau(String taiKhoan, String email) {
         // Sinh mật khẩu mới
         String newPassword = PasswordUtil.generateTempPassword();
