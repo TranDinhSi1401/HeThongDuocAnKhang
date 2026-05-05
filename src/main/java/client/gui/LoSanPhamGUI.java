@@ -17,6 +17,7 @@ import org.apache.poi.ss.usermodel.DateUtil;
 import java.io.File;
 import java.io.FileInputStream;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -117,7 +118,7 @@ public class LoSanPhamGUI extends javax.swing.JPanel {
 
             // truyền dữ liệu để hiển thị
             tblLoSanPham.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
-                if (e.getValueIsAdjusting()) {
+                if (!e.getValueIsAdjusting()) {
                     int x1 = tblLoSanPham.getSelectedRow();
                     if (x1 >= 0) {
                         String maSP = tblLoSanPham.getValueAt(x1, 0).toString();
@@ -131,6 +132,7 @@ public class LoSanPhamGUI extends javax.swing.JPanel {
                         txtMaLo.setText(maLO);
                         txtDonViTinh.setText(donVi);
                         txtSoLuong.setText(sl);
+                        txtNhaCungCap.setText("");
 
                         try {
                             Response res = SocketClient.getInstance().sendRequest(
@@ -1734,7 +1736,7 @@ public class LoSanPhamGUI extends javax.swing.JPanel {
                         Object[] row = new Object[] {
                                 i.getMaLoSanPham(),
                                 tenSanPham,
-                                i.getThoiGian(),
+                                formatLocalDateTime(i.getThoiGian()),
                                 i.getHanhDong(),
                                 i.getSoLuongSau(),
                                 i.getGhiChu(),
@@ -2106,6 +2108,10 @@ public class LoSanPhamGUI extends javax.swing.JPanel {
 
     private String formatLocalDate(LocalDate date) {
         return date == null ? "" : date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+    }
+
+    private String formatLocalDateTime(LocalDateTime dateTime) {
+        return dateTime == null ? "" : dateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
     }
 
     private Object[] dtoToSearchRow(LoSanPhamDTO lo) {

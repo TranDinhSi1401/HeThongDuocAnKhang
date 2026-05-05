@@ -22,6 +22,8 @@ public class LoSanPhamDAO extends AbstractGenericDaoImpl<LoSanPham, String> {
                 "SELECT DISTINCT lsp FROM LoSanPham lsp " +
                 "LEFT JOIN FETCH lsp.sanPham sp " +
                 "LEFT JOIN FETCH sp.donViTinhs " +
+                "LEFT JOIN FETCH sp.sanPhamCungCaps spcc " +
+                "LEFT JOIN FETCH spcc.nhaCungCap " +
                 "LEFT JOIN FETCH lsp.chiTietPhieuNhaps " +
                 "ORDER BY lsp.ngayHetHan ASC",
                 LoSanPham.class)
@@ -36,6 +38,8 @@ public class LoSanPhamDAO extends AbstractGenericDaoImpl<LoSanPham, String> {
                 "SELECT DISTINCT lsp FROM LoSanPham lsp " +
                 "LEFT JOIN FETCH lsp.sanPham sp " +
                 "LEFT JOIN FETCH sp.donViTinhs " +
+                "LEFT JOIN FETCH sp.sanPhamCungCaps spcc " +
+                "LEFT JOIN FETCH spcc.nhaCungCap " +
                 "LEFT JOIN FETCH lsp.chiTietPhieuNhaps " +
                 "WHERE lsp.daHuy = false ORDER BY lsp.ngayHetHan ASC",
                 LoSanPham.class)
@@ -66,7 +70,10 @@ public class LoSanPhamDAO extends AbstractGenericDaoImpl<LoSanPham, String> {
                 "SELECT DISTINCT lsp FROM LoSanPham lsp " +
                 "LEFT JOIN FETCH lsp.sanPham sp " +
                 "LEFT JOIN FETCH sp.donViTinhs " +
-                "LEFT JOIN FETCH lsp.chiTietPhieuNhaps " +
+                "LEFT JOIN FETCH sp.sanPhamCungCaps spcc " +
+                "LEFT JOIN FETCH spcc.nhaCungCap " +
+                "LEFT JOIN FETCH lsp.chiTietPhieuNhaps ctpn " +
+                "LEFT JOIN FETCH ctpn.nhaCungCap " +
                 "WHERE lsp.maLoSanPham = :maLo",
                 LoSanPham.class)
               .setParameter("maLo", maLo)

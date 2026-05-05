@@ -7,6 +7,7 @@ import common.dto.LichSuLoDTO;
 import common.dto.LoSanPhamDTO;
 import server.dao.LichSuLoDAO;
 import server.dao.LoSanPhamDAO;
+import server.dao.SanPhamDAO;
 import server.entity.LichSuLo;
 import server.entity.LoSanPham;
 import server.entity.NhanVien;
@@ -20,6 +21,7 @@ public class LoSanPhamService {
 
     private final LoSanPhamDAO loSanPhamDAO = new LoSanPhamDAO();
     private final LichSuLoDAO lichSuLoDAO = new LichSuLoDAO();
+    private final SanPhamDAO sanPhamDAO = new SanPhamDAO();
 
     public List<LoSanPhamDTO> getLoSanPhamTheoMaSP(String maSP) {
         return loSanPhamDAO.getLoSanPhamTheoMaSP(maSP)
@@ -66,10 +68,27 @@ public class LoSanPhamService {
     }
 
     public boolean addLoSanPham(LoSanPhamDTO dto) {
+        // Bước 1: Tìm sản phẩm trực tiếp bằng mã sản phẩm gốc (vd: SP-0001)
+        SanPham sp = sanPhamDAO.findById(dto.getMaSP());
+
+        // Bước 2: Nếu không tìm thấy, thử coi giá trị đó là mã vạch và tra cứu
+        if (sp == null) {
+            String maGoc = sanPhamDAO.getMaSpTheoMaVach(dto.getMaSP());
+            if (maGoc != null) {
+                sp = sanPhamDAO.findById(maGoc);
+            }
+        }
+
+        // Bước 3: Vẫn không tìm thấy → báo lỗi rõ ràng
+        if (sp == null) {
+            throw new RuntimeException(
+                "Không tìm thấy sản phẩm với mã hoặc mã vạch: " + dto.getMaSP());
+        }
+
+        // Chuyển DTO thành entity và gán sản phẩm đã tìm được
         LoSanPham entity = EntityMapper.toEntity(dto);
-        SanPham sp = new SanPham();
-        sp.setMaSP(dto.getMaSP());
         entity.setSanPham(sp);
+
         loSanPhamDAO.create(entity);
         return true;
     }

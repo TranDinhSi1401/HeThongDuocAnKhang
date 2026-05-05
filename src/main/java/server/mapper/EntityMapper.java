@@ -286,6 +286,7 @@ public class EntityMapper {
                         }
                 }
 
+                // Ưu tiên lấy NCC từ ChiTietPhieuNhap (lô nhập qua phiếu nhập chính thức)
                 if (entity.getChiTietPhieuNhaps() != null && !entity.getChiTietPhieuNhaps().isEmpty()) {
                         for (ChiTietPhieuNhap chiTietPhieuNhap : entity.getChiTietPhieuNhaps()) {
                                 if (chiTietPhieuNhap.getNhaCungCap() != null) {
@@ -293,6 +294,21 @@ public class EntityMapper {
                                 }
                                 giaNhap = chiTietPhieuNhap.getDonGia();
                                 break;
+                        }
+                }
+
+                // Fallback: lô nhập thủ công (từ Excel) chưa có phiếu nhập → lấy NCC từ SanPhamCungCap
+                if (tenNhaCungCap == null && entity.getSanPham() != null
+                        && entity.getSanPham().getSanPhamCungCaps() != null
+                        && !entity.getSanPham().getSanPhamCungCaps().isEmpty()) {
+                        for (SanPhamCungCap spcc : entity.getSanPham().getSanPhamCungCaps()) {
+                                if (spcc.getNhaCungCap() != null) {
+                                        tenNhaCungCap = spcc.getNhaCungCap().getTenNCC();
+                                        if (giaNhap == 0D) {
+                                                giaNhap = spcc.getGiaNhap();
+                                        }
+                                        break;
+                                }
                         }
                 }
 
