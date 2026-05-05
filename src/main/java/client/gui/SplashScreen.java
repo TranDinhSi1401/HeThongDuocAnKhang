@@ -46,13 +46,7 @@ public class SplashScreen extends JWindow {
         int y = (screen.height - height) / 2;
         setBounds(x, y, width, height);
 
-        ImageIcon icon = null;
-        try {
-            java.net.URL imgUrl = getClass().getResource("/images/logo.png");
-            if (imgUrl != null)
-                icon = new ImageIcon(imgUrl);
-        } catch (Exception ex) {
-        }
+        ImageIcon icon = loadLogoIcon();
 
         JLabel imageLabel = new JLabel();
         if (icon != null) {
@@ -96,14 +90,7 @@ public class SplashScreen extends JWindow {
         int y = (screen.height - height) / 2;
         setBounds(x, y, width, height);
 
-        ImageIcon icon = null;
-        try {
-            java.net.URL imgUrl = getClass().getResource("/images/logo.png");
-            if (imgUrl != null)
-                icon = new ImageIcon(imgUrl);
-        } catch (Exception ex) {
-            // ignore
-        }
+        ImageIcon icon = loadLogoIcon();
 
         JLabel imageLabel = new JLabel();
         if (icon != null) {
@@ -165,6 +152,11 @@ public class SplashScreen extends JWindow {
             });
             worker.execute();
         }
+    }
+
+    private ImageIcon loadLogoIcon() {
+        java.net.URL imgUrl = getClass().getResource("/images/logo.png");
+        return imgUrl != null ? new ImageIcon(imgUrl) : null;
     }
 
 }

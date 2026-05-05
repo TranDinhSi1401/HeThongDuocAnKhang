@@ -6,7 +6,7 @@ import java.io.Serializable;
  * Danh sách các lệnh (Command) mà Client có thể gửi lên Server.
  * Cả hai phía đều dùng chung enum này.
  *
- * Quy ước đặt tên:  ĐỘNG_TỪ + _ + ĐỐI_TƯỢNG
+ * Quy ước đặt tên: ĐỘNG_TỪ + _ + ĐỐI_TƯỢNG
  * Ví dụ: GET_ALL_SAN_PHAM, ADD_HOA_DON, v.v.
  */
 public enum CommandType implements Serializable {
@@ -16,7 +16,8 @@ public enum CommandType implements Serializable {
     GET_DOANH_THU_TUNG_QUY_TRONG_NAM,
     GET_DOANH_THU_TUNG_NAM_THEO_KHOANG,
     // ===== Auth =====
-    LOGIN,                    // data = Object[]{ tenDangNhap, plainPassword }     // data = Object[]{ maNV, email, newPlainPassword }
+    LOGIN, // data = Object[]{ tenDangNhap, plainPassword } // data = Object[]{ maNV,
+           // email, newPlainPassword }
     // ===== SanPham =====
     GET_ALL_SAN_PHAM,
     GET_SAN_PHAM_BY_MA,
@@ -123,13 +124,15 @@ public enum CommandType implements Serializable {
     GET_CTXL_BY_MA_CTHD,
 
     // ===== LoSanPham =====
-    GET_ALL_LO_SAN_PHAM,
     GET_LO_BY_MA_SP,
     GET_LO_BY_MA,
     GET_LO_BY_MA_CTHD,
     GET_LO_BY_MA_NCC,
     GET_DS_LO_BY_MA_SP,
     GET_DS_LO_DA_XUAT_BY_CTHD,
+    GET_ALL_LO_SAN_PHAM,
+    GET_ALL_LO_SAN_PHAM_KHONG_HUY,
+    GET_LO_SAN_PHAM_BY_MA,
     DEM_LO_THEO_TRANG_THAI,
     ADD_LO_SAN_PHAM,
     TRU_SO_LUONG_LO,
@@ -141,8 +144,8 @@ public enum CommandType implements Serializable {
     GET_LO_SAP_HET_HAN,
 
     // ===== LichSuLo =====
-    GET_ALL_LICH_SU_LO,
     GET_LICH_SU_LO_BY_MA_LO,
+    GET_ALL_LICH_SU_LO,
     ADD_LICH_SU_LO,
 
     // ===== NhaCungCap =====

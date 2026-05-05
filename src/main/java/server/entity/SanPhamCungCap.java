@@ -11,7 +11,7 @@ import lombok.*;
 @Builder
 @Entity
 @Table(name = "san_pham_cung_cap", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"ma_sp", "ma_ncc"})
+        @UniqueConstraint(columnNames = { "ma_sp", "ma_ncc" })
 })
 public class SanPhamCungCap {
     @Id
@@ -27,8 +27,8 @@ public class SanPhamCungCap {
     @JoinColumn(name = "ma_ncc")
     private NhaCungCap nhaCungCap;
 
-    @Column(name = "trang_thai_hop_tac")
-    private boolean trangThaiHopTac;
+    @Column(name = "trang_thai_hop_tac", nullable = false, columnDefinition = "BOOLEAN DEFAULT true")
+    private Boolean trangThaiHopTac;
 
     @Column(name = "gia_nhap")
     private double giaNhap;

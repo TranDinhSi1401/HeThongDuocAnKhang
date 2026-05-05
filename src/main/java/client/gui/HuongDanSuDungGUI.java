@@ -24,7 +24,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 
-public class HuongDanSuDungGUI extends javax.swing.JPanel {
+public class HuongDanSuDungGUI extends JPanel {
 
     private JTextField txtSearch;
     private DefaultListModel<String> topicModel;
@@ -381,7 +381,7 @@ public class HuongDanSuDungGUI extends javax.swing.JPanel {
             + "<li>✓ Cập nhật trạng thái thành \"Đã hủy\" trong hệ thống</li>"
             + "<li>✓ Liên hệ quản trị để xử lý tiêu hủy theo quy định</li>"
             + "</ul>"
-            + "p><b>Lô sắp hết hạn:</b></p>"
+            + "<p><b>Lô sắp hết hạn:</b></p>"
             + "<ul style='line-height:1.8;'>"
             + "<li>✓ Áp dụng quy tắc FEFO (First Expiry First Out – Hết hạn trước bán trước)</li>"
             + "<li>✓ Đẩy bán ưu tiên (có thể hạ giá hoặc khuyến mãi hợp lệ)</li>"
@@ -407,6 +407,17 @@ public class HuongDanSuDungGUI extends javax.swing.JPanel {
         htmlBaoCao = htmlBaoCao.replace("<h2>3.2. Xuất báo cáo doanh thu</h2>", "<h2>4. BÁO CÁO & THỐNG KÊ DOANH THU</h2>");
         contentMap.put("4. Báo cáo & Thống kê doanh thu", htmlBaoCao);
         
+        // Thêm kết luận
+//        String htmlKetLuan = "" 
+//            + "<html><body style='font-family: Segoe UI; font-size:13px; line-height:1.6; color:#222;'>" 
+//            + "<h2>Kết luận</h2>" 
+//            + "<ul>" 
+//            + "<li>Tài liệu dùng cho vận hành & đào tạo</li>" 
+//            + "<li>Viết rõ ràng, thực tế, dễ áp dụng</li>" 
+//            + "</ul>" 
+//            + "</body></html>";
+//        contentMap.put("Kết luận", htmlKetLuan);
+
         // Giữ nguyên thêm chủ đề phụ nếu cần
         contentMap.put("Thông báo lô hết hạn", htmlThongBao);
 

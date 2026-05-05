@@ -25,10 +25,10 @@ public class TaiKhoan {
     @Column(name = "mat_khau")
     private String matKhau;
 
-    @Column(name = "quan_ly")
+    @Column(name = "la_quan_ly", nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
     private Boolean quanLy;
 
-    @Column(name = "bi_khoa")
+    @Column(name = "bi_khoa", nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
     private Boolean biKhoa;
 
     @Column(name = "email")
@@ -37,9 +37,9 @@ public class TaiKhoan {
     @Column(name = "ngay_tao")
     private LocalDateTime ngayTao;
 
-    @Column(name = "da_xoa")
+    @Column(name = "da_xoa", nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
     private Boolean daXoa;
 
-    @Column(name = "quan_ly_lo")
+    @Column(name = "quan_ly_lo", nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
     private Boolean quanLyLo;
 }

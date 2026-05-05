@@ -44,7 +44,7 @@ public class KhuyenMai {
     @Column(name = "ngay_chinh_sua")
     private LocalDateTime ngayChinhSua;
 
-    @Column(name = "da_xoa")
+    @Column(name = "da_xoa", nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
     private Boolean daXoa;
 
     @OneToMany(mappedBy = "khuyenMai", cascade = CascadeType.ALL, orphanRemoval = true)

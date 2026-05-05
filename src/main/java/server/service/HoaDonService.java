@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -27,6 +28,7 @@ public class HoaDonService {
     private final ChiTietHoaDonDAO chiTietHoaDonDAO = new ChiTietHoaDonDAO();
     private final ChiTietXuatLoDAO chiTietXuatLoDAO = new ChiTietXuatLoDAO();
     private final KhachHangDAO khachHangDAO = new KhachHangDAO();
+    private final LichSuLoDAO lichSuLoDAO = new LichSuLoDAO();
     // ===== HoaDon =====
 
     public HoaDonDTO getHoaDonMoiNhatTrongNgay() {
@@ -174,149 +176,167 @@ public class HoaDonService {
     }
 
     public synchronized Object thanhToan(List<Map<String, Object>> dsSP, String maKH, boolean chuyenKhoan, double tongTien, TaiKhoanDTO taiKhoan, double tienKhachDua, double tienThua) throws Exception {
-            try {
-                Map<String, Integer> tongYeuCauTheoSP = new HashMap<>();
-                DonViTinhDAO donViTinhDAO = new DonViTinhDAO();
-                LoSanPhamDAO loSanPhamDAO = new LoSanPhamDAO();
+        try {
+            Map<String, Integer> tongYeuCauTheoSP = new HashMap<>();
+            DonViTinhDAO donViTinhDAO = new DonViTinhDAO();
+            LoSanPhamDAO loSanPhamDAO = new LoSanPhamDAO();
 
-                for (Map<String, Object> item : dsSP) {
-                    String maSP = item.get("maSP").toString();
-                    String maDVT = item.get("maDVT").toString();
+            for (Map<String, Object> item : dsSP) {
+                String maSP = item.get("maSP").toString();
+                String maDVT = item.get("maDVT").toString();
 
-                    DonViTinh dvt = donViTinhDAO.findById(maDVT);
-                    int heSoQuyDoi = dvt.getHeSoQuyDoi();
-                    int soLuongYeuCau = parseIntFromTable(item.get("soLuong").toString()) * heSoQuyDoi;
+                DonViTinh dvt = donViTinhDAO.findById(maDVT);
+                int heSoQuyDoi = dvt.getHeSoQuyDoi();
+                int soLuongYeuCau = parseIntFromTable(item.get("soLuong").toString()) * heSoQuyDoi;
 
-                    // cộng dồn số lượng nếu trùng mã sản phẩm
-                    tongYeuCauTheoSP.merge(maSP, soLuongYeuCau, Integer::sum);
-                }
-
-                for (Map.Entry<String, Integer> entry : tongYeuCauTheoSP.entrySet()) {
-                    String maSP = entry.getKey();
-                    int tongYeuCau = entry.getValue();
-
-                    int tongTon = loSanPhamDAO.dsLoTheoMaSanPham(maSP)
-                            .stream()
-                            .mapToInt(LoSanPham::getSoLuong)
-                            .sum();
-
-                    if (tongYeuCau > tongTon) {
-                        throw new Exception("Không đủ hàng cho sản phẩm " + maSP
-                                + " (Yêu cầu: " + tongYeuCau + ", Tồn: " + tongTon + ")");
-                    }
-                }
-
-                // Lấy mã hóa đơn mới nhất
-                int soHDMoiNhat = hoaDonDAO.getSoHDCuoiCungTrongNgay(LocalDate.now());
-                LocalDateTime now = LocalDateTime.now();
-                String maHDMoi;
-
-                if (soHDMoiNhat == 0) {
-                    maHDMoi = taoMaHoaDonMoi(now.toLocalDate(), 1);
-                } else {
-                    maHDMoi = taoMaHoaDonMoi(now.toLocalDate(), soHDMoiNhat + 1);
-                }
-
-                // Tạo hóa đơn
-                String maNV = taiKhoan.getMaNV();
-                LocalDateTime ngayLapHD = LocalDateTime.now();
-                HoaDon hd = HoaDon.builder()
-                        .maHoaDon(maHDMoi)
-                        .nhanVien(NhanVien.builder().maNV(maNV).build())
-                        .khachHang(KhachHang.builder().maKH(maKH).build())
-                        .ngayLapHoaDon(ngayLapHD)
-                        .chuyenKhoan(chuyenKhoan)
-                        .tongTien(tongTien)
-                        .build();
-
-                if (hoaDonDAO.create(hd) == null) {
-                    throw new Exception("Tạo hóa đơn thất bại");
-                }
-
-                // Tạo danh sách chi tiết hóa đơn
-                ArrayList<ChiTietHoaDon> dsCTHD = new ArrayList<>();
-                int soCTHDMoiNhat = chiTietHoaDonDAO.getSoCTHDCuoiCungTrongNgay(LocalDate.now()) + 1;
-                for (Map<String, Object> item : dsSP) {
-                    String maDVT = item.get("maDVT").toString();
-                    int heSoQuyDoi = donViTinhDAO.findById(maDVT).getHeSoQuyDoi();
-                    int soLuong = parseIntFromTable(item.get("soLuong").toString());
-                    double donGia = parseDoubleFromTable(item.get("donGia").toString());
-                    double giamGia = parseDoubleFromTable(item.get("giamGia").toString());
-                    double thanhTien = parseDoubleFromTable(item.get("thanhTien").toString());
-
-                    String maSP = item.get("maSP").toString();
-
-
-                    String maCTHDMoi;
-                    if (soCTHDMoiNhat == 0) {
-                        maCTHDMoi = taoMaChiTietHoaDonMoi(now.toLocalDate(), 1);
-                    } else {
-                        maCTHDMoi = taoMaChiTietHoaDonMoi(now.toLocalDate(), soCTHDMoiNhat++);
-                    }
-
-                    ChiTietHoaDon cthd = ChiTietHoaDon.builder()
-                            .maChiTietHoaDon(maCTHDMoi)
-                            .hoaDon(HoaDon.builder().maHoaDon(maHDMoi).build())
-                            .donViTinh(DonViTinh.builder().maDonViTinh(maDVT).build())
-                            .soLuong(soLuong)
-                            .donGia(donGia)
-                            .giamGia(giamGia)
-                            .thanhTien(thanhTien)
-                            .build();
-                    dsCTHD.add(cthd);
-                    if (null == chiTietHoaDonDAO.create(cthd)) {
-                        throw new Exception("Tạo chi tiết hóa đơn thất bại");
-                    }
-
-                    // Trừ tồn kho và tạo chi tiết xuất lô
-                    int soLuongXuat = soLuong * heSoQuyDoi;
-                    List<LoSanPham> dsLSP = loSanPhamDAO.getLoSanPhamTheoMaSP(maSP);
-                    for (LoSanPham lsp : dsLSP) {
-                        int soLuongTon = lsp.getSoLuong();
-                        if (soLuongXuat <= 0)
-                            break;
-
-                        if (soLuongTon >= soLuongXuat) {
-                            loSanPhamDAO.truSoLuong(lsp.getMaLoSanPham(), soLuongXuat);
-                            //ChiTietXuatLo ctxl = new ChiTietXuatLo(new LoSanPham(lsp.getMaLoSanPham()), new ChiTietHoaDon(maCTHDMoi), soLuongXuat);
-                            ChiTietXuatLo ctxl = ChiTietXuatLo.builder()
-                                    .loSanPham(LoSanPham.builder().maLoSanPham(lsp.getMaLoSanPham()).build())
-                                    .chiTietHoaDon(ChiTietHoaDon.builder().maChiTietHoaDon(maCTHDMoi).build())
-                                    .soLuong(soLuongXuat)
-                                    .build();
-                            chiTietXuatLoDAO.create(ctxl);
-
-                            soLuongXuat = 0;
-                        } else {
-                            loSanPhamDAO.truSoLuong(lsp.getMaLoSanPham(), soLuongTon);
-                            //ChiTietXuatLo ctxl = new ChiTietXuatLo(new LoSanPham(lsp.getMaLoSanPham()), new ChiTietHoaDon(maCTHDMoi), soLuongTon);
-                            ChiTietXuatLo ctxl = ChiTietXuatLo.builder()
-                                    .loSanPham(LoSanPham.builder().maLoSanPham(lsp.getMaLoSanPham()).build())
-                                    .chiTietHoaDon(ChiTietHoaDon.builder().maChiTietHoaDon(maCTHDMoi).build())
-                                    .soLuong(soLuongTon)
-                                    .build();
-                            chiTietXuatLoDAO.create(ctxl);
-                            soLuongXuat -= soLuongTon;
-                        }
-                    }
-
-                    if (soLuongXuat > 0) {
-                        throw new Exception("Không đủ số lượng");
-                    }
-                }
-
-                // Cập nhật điểm tích lũy cho khách hàng mua lớn hơn bằng 1 ngàn
-                if (tongTien >= 1000 && !"KH-99999".equals(maKH)) {
-                    int diemTichLuy = (int) Math.floor(tongTien / 1000);
-                    khachHangDAO.updateDiemTichLuy(diemTichLuy, maKH);
-                }
-                System.out.println("Thanh toán thành công. Mã hóa đơn: " + maHDMoi);
-                String noiDung = taoNoiDungHoaDon(hd, dsCTHD, tienKhachDua, tienThua);
-                return new Object[] {true, noiDung};
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
-                return new Object[] {false, e.getMessage()};
+                // cộng dồn số lượng nếu trùng mã sản phẩm
+                tongYeuCauTheoSP.merge(maSP, soLuongYeuCau, Integer::sum);
             }
+
+            for (Map.Entry<String, Integer> entry : tongYeuCauTheoSP.entrySet()) {
+                String maSP = entry.getKey();
+                int tongYeuCau = entry.getValue();
+
+                int tongTon = loSanPhamDAO.dsLoTheoMaSanPham(maSP)
+                        .stream()
+                        .mapToInt(LoSanPham::getSoLuong)
+                        .sum();
+
+                if (tongYeuCau > tongTon) {
+                    throw new Exception("Không đủ hàng cho sản phẩm " + maSP
+                            + " (Yêu cầu: " + tongYeuCau + ", Tồn: " + tongTon + ")");
+                }
+            }
+
+            // Lấy mã hóa đơn mới nhất
+            int soHDMoiNhat = hoaDonDAO.getSoHDCuoiCungTrongNgay(LocalDate.now());
+            LocalDateTime now = LocalDateTime.now();
+            String maHDMoi;
+
+            if (soHDMoiNhat == 0) {
+                maHDMoi = taoMaHoaDonMoi(now.toLocalDate(), 1);
+            } else {
+                maHDMoi = taoMaHoaDonMoi(now.toLocalDate(), soHDMoiNhat + 1);
+            }
+
+            // Tạo hóa đơn
+            String maNV = taiKhoan.getMaNV();
+            LocalDateTime ngayLapHD = LocalDateTime.now();
+            HoaDon hd = HoaDon.builder()
+                    .maHoaDon(maHDMoi)
+                    .nhanVien(NhanVien.builder().maNV(maNV).build())
+                    .khachHang(KhachHang.builder().maKH(maKH).build())
+                    .ngayLapHoaDon(ngayLapHD)
+                    .chuyenKhoan(chuyenKhoan)
+                    .tongTien(tongTien)
+                    .build();
+
+            if (hoaDonDAO.create(hd) == null) {
+                throw new Exception("Tạo hóa đơn thất bại");
+            }
+
+            // Tạo danh sách chi tiết hóa đơn
+            ArrayList<ChiTietHoaDon> dsCTHD = new ArrayList<>();
+            int soCTHDMoiNhat = chiTietHoaDonDAO.getSoCTHDCuoiCungTrongNgay(LocalDate.now()) + 1;
+            for (Map<String, Object> item : dsSP) {
+                String maDVT = item.get("maDVT").toString();
+                int heSoQuyDoi = donViTinhDAO.findById(maDVT).getHeSoQuyDoi();
+                int soLuong = parseIntFromTable(item.get("soLuong").toString());
+                double donGia = parseDoubleFromTable(item.get("donGia").toString());
+                double giamGia = parseDoubleFromTable(item.get("giamGia").toString());
+                double thanhTien = parseDoubleFromTable(item.get("thanhTien").toString());
+
+                String maSP = item.get("maSP").toString();
+
+
+                String maCTHDMoi;
+                if (soCTHDMoiNhat == 0) {
+                    maCTHDMoi = taoMaChiTietHoaDonMoi(now.toLocalDate(), 1);
+                } else {
+                    maCTHDMoi = taoMaChiTietHoaDonMoi(now.toLocalDate(), soCTHDMoiNhat++);
+                }
+
+                ChiTietHoaDon cthd = ChiTietHoaDon.builder()
+                        .maChiTietHoaDon(maCTHDMoi)
+                        .hoaDon(HoaDon.builder().maHoaDon(maHDMoi).build())
+                        .donViTinh(DonViTinh.builder().maDonViTinh(maDVT).build())
+                        .soLuong(soLuong)
+                        .donGia(donGia)
+                        .giamGia(giamGia)
+                        .thanhTien(thanhTien)
+                        .build();
+                dsCTHD.add(cthd);
+                if (null == chiTietHoaDonDAO.create(cthd)) {
+                    throw new Exception("Tạo chi tiết hóa đơn thất bại");
+                }
+
+                // Trừ tồn kho và tạo chi tiết xuất lô
+                int soLuongXuat = soLuong * heSoQuyDoi;
+                List<LoSanPham> dsLSP = loSanPhamDAO.getLoSanPhamTheoMaSP(maSP);
+                for (LoSanPham lsp : dsLSP) {
+                    int soLuongTon = lsp.getSoLuong();
+                    if (soLuongXuat <= 0)
+                        break;
+
+                    if (soLuongTon >= soLuongXuat) {
+                        int soLuongTru = soLuongXuat;
+                        loSanPhamDAO.truSoLuong(lsp.getMaLoSanPham(), soLuongTru);
+                        ghiLichSuXuatLo(lsp.getMaLoSanPham(), maNV, maHDMoi, maCTHDMoi, soLuongTru, soLuongTon - soLuongTru);
+                        //ChiTietXuatLo ctxl = new ChiTietXuatLo(new LoSanPham(lsp.getMaLoSanPham()), new ChiTietHoaDon(maCTHDMoi), soLuongXuat);
+                        ChiTietXuatLo ctxl = ChiTietXuatLo.builder()
+                                .loSanPham(LoSanPham.builder().maLoSanPham(lsp.getMaLoSanPham()).build())
+                                .chiTietHoaDon(ChiTietHoaDon.builder().maChiTietHoaDon(maCTHDMoi).build())
+                                .soLuong(soLuongTru)
+                                .build();
+                        chiTietXuatLoDAO.create(ctxl);
+
+                        soLuongXuat = 0;
+                    } else {
+                        int soLuongTru = soLuongTon;
+                        loSanPhamDAO.truSoLuong(lsp.getMaLoSanPham(), soLuongTru);
+                        ghiLichSuXuatLo(lsp.getMaLoSanPham(), maNV, maHDMoi, maCTHDMoi, soLuongTru, 0);
+                        //ChiTietXuatLo ctxl = new ChiTietXuatLo(new LoSanPham(lsp.getMaLoSanPham()), new ChiTietHoaDon(maCTHDMoi), soLuongTon);
+                        ChiTietXuatLo ctxl = ChiTietXuatLo.builder()
+                                .loSanPham(LoSanPham.builder().maLoSanPham(lsp.getMaLoSanPham()).build())
+                                .chiTietHoaDon(ChiTietHoaDon.builder().maChiTietHoaDon(maCTHDMoi).build())
+                                .soLuong(soLuongTru)
+                                .build();
+                        chiTietXuatLoDAO.create(ctxl);
+                        soLuongXuat -= soLuongTru;
+                    }
+                }
+
+                if (soLuongXuat > 0) {
+                    throw new Exception("Không đủ số lượng");
+                }
+            }
+
+            // Cập nhật điểm tích lũy cho khách hàng mua lớn hơn bằng 1 ngàn
+            if (tongTien >= 1000 && !"KH-99999".equals(maKH)) {
+                int diemTichLuy = (int) Math.floor(tongTien / 1000);
+                khachHangDAO.updateDiemTichLuy(diemTichLuy, maKH);
+            }
+            System.out.println("Thanh toán thành công. Mã hóa đơn: " + maHDMoi);
+            String noiDung = taoNoiDungHoaDon(hd, dsCTHD, tienKhachDua, tienThua);
+
+            return new Object[] {true, noiDung};
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return new Object[] {false, e.getMessage()};
+        }
+    }
+
+    private void ghiLichSuXuatLo(String maLo, String maNV, String maHD, String maCTHD, int soLuongXuat, int soLuongSau) {
+        LichSuLo lichSu = LichSuLo.builder()
+                .maLichSuLo("LSL-" + UUID.randomUUID())
+                .loSanPham(LoSanPham.builder().maLoSanPham(maLo).build())
+                .nhanVien(NhanVien.builder().maNV(maNV).build())
+                .thoiGian(LocalDateTime.now())
+                .hanhDong("XUAT_LO")
+                .soLuongSau(soLuongSau)
+                .ghiChu("Xuất " + soLuongXuat + " cho hóa đơn " + maHD + " (" + maCTHD + ")")
+                .build();
+        lichSuLoDAO.create(lichSu);
     }
 
     public static String taoNoiDungHoaDon(HoaDon hd, ArrayList<ChiTietHoaDon> dsCTHD, double tienKhachDua, double tienThua) {
@@ -486,12 +506,22 @@ public class HoaDonService {
         return hoaDonDAO.getDoanhThuTungThangTrongNam(nam);
     }
 
+    // ✅ Giữ lại bản List<DoanhThu> — xóa bản Map<Integer, Double> bị trùng chữ ký
     public List<DoanhThu> getDoanhThuTungQuyTrongNam(int nam) {
         return hoaDonDAO.getDoanhThuTungQuyTrongNam(nam);
     }
 
+    // ✅ Giữ lại bản List<DoanhThu> — xóa bản Map<Integer, Double> bị trùng chữ ký
     public List<DoanhThu> getDoanhThuTungNamTheoKhoang(int namBatDau, int namKetThuc) {
         return hoaDonDAO.getDoanhThuTungNamTheoKhoang(namBatDau, namKetThuc);
     }
 
+    public List<DoanhThu> getDoanhThuTheoNgayTrongKhoangThoiGian(LocalDate ngayBatDau, LocalDate ngayKetThuc) {
+        return hoaDonDAO.getDoanhThuTungNgayTrongKhoangThoiGian(ngayBatDau, ngayKetThuc);
+    }
+
+    public boolean thanhToan(HoaDonDTO hoaDonDTO, DefaultTableModel model) {
+        // Logic thanh toán ở đây
+        return true;
+    }
 }

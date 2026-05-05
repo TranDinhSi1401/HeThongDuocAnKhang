@@ -1,7 +1,49 @@
 package server.mapper;
 
-import common.dto.*;
-import server.entity.*;
+import common.dto.CaLamDTO;
+import common.dto.ChiTietHoaDonDTO;
+import common.dto.ChiTietPhieuNhapDTO;
+import common.dto.ChiTietPhieuTraHangDTO;
+import common.dto.ChiTietXuatLoDTO;
+import common.dto.DonViTinhDTO;
+import common.dto.HoaDonDTO;
+import common.dto.KhachHangDTO;
+import common.dto.KhuyenMaiDTO;
+import common.dto.KhuyenMaiSanPhamDTO;
+import common.dto.LichSuCaLamDTO;
+import common.dto.LichSuLoDTO;
+import common.dto.LoSanPhamDTO;
+import common.dto.MaVachSanPhamDTO;
+import common.dto.NhaCungCapDTO;
+import common.dto.NhanVienDTO;
+import common.dto.PhieuNhapDTO;
+import common.dto.PhieuTraHangDTO;
+import common.dto.SanPhamCungCapDTO;
+import common.dto.SanPhamDTO;
+import common.dto.TaiKhoanDTO;
+import server.entity.CaLam;
+import server.entity.ChiTietHoaDon;
+import server.entity.ChiTietPhieuNhap;
+import server.entity.ChiTietPhieuTraHang;
+import server.entity.ChiTietXuatLo;
+import server.entity.DonViTinh;
+import server.entity.HoaDon;
+import server.entity.KhachHang;
+import server.entity.KhuyenMai;
+import server.entity.KhuyenMaiSanPham;
+import server.entity.LichSuCaLam;
+import server.entity.LichSuLo;
+import server.entity.LoSanPham;
+import server.entity.LoaiKhuyenMaiEnum;
+import server.entity.LoaiSanPhamEnum;
+import server.entity.MaVachSanPham;
+import server.entity.NhaCungCap;
+import server.entity.NhanVien;
+import server.entity.PhieuNhap;
+import server.entity.PhieuTraHang;
+import server.entity.SanPham;
+import server.entity.SanPhamCungCap;
+import server.entity.TaiKhoan;
 
 /**
  * "Phiên dịch viên" giữa Entity (JPA, chỉ dùng phía Server)
@@ -60,7 +102,7 @@ public class EntityMapper {
                 .ten(entity.getTen())
                 .sdt(entity.getSdt())
                 .diemTichLuy(entity.getDiemTichLuy())
-                .daXoa(Boolean.TRUE.equals(entity.getDaXoa()))
+                .daXoa(entity.getDaXoa() != null ? entity.getDaXoa() : false)
                 .build();
     }
 
@@ -88,10 +130,10 @@ public class EntityMapper {
                 .ten(entity.getTen())
                 .sdt(entity.getSdt())
                 .cccd(entity.getCccd())
-                .gioiTinh(Boolean.TRUE.equals(entity.getGioiTinh()))
+                .gioiTinh(entity.getGioiTinh() != null ? entity.getGioiTinh() : false)
                 .ngaySinh(entity.getNgaySinh())
                 .diaChi(entity.getDiaChi())
-                .nghiViec(Boolean.TRUE.equals(entity.getNghiViec()))
+                .nghiViec(entity.getNghiViec() != null ? entity.getNghiViec() : false)
                 .build();
     }
 
@@ -102,19 +144,16 @@ public class EntityMapper {
         return TaiKhoanDTO.builder()
                 .maNV(entity.getMaNV())
                 .matKhau(entity.getMatKhau())
-                .quanLy(Boolean.TRUE.equals(entity.getQuanLy()))
-                .biKhoa(Boolean.TRUE.equals(entity.getBiKhoa()))
+                .quanLy(entity.getQuanLy() != null ? entity.getQuanLy() : false)
+                .biKhoa(entity.getBiKhoa() != null ? entity.getBiKhoa() : false)
                 .email(entity.getEmail())
                 .ngayTao(entity.getNgayTao())
-                .daXoa(Boolean.TRUE.equals(entity.getDaXoa()))
-                .quanLyLo(Boolean.TRUE.equals(entity.getQuanLyLo()))
+                .daXoa(entity.getDaXoa() != null ? entity.getDaXoa() : false)
+                .quanLyLo(entity.getQuanLyLo() != null ? entity.getQuanLyLo() : false)
                 .build();
     }
 
-    /**
-     * Tạo TaiKhoan entity từ DTO — NhanVien phải được set riêng sau khi gọi hàm này.
-     */
-    public static TaiKhoan toEntityTaiKhoan(TaiKhoanDTO dto) {
+    public static TaiKhoan toEntity(TaiKhoanDTO dto) {
         return TaiKhoan.builder()
                 .maNV(dto.getMaNV())
                 .matKhau(dto.getMatKhau())
@@ -154,7 +193,7 @@ public class EntityMapper {
                         ? entity.getLoaiSanPham().name() : null)
                 .tonToiThieu(entity.getTonToiThieu())
                 .tonToiDa(entity.getTonToiDa())
-                .daXoa(Boolean.TRUE.equals(entity.getDaXoa()))
+                .daXoa(entity.getDaXoa() != null ? entity.getDaXoa() : false)
                 .build();
     }
 
@@ -182,8 +221,8 @@ public class EntityMapper {
                 .tenDonViTinh(entity.getTenDonViTinh())
                 .heSoQuyDoi(entity.getHeSoQuyDoi())
                 .giaBanTheoDonVi(entity.getGiaBanTheoDonVi())
-                .donViTinhCoBan(Boolean.TRUE.equals(entity.getDonViTinhCoBan()))
-                .daXoa(Boolean.TRUE.equals(entity.getDaXoa()))
+                .donViTinhCoBan(entity.getDonViTinhCoBan() != null ? entity.getDonViTinhCoBan() : false)
+                .daXoa(entity.getDaXoa() != null ? entity.getDaXoa() : false)
                 .build();
     }
 
@@ -219,13 +258,68 @@ public class EntityMapper {
     }
 
     public static LoSanPhamDTO toDTO(LoSanPham entity) {
+                String tenSanPham = null;
+                String tenDonViTinh = null;
+                String tenNhaCungCap = null;
+                double giaNhap = 0D;
+
+                if (entity.getSanPham() != null) {
+                        tenSanPham = entity.getSanPham().getTen();
+
+                        // Lấy đơn vị tính cơ bản (hoặc đơn vị tính đầu tiên nếu không có cơ bản)
+                        if (entity.getSanPham().getDonViTinhs() != null && !entity.getSanPham().getDonViTinhs().isEmpty()) {
+                                DonViTinh donViTinhChon = null;
+                                for (DonViTinh donViTinh : entity.getSanPham().getDonViTinhs()) {
+                                        if (donViTinhChon == null || (donViTinh.getDonViTinhCoBan() != null && donViTinh.getDonViTinhCoBan())) {
+                                                donViTinhChon = donViTinh;
+                                                if (donViTinh.getDonViTinhCoBan() != null && donViTinh.getDonViTinhCoBan()) {
+                                                        break;
+                                                }
+                                        }
+                                }
+                                if (donViTinhChon != null) {
+                                        tenDonViTinh = donViTinhChon.getTenDonViTinh();
+                                }
+                        }
+                }
+
+                // Ưu tiên lấy NCC từ ChiTietPhieuNhap (lô nhập qua phiếu nhập chính thức)
+                if (entity.getChiTietPhieuNhaps() != null && !entity.getChiTietPhieuNhaps().isEmpty()) {
+                        for (ChiTietPhieuNhap chiTietPhieuNhap : entity.getChiTietPhieuNhaps()) {
+                                if (chiTietPhieuNhap.getNhaCungCap() != null) {
+                                        tenNhaCungCap = chiTietPhieuNhap.getNhaCungCap().getTenNCC();
+                                }
+                                giaNhap = chiTietPhieuNhap.getDonGia();
+                                break;
+                        }
+                }
+
+                // Fallback: lô nhập thủ công (từ Excel) chưa có phiếu nhập → lấy NCC từ SanPhamCungCap
+                if (tenNhaCungCap == null && entity.getSanPham() != null
+                        && entity.getSanPham().getSanPhamCungCaps() != null
+                        && !entity.getSanPham().getSanPhamCungCaps().isEmpty()) {
+                        for (SanPhamCungCap spcc : entity.getSanPham().getSanPhamCungCaps()) {
+                                if (spcc.getNhaCungCap() != null) {
+                                        tenNhaCungCap = spcc.getNhaCungCap().getTenNCC();
+                                        if (giaNhap == 0D) {
+                                                giaNhap = spcc.getGiaNhap();
+                                        }
+                                        break;
+                                }
+                        }
+                }
+
         return LoSanPhamDTO.builder()
                 .maLoSanPham(entity.getMaLoSanPham())
                 .maSP(entity.getSanPham() != null ? entity.getSanPham().getMaSP() : null)
+                .tenSP(tenSanPham)
+                .tenDonVi(tenDonViTinh != null ? tenDonViTinh : "")
+                .tenNhaCungCap(tenNhaCungCap)
+                .giaNhap(giaNhap)
                 .soLuong(entity.getSoLuong())
                 .ngaySanXuat(entity.getNgaySanXuat())
                 .ngayHetHan(entity.getNgayHetHan())
-                .daHuy(Boolean.TRUE.equals(entity.getDaHuy()))
+                .daHuy(entity.getDaHuy() != null ? entity.getDaHuy() : false)
                 .build();
     }
 
@@ -250,7 +344,7 @@ public class EntityMapper {
                 .diaChi(entity.getDiaChi())
                 .sdt(entity.getSdt())
                 .email(entity.getEmail())
-                .daXoa(Boolean.TRUE.equals(entity.getDaXoa()))
+                .daXoa(entity.getDaXoa() != null ? entity.getDaXoa() : false)
                 .build();
     }
 
@@ -262,7 +356,7 @@ public class EntityMapper {
                 .id(entity.getId())
                 .maSP(entity.getSanPham() != null ? entity.getSanPham().getMaSP() : null)
                 .maNCC(entity.getNhaCungCap() != null ? entity.getNhaCungCap().getMaNCC() : null)
-                .trangThaiHopTac(entity.isTrangThaiHopTac())
+                .trangThaiHopTac(entity.getTrangThaiHopTac() != null ? entity.getTrangThaiHopTac() : true)
                 .giaNhap(entity.getGiaNhap())
                 .build();
     }
@@ -298,7 +392,7 @@ public class EntityMapper {
                 .soLuongToiThieu(entity.getSoLuongToiThieu())
                 .soLuongToiDa(entity.getSoLuongToiDa())
                 .ngayChinhSua(entity.getNgayChinhSua())
-                .daXoa(Boolean.TRUE.equals(entity.getDaXoa()))
+                .daXoa(entity.getDaXoa() != null ? entity.getDaXoa() : false)
                 .build();
     }
 
@@ -318,32 +412,13 @@ public class EntityMapper {
     //  HoaDon
     // ============================================================
     public static HoaDonDTO toDTO(HoaDon entity) {
-        String tenKH = "Khách lẻ";
-        if (entity.getKhachHang() != null) {
-            String hoTenDem = entity.getKhachHang().getHoTenDem();
-            String ten = entity.getKhachHang().getTen();
-            tenKH = (hoTenDem != null ? hoTenDem : "") + " " + (ten != null ? ten : "");
-            tenKH = tenKH.trim();
-            if (tenKH.isEmpty()) {
-                tenKH = "Khách lẻ";
-            }
-        }
-        String tenNV = "Không xác định";
-        if (entity.getNhanVien() != null) {
-            String hoTenDem = entity.getNhanVien().getHoTenDem();
-            String ten = entity.getNhanVien().getTen();
-            tenNV = (hoTenDem != null ? hoTenDem : "") + " " + (ten != null ? ten : "");
-            tenNV = tenNV.trim();
-        }
         return HoaDonDTO.builder()
                 .maHoaDon(entity.getMaHoaDon())
                 .maNV(entity.getNhanVien() != null ? entity.getNhanVien().getMaNV() : null)
                 .maKH(entity.getKhachHang() != null ? entity.getKhachHang().getMaKH() : null)
                 .ngayLapHoaDon(entity.getNgayLapHoaDon())
-                .chuyenKhoan(Boolean.TRUE.equals(entity.getChuyenKhoan()))
+                .chuyenKhoan(entity.getChuyenKhoan() != null ? entity.getChuyenKhoan() : false)
                 .tongTien(entity.getTongTien())
-                .tenKH(tenKH)
-                .tenNV(tenNV)
                 .build();
     }
 
@@ -351,14 +426,6 @@ public class EntityMapper {
     //  ChiTietHoaDon
     // ============================================================
     public static ChiTietHoaDonDTO toDTO(ChiTietHoaDon entity) {
-        String tenSP = "";
-        String tenDVT = "";
-        if (entity.getDonViTinh() != null) {
-            tenDVT = entity.getDonViTinh().getTenDonViTinh();
-            if (entity.getDonViTinh().getSanPham() != null) {
-                tenSP = entity.getDonViTinh().getSanPham().getTen();
-            }
-        }
         return ChiTietHoaDonDTO.builder()
                 .maChiTietHoaDon(entity.getMaChiTietHoaDon())
                 .maHoaDon(entity.getHoaDon() != null ? entity.getHoaDon().getMaHoaDon() : null)
@@ -367,14 +434,9 @@ public class EntityMapper {
                 .donGia(entity.getDonGia())
                 .giamGia(entity.getGiamGia())
                 .thanhTien(entity.getThanhTien())
-                .tenSP(tenSP)
-                .tenDVT(tenDVT)
                 .build();
     }
 
-    // ============================================================
-    //  ChiTietXuatLo
-    // ============================================================
     public static ChiTietXuatLoDTO toDTO(ChiTietXuatLo entity) {
         return ChiTietXuatLoDTO.builder()
                 .id(entity.getId())
@@ -382,6 +444,13 @@ public class EntityMapper {
                 .maChiTietHoaDon(entity.getChiTietHoaDon() != null
                         ? entity.getChiTietHoaDon().getMaChiTietHoaDon() : null)
                 .soLuong(entity.getSoLuong())
+                .build();
+    }
+
+    public static ChiTietXuatLo toEntity(ChiTietXuatLoDTO dto) {
+        return ChiTietXuatLo.builder()
+                .id(dto.getId())
+                .soLuong(dto.getSoLuong())
                 .build();
     }
 
@@ -475,6 +544,16 @@ public class EntityMapper {
                 .hanhDong(entity.getHanhDong())
                 .soLuongSau(entity.getSoLuongSau())
                 .ghiChu(entity.getGhiChu())
+                .build();
+    }
+
+    public static LichSuLo toEntity(LichSuLoDTO dto) {
+        return LichSuLo.builder()
+                .maLichSuLo(dto.getMaLichSuLo())
+                .thoiGian(dto.getThoiGian())
+                .hanhDong(dto.getHanhDong())
+                .soLuongSau(dto.getSoLuongSau())
+                .ghiChu(dto.getGhiChu())
                 .build();
     }
 }

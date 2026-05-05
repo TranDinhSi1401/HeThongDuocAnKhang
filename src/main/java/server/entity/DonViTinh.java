@@ -31,10 +31,10 @@ public class DonViTinh {
     @Column(name = "gia_ban_theo_don_vi")
     private double giaBanTheoDonVi;
 
-    @Column(name = "don_vi_tinh_co_ban")
+    @Column(name = "don_vi_tinh_co_ban", nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
     private Boolean donViTinhCoBan;
 
-    @Column(name = "da_xoa")
+    @Column(name = "da_xoa", nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
     private Boolean daXoa;
 
     @OneToMany(mappedBy = "donViTinh", cascade = CascadeType.ALL, orphanRemoval = true)

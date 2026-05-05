@@ -9,7 +9,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Setter
 @Getter
-@ToString(exclude = {"sanPhamCungCaps", "chiTietPhieuNhaps"})
+@ToString(exclude = { "sanPhamCungCaps", "chiTietPhieuNhaps" })
 @Builder
 @Entity
 @Table(name = "nha_cung_cap")
@@ -30,7 +30,7 @@ public class NhaCungCap {
     @Column(name = "email")
     private String email;
 
-    @Column(name = "da_xoa")
+    @Column(name = "da_xoa", nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
     private Boolean daXoa;
 
     @OneToMany(mappedBy = "nhaCungCap", cascade = CascadeType.ALL, orphanRemoval = true)

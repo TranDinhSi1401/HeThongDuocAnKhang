@@ -30,7 +30,7 @@ public class KhachHang {
     @Column(name = "diem_tich_luy")
     private int diemTichLuy;
 
-    @Column(name = "da_xoa")
+    @Column(name = "da_xoa", nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
     private Boolean daXoa;
 
     @OneToMany(mappedBy = "khachHang", cascade = CascadeType.ALL, orphanRemoval = true)

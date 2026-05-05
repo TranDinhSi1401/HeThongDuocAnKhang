@@ -40,7 +40,7 @@ public class SanPhamCungCapDAO extends AbstractGenericDaoImpl<SanPhamCungCap, Lo
         return doInTransaction(em -> {
             SanPhamCungCap spcc = em.find(SanPhamCungCap.class, id);
             if (spcc == null) return false;
-            spcc.setTrangThaiHopTac(spccNew.isTrangThaiHopTac());
+            spcc.setTrangThaiHopTac(spccNew.getTrangThaiHopTac());
             spcc.setGiaNhap(spccNew.getGiaNhap());
             em.merge(spcc);
             return true;

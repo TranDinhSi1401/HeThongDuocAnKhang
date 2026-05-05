@@ -91,7 +91,7 @@ public class NhanVienService {
     }
 
     public boolean addTaiKhoan(TaiKhoanDTO dto) {
-        TaiKhoan entity = EntityMapper.toEntityTaiKhoan(dto);
+        TaiKhoan entity = EntityMapper.toEntity(dto);
         // Gắn NhanVien reference
         NhanVien nv = new NhanVien();
         nv.setMaNV(dto.getMaNV());
@@ -101,7 +101,7 @@ public class NhanVienService {
     }
 
     public boolean capNhatTaiKhoan(TaiKhoanDTO dto) {
-        TaiKhoan tk = EntityMapper.toEntityTaiKhoan(dto);
+        TaiKhoan tk = EntityMapper.toEntity(dto);
         return taiKhoanDAO.capNhatTaiKhoan(tk);
     }
 
