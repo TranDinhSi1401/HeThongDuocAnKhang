@@ -2,6 +2,8 @@ package server.service;
 
 import common.dto.NhanVienDTO;
 import common.dto.TaiKhoanDTO;
+import common.utils.EmailUtil;
+import common.utils.PasswordUtil;
 import org.mindrot.jbcrypt.BCrypt;
 import server.dao.NhanVienDAO;
 import server.dao.TaiKhoanDAO;

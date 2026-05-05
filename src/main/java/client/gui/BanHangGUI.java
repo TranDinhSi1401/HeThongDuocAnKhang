@@ -21,7 +21,7 @@ import javax.swing.UIManager;
  *
  * @author trand
  */
-public class BanHangGUI extends javax.swing.JPanel {
+public class BanHangGUI extends JPanel {
     private JTabbedPane tabHoaDon;
     /**
      * Creates new form BanHangGUI
@@ -41,7 +41,7 @@ public class BanHangGUI extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        setLayout(new java.awt.BorderLayout());
+        setLayout(new BorderLayout());
     }// </editor-fold>//GEN-END:initComponents
 
     private void initTabHoaDon() {
@@ -70,8 +70,8 @@ public class BanHangGUI extends javax.swing.JPanel {
             }
         });
 
-        setLayout(new java.awt.BorderLayout());
-        add(tabHoaDon, java.awt.BorderLayout.CENTER);
+        setLayout(new BorderLayout());
+        add(tabHoaDon, BorderLayout.CENTER);
     }
 
     private void addCloseButton(JTabbedPane tabbedPane, int index) {

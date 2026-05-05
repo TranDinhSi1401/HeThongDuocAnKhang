@@ -63,6 +63,18 @@ public class KhuyenMaiDAO extends AbstractGenericDaoImpl<KhuyenMai, String> {
         });
     }
 
+    /** Lấy danh sách khuyến mãi theo mã sản phẩm. */
+    public List<KhuyenMai> getKhuyenMaiTheoMaSP(String maSP) {
+        return doInTransaction(em -> {
+            return em.createQuery(
+                "SELECT DISTINCT km FROM KhuyenMai km " +
+                "JOIN km.khuyenMaiSanPhams kmsp " +
+                "WHERE kmsp.sanPham.maSP = :maSP AND km.daXoa = false", KhuyenMai.class)
+                .setParameter("maSP", maSP)
+                .getResultList();
+        });
+    }
+
     /** Lấy số thứ tự mã KM cuối cùng theo format "KM-XXXX". */
     public int getMaKMCuoiCung() {
         return doInTransaction(em -> {

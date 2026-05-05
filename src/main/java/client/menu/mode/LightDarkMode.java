@@ -48,8 +48,13 @@ public class LightDarkMode extends JPanel {
         putClientProperty(FlatClientProperties.STYLE, ""
                 + "arc:999;"
                 + "background:$Menu.lightdark.background");
-        buttonLight = new JButton("Light", new FlatSVGIcon("hethongnhathuocduocankhang/menu/mode/light.svg"));
-        buttonDark = new JButton("Dark", new FlatSVGIcon("hethongnhathuocduocankhang/menu/mode/dark.svg"));
+
+        // Load SVG icons từ resources
+        FlatSVGIcon lightIcon = loadSVGIcon("client/menu/mode/light.svg");
+        FlatSVGIcon darkIcon = loadSVGIcon("client/menu/mode/dark.svg");
+
+        buttonLight = new JButton("Light", lightIcon);
+        buttonDark = new JButton("Dark", darkIcon);
         buttonLighDark = new JButton();
         buttonLighDark.putClientProperty(FlatClientProperties.STYLE, ""
                 + "arc:999;"
@@ -72,6 +77,19 @@ public class LightDarkMode extends JPanel {
         add(buttonLight);
         add(buttonDark);
         add(buttonLighDark);
+    }
+
+    private FlatSVGIcon loadSVGIcon(String path) {
+        try {
+            java.net.URL url = getClass().getClassLoader().getResource(path);
+            if (url != null) {
+                return new FlatSVGIcon(String.valueOf(url), 24, 24);
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to load SVG icon: " + path + " - " + e.getMessage());
+        }
+        // Fallback
+        return new FlatSVGIcon(path, 24, 24);
     }
 
     private void changeMode(boolean dark) {

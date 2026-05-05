@@ -22,9 +22,14 @@ public class KhuyenMaiService {
         return khuyenMaiDAO.getKhuyenMaiDangHoatDong().stream().map(EntityMapper::toDTO).collect(Collectors.toList());
     }
 
+<<<<<<< HEAD
     public KhuyenMaiDTO timKMTheoMa(String maKM) {
         KhuyenMai km = khuyenMaiDAO.findById(maKM);
         return km != null ? EntityMapper.toDTO(km) : null;
+=======
+    public List<KhuyenMaiDTO> getKhuyenMaiTheoMaSp(String maSP) {
+        return khuyenMaiDAO.getKhuyenMaiTheoMaSP(maSP).stream().map(EntityMapper::toDTO).collect(Collectors.toList());
+>>>>>>> master
     }
 
     public int getMaKMCuoiCung() { return khuyenMaiDAO.getMaKMCuoiCung(); }

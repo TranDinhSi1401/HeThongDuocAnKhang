@@ -86,7 +86,7 @@ public class Menu extends JPanel {
                 + "background:$Menu.background;"
                 + "arc:10");
         header = new JLabel(headerName);
-        header.setIcon(new ImageIcon(getClass().getResource("/resources/images/medicine.png")));
+        header.setIcon(new ImageIcon(getClass().getResource("/images/medicine.png")));
         header.putClientProperty(FlatClientProperties.STYLE, ""
                 + "font:$Menu.header.font;"
                 + "foreground:$Menu.foreground");
@@ -103,7 +103,13 @@ public class Menu extends JPanel {
                 + "border:null");
         JScrollBar vscroll = scroll.getVerticalScrollBar();
         vscroll.setUnitIncrement(10);
+<<<<<<< HEAD
         // Bỏ style scrollbar vì gây lỗi trên một số phiên bản JDK/FlatLaf
+=======
+        // ScrollBar styling - sử dụng properties tiêu chuẩn FlatLaf
+        vscroll.putClientProperty(FlatClientProperties.STYLE, ""
+                + "width:12");
+>>>>>>> master
         createMenu();
         lightDarkMode = new LightDarkMode();
         toolBarAccentColor = new ToolBarAccentColor(this);

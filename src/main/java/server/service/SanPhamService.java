@@ -1,8 +1,6 @@
 package server.service;
 
-import common.dto.SanPhamDTO;
-import common.dto.DonViTinhDTO;
-import common.dto.MaVachSanPhamDTO;
+import common.dto.*;
 import server.dao.SanPhamDAO;
 import server.dao.DonViTinhDAO;
 import server.dao.MaVachSanPhamDAO;
@@ -105,6 +103,19 @@ public class SanPhamService {
         sanPhamDAO.getSPBanChayTrongNam(tg)
                 .forEach((sp, nums) -> result.put(EntityMapper.toDTO(sp), nums));
         return result;
+    }
+
+    public ChiTietSanPhamDTO getChiTietSpBangMaSp(String maSP) {
+        SanPhamDTO sp = timSPTheoMa(maSP);
+        List<DonViTinhDTO> dsDVT = getDonViTinhTheoMaSP(maSP);
+        List<KhuyenMaiDTO> dsKM = new KhuyenMaiService().getKhuyenMaiTheoMaSp(maSP);
+        List<LoSanPhamDTO> dsLSP = new LoSanPhamService().getLoSanPhamTheoMaSP(maSP);
+        return ChiTietSanPhamDTO.builder()
+                .sanPham(sp)
+                .dsDVT(dsDVT)
+                .dsKM(dsKM)
+                .dsLSP(dsLSP)
+                .build();
     }
 
     // ===== DonViTinh =====
