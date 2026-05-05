@@ -3,6 +3,7 @@ package server.dao;
 import server.entity.HoaDon;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -93,7 +94,10 @@ public class HoaDonDAO extends AbstractGenericDaoImpl<HoaDon, String> {
     }
 
     /** Lấy số thứ tự HD cuối cùng trong ngày theo format "HD-YYYYMMDD-XXX". */
-    public int getSoHDCuoiCungTrongNgay(String ngay) {
+    public int getSoHDCuoiCungTrongNgay(LocalDate ngay) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        String ngayFormatted = ngay.format(formatter);
+
         return doInTransaction(em -> {
             String prefix = "HD-" + ngay + "-";
             List<String> result = em.createQuery(

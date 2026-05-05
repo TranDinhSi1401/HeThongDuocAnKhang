@@ -10,7 +10,7 @@ import java.io.Serializable;
  * Ví dụ: GET_ALL_SAN_PHAM, ADD_HOA_DON, v.v.
  */
 public enum CommandType implements Serializable {
-
+    THANH_TOAN,
     // ===== Auth =====
     LOGIN,                    // data = Object[]{ tenDangNhap, plainPassword }     // data = Object[]{ maNV, email, newPlainPassword }
     // ===== SanPham =====
