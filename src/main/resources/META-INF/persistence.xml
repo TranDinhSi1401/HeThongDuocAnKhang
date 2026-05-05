@@ -34,7 +34,7 @@
                       value="jdbc:mariadb://localhost:3306/nhathuocduocankhang"/>
             <property name="jakarta.persistence.jdbc.user" value="root"/>
             <property name="jakarta.persistence.jdbc.password"
-                      value="123456"/>
+                      value="root"/>
             <property name="hibernate.dialect"
                       value="org.hibernate.dialect.MariaDBDialect"/>
             <property name="hibernate.show_sql" value="true"/>

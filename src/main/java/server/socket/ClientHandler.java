@@ -237,7 +237,7 @@ public class ClientHandler implements Runnable {
                 // ===== LO SAN PHAM =====
                 case GET_ALL_LO_SAN_PHAM -> Response.ok(loSanPhamService.getAllLoSanPham());
                 case GET_ALL_LO_SAN_PHAM_KHONG_HUY -> Response.ok(loSanPhamService.getAllLoSanPhamKhongHuy());
-                case GET_LO_SAN_PHAM_BY_MA -> Response.ok(loSanPhamService.getLoSanPhamByMa((String) data));
+                case GET_LO_SAN_PHAM_BY_MA -> Response.ok(loSanPhamService.timLoSanPham((String) data));
                 case GET_LO_BY_MA_SP       -> Response.ok(loSanPhamService.getLoSanPhamTheoMaSP((String) data));
                 case GET_LO_BY_MA          -> Response.ok(loSanPhamService.timLoSanPham((String) data));
                 case GET_LO_BY_MA_CTHD     -> Response.ok(loSanPhamService.getLoSanPhamTheoMaCTHD((String) data));

@@ -153,10 +153,7 @@ public class EntityMapper {
                 .build();
     }
 
-    /**
-     * Tạo TaiKhoan entity từ DTO — NhanVien phải được set riêng sau khi gọi hàm này.
-     */
-    public static TaiKhoan toEntityTaiKhoan(TaiKhoanDTO dto) {
+    public static TaiKhoan toEntity(TaiKhoanDTO dto) {
         return TaiKhoan.builder()
                 .maNV(dto.getMaNV())
                 .matKhau(dto.getMatKhau())
@@ -315,10 +312,10 @@ public class EntityMapper {
         return LoSanPhamDTO.builder()
                 .maLoSanPham(entity.getMaLoSanPham())
                 .maSP(entity.getSanPham() != null ? entity.getSanPham().getMaSP() : null)
-                                .tenSP(tenSanPham)
-                                .tenDonVi(tenDonViTinh != null ? tenDonViTinh : "")
-                                .tenNhaCungCap(tenNhaCungCap)
-                                .giaNhap(giaNhap)
+                .tenSP(tenSanPham)
+                .tenDonVi(tenDonViTinh != null ? tenDonViTinh : "")
+                .tenNhaCungCap(tenNhaCungCap)
+                .giaNhap(giaNhap)
                 .soLuong(entity.getSoLuong())
                 .ngaySanXuat(entity.getNgaySanXuat())
                 .ngayHetHan(entity.getNgayHetHan())
@@ -420,7 +417,7 @@ public class EntityMapper {
                 .maNV(entity.getNhanVien() != null ? entity.getNhanVien().getMaNV() : null)
                 .maKH(entity.getKhachHang() != null ? entity.getKhachHang().getMaKH() : null)
                 .ngayLapHoaDon(entity.getNgayLapHoaDon())
-                .chuyenKhoan(entity.isChuyenKhoan())
+                .chuyenKhoan(entity.getChuyenKhoan() != null ? entity.getChuyenKhoan() : false)
                 .tongTien(entity.getTongTien())
                 .build();
     }
@@ -440,9 +437,6 @@ public class EntityMapper {
                 .build();
     }
 
-    // ============================================================
-    //  ChiTietXuatLo
-    // ============================================================
     public static ChiTietXuatLoDTO toDTO(ChiTietXuatLo entity) {
         return ChiTietXuatLoDTO.builder()
                 .id(entity.getId())
@@ -450,6 +444,13 @@ public class EntityMapper {
                 .maChiTietHoaDon(entity.getChiTietHoaDon() != null
                         ? entity.getChiTietHoaDon().getMaChiTietHoaDon() : null)
                 .soLuong(entity.getSoLuong())
+                .build();
+    }
+
+    public static ChiTietXuatLo toEntity(ChiTietXuatLoDTO dto) {
+        return ChiTietXuatLo.builder()
+                .id(dto.getId())
+                .soLuong(dto.getSoLuong())
                 .build();
     }
 
@@ -543,6 +544,16 @@ public class EntityMapper {
                 .hanhDong(entity.getHanhDong())
                 .soLuongSau(entity.getSoLuongSau())
                 .ghiChu(entity.getGhiChu())
+                .build();
+    }
+
+    public static LichSuLo toEntity(LichSuLoDTO dto) {
+        return LichSuLo.builder()
+                .maLichSuLo(dto.getMaLichSuLo())
+                .thoiGian(dto.getThoiGian())
+                .hanhDong(dto.getHanhDong())
+                .soLuongSau(dto.getSoLuongSau())
+                .ghiChu(dto.getGhiChu())
                 .build();
     }
 }
