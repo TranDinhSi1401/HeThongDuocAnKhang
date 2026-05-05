@@ -6,12 +6,13 @@ import common.network.Request;
 import common.network.Response;
 import server.service.*;
 
-import javax.swing.table.DefaultTableModel;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Xử lý một kết nối Client trong Thread riêng.
@@ -221,7 +222,16 @@ public class ClientHandler implements Runnable {
                 case GET_CTXL_BY_MA_CTHD  -> Response.ok(hoaDonService.getCTXLByMaCTHD((String) data));
                 case THANH_TOAN -> {
                     Object[] arr = (Object[]) data;
-                    yield Response.ok(hoaDonService.thanhToan((HoaDonDTO) arr[0], (DefaultTableModel) arr[1]));
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, Object>> dsSanPham = (List<Map<String, Object>>) arr[0];
+                    yield Response.ok(hoaDonService.thanhToan(
+                            dsSanPham,
+                            (String) arr[1],
+                            (Boolean) arr[2],
+                            ((Number) arr[3]).doubleValue(),
+                            (TaiKhoanDTO) arr[4],
+                            ((Number) arr[5]).doubleValue(),
+                            ((Number) arr[6]).doubleValue()));
                 }
 
                 // ===== LO SAN PHAM =====

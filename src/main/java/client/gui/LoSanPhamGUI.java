@@ -138,10 +138,12 @@ public class LoSanPhamGUI extends javax.swing.JPanel {
                             Response res = SocketClient.getInstance().sendRequest(
                                     new Request(CommandType.GET_LO_SAN_PHAM_BY_MA, maLO));
                             if (res.isSuccess() && res.getData() instanceof LoSanPhamDTO lo) {
+                                txtMaSanPham.setText(safeString(lo.getMaSP()));
                                 txtNhaCungCap.setText(safeString(lo.getTenNhaCungCap()));
                                 txtNgaySanXuat.setText(formatLocalDate(lo.getNgaySanXuat()));
                                 txtNgayHetHan.setText(formatLocalDate(lo.getNgayHetHan()));
                                 txtGiaNhap.setText(lo.getGiaNhap() > 0 ? String.valueOf(lo.getGiaNhap()) : "");
+                                txtSoLuong.setText(String.valueOf(lo.getSoLuong()));
                                 if (!safeString(lo.getTenSP()).isEmpty()) {
                                     txtTenSanPham.setText(lo.getTenSP());
                                 }

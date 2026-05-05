@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -27,6 +28,7 @@ public class HoaDonService {
     private final ChiTietHoaDonDAO chiTietHoaDonDAO = new ChiTietHoaDonDAO();
     private final ChiTietXuatLoDAO chiTietXuatLoDAO = new ChiTietXuatLoDAO();
     private final KhachHangDAO khachHangDAO = new KhachHangDAO();
+    private final LichSuLoDAO lichSuLoDAO = new LichSuLoDAO();
     // ===== HoaDon =====
 
     public HoaDonDTO getHoaDonMoiNhatTrongNgay() {
@@ -272,26 +274,30 @@ public class HoaDonService {
                         break;
 
                     if (soLuongTon >= soLuongXuat) {
-                        loSanPhamDAO.truSoLuong(lsp.getMaLoSanPham(), soLuongXuat);
+                        int soLuongTru = soLuongXuat;
+                        loSanPhamDAO.truSoLuong(lsp.getMaLoSanPham(), soLuongTru);
+                        ghiLichSuXuatLo(lsp.getMaLoSanPham(), maNV, maHDMoi, maCTHDMoi, soLuongTru, soLuongTon - soLuongTru);
                         //ChiTietXuatLo ctxl = new ChiTietXuatLo(new LoSanPham(lsp.getMaLoSanPham()), new ChiTietHoaDon(maCTHDMoi), soLuongXuat);
                         ChiTietXuatLo ctxl = ChiTietXuatLo.builder()
                                 .loSanPham(LoSanPham.builder().maLoSanPham(lsp.getMaLoSanPham()).build())
                                 .chiTietHoaDon(ChiTietHoaDon.builder().maChiTietHoaDon(maCTHDMoi).build())
-                                .soLuong(soLuongXuat)
+                                .soLuong(soLuongTru)
                                 .build();
                         chiTietXuatLoDAO.create(ctxl);
 
                         soLuongXuat = 0;
                     } else {
-                        loSanPhamDAO.truSoLuong(lsp.getMaLoSanPham(), soLuongTon);
+                        int soLuongTru = soLuongTon;
+                        loSanPhamDAO.truSoLuong(lsp.getMaLoSanPham(), soLuongTru);
+                        ghiLichSuXuatLo(lsp.getMaLoSanPham(), maNV, maHDMoi, maCTHDMoi, soLuongTru, 0);
                         //ChiTietXuatLo ctxl = new ChiTietXuatLo(new LoSanPham(lsp.getMaLoSanPham()), new ChiTietHoaDon(maCTHDMoi), soLuongTon);
                         ChiTietXuatLo ctxl = ChiTietXuatLo.builder()
                                 .loSanPham(LoSanPham.builder().maLoSanPham(lsp.getMaLoSanPham()).build())
                                 .chiTietHoaDon(ChiTietHoaDon.builder().maChiTietHoaDon(maCTHDMoi).build())
-                                .soLuong(soLuongTon)
+                                .soLuong(soLuongTru)
                                 .build();
                         chiTietXuatLoDAO.create(ctxl);
-                        soLuongXuat -= soLuongTon;
+                        soLuongXuat -= soLuongTru;
                     }
                 }
 
@@ -313,6 +319,19 @@ public class HoaDonService {
             System.out.println(e.getMessage());
             return new Object[] {false, e.getMessage()};
         }
+    }
+
+    private void ghiLichSuXuatLo(String maLo, String maNV, String maHD, String maCTHD, int soLuongXuat, int soLuongSau) {
+        LichSuLo lichSu = LichSuLo.builder()
+                .maLichSuLo("LSL-" + UUID.randomUUID())
+                .loSanPham(LoSanPham.builder().maLoSanPham(maLo).build())
+                .nhanVien(NhanVien.builder().maNV(maNV).build())
+                .thoiGian(LocalDateTime.now())
+                .hanhDong("XUAT_LO")
+                .soLuongSau(soLuongSau)
+                .ghiChu("Xuất " + soLuongXuat + " cho hóa đơn " + maHD + " (" + maCTHD + ")")
+                .build();
+        lichSuLoDAO.create(lichSu);
     }
 
     public static String taoNoiDungHoaDon(HoaDon hd, ArrayList<ChiTietHoaDon> dsCTHD, double tienKhachDua, double tienThua) {

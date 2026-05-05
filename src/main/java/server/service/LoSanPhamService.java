@@ -141,7 +141,7 @@ public class LoSanPhamService {
     }
 
     public LoSanPhamDTO getLoSanPhamByMa(String maLo) {
-        LoSanPham lo = loSanPhamDAO.findById(maLo);
+        LoSanPham lo = loSanPhamDAO.timLoSanPham(maLo);
         return lo != null ? EntityMapper.toDTO(lo) : null;
     }
 }
