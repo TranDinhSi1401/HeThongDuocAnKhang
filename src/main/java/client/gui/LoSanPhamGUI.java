@@ -619,7 +619,7 @@ public class LoSanPhamGUI extends javax.swing.JPanel {
         jScrollPane3.setViewportView(tblThemSanPham);
 
         btnThemSanPhamTuExcel.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        btnThemSanPhamTuExcel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/images/excel.png"))); // NOI18N
+        btnThemSanPhamTuExcel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/excel.png"))); // NOI18N
         btnThemSanPhamTuExcel.setText("Excel [F6]");
         btnThemSanPhamTuExcel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

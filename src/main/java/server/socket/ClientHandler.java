@@ -146,6 +146,7 @@ public class ClientHandler implements Runnable {
                     Object[] arr = (Object[]) data;
                     yield Response.ok(khachHangService.truDiemTichLuy((Integer) arr[0], (String) arr[1]));
                 }
+                case SEARCH_KHACH_HANG_BY_SDT -> Response.ok(khachHangService.timKHTheoSDT((String) data));
 
                 // ===== NHAN VIEN =====
                 case GET_ALL_NHAN_VIEN        -> Response.ok(nhanVienService.getAllNhanVien());
@@ -199,6 +200,7 @@ public class ClientHandler implements Runnable {
                 case GET_SO_PTH                      -> Response.ok(hoaDonService.getSoPTH((String) data));
                 case GET_TONG_TIEN_CAC_PTH           -> Response.ok(hoaDonService.getTongTienCacPTH((String) data));
                 case ADD_HOA_DON                     -> Response.ok(hoaDonService.addHoaDon((HoaDonDTO) data));
+                case GET_ALL_HOA_DON                 -> Response.ok(hoaDonService.getAllHoaDon());
                 case GET_DOANH_THU_NGAY              -> Response.ok(hoaDonService.getDoanhThuTheoNgay((LocalDate) data));
                 case GET_DOANH_THU_THANG             -> Response.ok(hoaDonService.getDoanhThuTheoThang((LocalDate) data));
                 case GET_DOANH_THU_TUNG_NGAY         -> Response.ok(hoaDonService.getDoanhThuTungNgayTrongThang((LocalDate) data));

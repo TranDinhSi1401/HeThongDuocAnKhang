@@ -48,7 +48,7 @@ public class SplashScreen extends JWindow {
 
         ImageIcon icon = null;
         try {
-            java.net.URL imgUrl = getClass().getResource("/resources/images/logo.png");
+            java.net.URL imgUrl = getClass().getResource("/images/logo.png");
             if (imgUrl != null)
                 icon = new ImageIcon(imgUrl);
         } catch (Exception ex) {
@@ -98,7 +98,7 @@ public class SplashScreen extends JWindow {
 
         ImageIcon icon = null;
         try {
-            java.net.URL imgUrl = getClass().getResource("/resources/images/logo.png");
+            java.net.URL imgUrl = getClass().getResource("/images/logo.png");
             if (imgUrl != null)
                 icon = new ImageIcon(imgUrl);
         } catch (Exception ex) {

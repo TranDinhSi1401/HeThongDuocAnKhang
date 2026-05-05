@@ -1,18 +1,10 @@
-<<<<<<<< HEAD:src/main/java/common/util/PasswordUtil.java
-package common.util;
-
-========
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package common.utils;
-import java.security.SecureRandom;
 
 import client.socket.SocketClient;
 import common.network.CommandType;
 import common.network.Request;
->>>>>>>> master:src/main/java/common/utils/PasswordUtil.java
+import java.security.SecureRandom;
+
 import org.mindrot.jbcrypt.BCrypt;
 import java.security.SecureRandom;
 
@@ -59,9 +51,6 @@ public class PasswordUtil {
     public static boolean checkPassword(String plainPassword, String hashedPassword) {
         return BCrypt.checkpw(plainPassword, hashedPassword);
     }
-<<<<<<<< HEAD:src/main/java/common/util/PasswordUtil.java
-========
-
     public static boolean quenMatKhau(String taiKhoan, String email) {
         // Sinh mật khẩu mới
         String newPassword = PasswordUtil.generateTempPassword();
@@ -89,5 +78,4 @@ public class PasswordUtil {
 
         return check;
     }
->>>>>>>> master:src/main/java/common/utils/PasswordUtil.java
 }

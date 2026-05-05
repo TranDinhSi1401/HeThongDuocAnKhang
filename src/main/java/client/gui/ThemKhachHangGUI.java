@@ -135,7 +135,8 @@ public class ThemKhachHangGUI extends javax.swing.JPanel {
 
         jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        jLabel1.setFont(new java.awt.Font("Segoe UI", 0, 18));
+        jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 20));
+        jLabel1.setForeground(new java.awt.Color(25, 118, 210));
         jLabel1.setText("Thông tin khách hàng");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);

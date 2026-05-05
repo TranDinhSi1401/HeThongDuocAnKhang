@@ -30,6 +30,11 @@ public class KhachHangBUS {
         return (res.isSuccess()) ? (List<KhachHangDTO>) res.getData() : new ArrayList<>();
     }
 
+    public List<KhachHangDTO> searchKhachHangBySdt(String sdt) {
+        Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.SEARCH_KHACH_HANG_BY_SDT, sdt));
+        return (res.isSuccess()) ? (List<KhachHangDTO>) res.getData() : new ArrayList<>();
+    }
+
     public int getMaKHCuoi() {
         Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_MA_KH_CUOI, null));
         return (res.isSuccess()) ? (int) res.getData() : 0;

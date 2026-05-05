@@ -42,6 +42,11 @@ public class HoaDonService {
         return hd != null ? EntityMapper.toDTO(hd) : null;
     }
 
+    public List<HoaDonDTO> getAllHoaDon() {
+        return hoaDonDAO.loadAll()
+                .stream().map(EntityMapper::toDTO).collect(Collectors.toList());
+    }
+
     public List<HoaDonDTO> timHDTheoMaNV(String maNV) {
         return hoaDonDAO.timHDTheoMaNV(maNV)
                 .stream().map(EntityMapper::toDTO).collect(Collectors.toList());

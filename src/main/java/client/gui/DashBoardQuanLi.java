@@ -942,7 +942,7 @@ public class DashBoardQuanLi extends javax.swing.JPanel {
         jPanel4.setPreferredSize(new java.awt.Dimension(220, 220));
         jPanel4.setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/images/profile1.png"))); // NOI18N
+        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/profile1.png"))); // NOI18N
         jPanel4.add(jLabel1, new java.awt.GridBagConstraints());
 
         jPanel3.add(jPanel4, java.awt.BorderLayout.LINE_START);

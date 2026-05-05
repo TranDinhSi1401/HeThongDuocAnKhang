@@ -21,7 +21,7 @@ import javax.swing.event.ListSelectionListener;
 
 public class QuanLiKhachHangGUI extends JPanel {
 
-    private JButton btnThem, btnXoa, btnSua;
+    private JButton btnThem, btnXoa, btnSua, btnXuatExcel, btnLamMoi;
     private JTextField txtTimKiem;
     private JTable table;
     private JComboBox<String> cmbTieuChiTimKiem;
@@ -47,18 +47,25 @@ public class QuanLiKhachHangGUI extends JPanel {
         btnThem = new JButton("Thêm - F6");
         btnXoa = new JButton("Xóa - Del");
         btnSua = new JButton("Sửa - F2");
+        btnXuatExcel = new JButton("Xuất Excel");
+        btnLamMoi = new JButton("Làm mới - F5");
 
         mapKeyToClickButton("F6", btnThem);
         mapKeyToClickButton("DELETE", btnXoa);
         mapKeyToClickButton("F2", btnSua);
+        mapKeyToClickButton("F5", btnLamMoi);
 
         setupTopButton(btnThem, new Color(25, 118, 210)); // Xanh dương
         setupTopButton(btnXoa, new Color(255, 51, 51));  // Đỏ
         setupTopButton(btnSua, new Color(0, 203, 0));    // Xanh lá
+        setupTopButton(btnXuatExcel, new Color(255, 255, 255)); // Trắng
+        setupTopButton(btnLamMoi, new Color(255, 255, 255)); // Trắng
 
         pnlNorthLeft.add(btnThem);
         pnlNorthLeft.add(btnXoa);
         pnlNorthLeft.add(btnSua);
+        pnlNorthLeft.add(btnXuatExcel);
+        pnlNorthLeft.add(btnLamMoi);
 
         pnlNorth.add(pnlNorthLeft, BorderLayout.WEST);
 
@@ -224,6 +231,21 @@ public class QuanLiKhachHangGUI extends JPanel {
             }
         });
 
+        btnXuatExcel.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                xuLyXuatExcel();
+            }
+        });
+
+        btnLamMoi.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                updateTable();
+                txtTimKiem.setText("");
+            }
+        });
+
         txtTimKiem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -279,12 +301,32 @@ public class QuanLiKhachHangGUI extends JPanel {
                     dsKetQua = khachHangBUS.getKhachHangByTen(tuKhoa);
                     break;
                 case "Số điện thoại":
-                    KhachHangDTO khSdt = khachHangBUS.getKhachHangBySdt(tuKhoa);
-                    if (khSdt != null) dsKetQua.add(khSdt);
+                    // Bây giờ BUS sẽ trả về List cho tìm kiếm
+                    dsKetQua = khachHangBUS.searchKhachHangBySdt(tuKhoa);
                     break;
             }
         }
         updateTable(dsKetQua);
+    }
+
+    private void xuLyXuatExcel() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Chọn nơi lưu file Excel");
+        fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Excel files", "xlsx"));
+        
+        int userSelection = fileChooser.showSaveDialog(this);
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            String filePath = fileChooser.getSelectedFile().getAbsolutePath();
+            if (!filePath.toLowerCase().endsWith(".xlsx")) {
+                filePath += ".xlsx";
+            }
+            try {
+                common.utils.ExcelUtil.exportTableToExcel(table, "Danh sách khách hàng", filePath);
+                JOptionPane.showMessageDialog(this, "Xuất file Excel thành công!");
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Lỗi khi xuất file Excel: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            }
+        }
     }
 
     //HÀM XỬ LÝ NÚT THÊM

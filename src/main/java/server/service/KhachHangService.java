@@ -45,12 +45,19 @@ public class KhachHangService {
     }
 
     public boolean addKhachHang(KhachHangDTO dto) {
+        if (khachHangDAO.getKhachHangTheoSdt(dto.getSdt()) != null) {
+            return false; // SĐT đã tồn tại
+        }
         KhachHang entity = EntityMapper.toEntity(dto);
         khachHangDAO.create(entity);
         return true;
     }
 
     public boolean suaKhachHang(String maKH, KhachHangDTO dto) {
+        KhachHang existing = khachHangDAO.getKhachHangTheoSdt(dto.getSdt());
+        if (existing != null && !existing.getMaKH().equals(maKH)) {
+            return false; // SĐT đã thuộc về KH khác
+        }
         KhachHang khNew = EntityMapper.toEntity(dto);
         return khachHangDAO.suaKhachHang(maKH, khNew);
     }

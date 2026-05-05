@@ -1,12 +1,4 @@
-<<<<<<<< HEAD:src/main/java/server/util/EmailUtil.java
 package server.util;
-========
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-package common.utils;
->>>>>>>> master:src/main/java/common/utils/EmailUtil.java
 
 import javax.mail.PasswordAuthentication;
 import java.util.Properties;

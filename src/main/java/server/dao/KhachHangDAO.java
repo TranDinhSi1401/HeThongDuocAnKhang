@@ -103,11 +103,11 @@ public class KhachHangDAO extends AbstractGenericDaoImpl<KhachHang, String> {
         );
     }
 
-    /** Tìm khách hàng theo SĐT (danh sách, chưa bị xóa). */
+    /** Tìm khách hàng theo SĐT (danh sách, LIKE, chưa bị xóa). */
     public List<KhachHang> timKHTheoSDT(String sdtKH) {
         return doInTransaction(em ->
-            em.createQuery("SELECT kh FROM KhachHang kh WHERE kh.sdt = :sdt AND kh.daXoa = false", KhachHang.class)
-              .setParameter("sdt", sdtKH)
+            em.createQuery("SELECT kh FROM KhachHang kh WHERE kh.sdt LIKE :sdt AND kh.daXoa = false", KhachHang.class)
+              .setParameter("sdt", "%" + sdtKH + "%")
               .getResultList()
         );
     }

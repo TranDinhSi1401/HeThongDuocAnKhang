@@ -57,6 +57,7 @@ public enum CommandType implements Serializable {
     XOA_KHACH_HANG,
     UPDATE_DIEM_TICH_LUY,
     TRU_DIEM_TICH_LUY,
+    SEARCH_KHACH_HANG_BY_SDT,
 
     // ===== NhanVien =====
     GET_ALL_NHAN_VIEN,

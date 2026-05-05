@@ -34,9 +34,10 @@ import javax.swing.event.ListSelectionListener;
 
 public class QuanLiHoaDonGUI extends JPanel {
 
+    private JButton btnLamMoi;
     private JTextField txtTimKiem;
-    private JDateChooser chonLichNgayTimKiem;
-    private JPanel pnlNhapLieuTiimKiem;
+    private JDateChooser chonLichNgayTimKiem, chonLichNgayKetThuc;
+    private JPanel pnlNhapLieuTiimKiem, pnlDateRange;
     private JTable table;
     private JComboBox<String> cmbTieuChiTimKiem;
     private JComboBox<String> cmbBoLoc;
@@ -55,8 +56,14 @@ public class QuanLiHoaDonGUI extends JPanel {
 
         // Panel Chức năng (LEFT)
         JPanel pnlNorthLeft = new JPanel();
-        pnlNorthLeft.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        pnlNorthLeft.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 5));
         pnlNorthLeft.setBorder(new EmptyBorder(0, 0, 10, 0));
+        
+        btnLamMoi = new JButton("Làm mới (F5)");
+        setupButton(btnLamMoi, new Color(255, 255, 255));
+        
+        pnlNorthLeft.add(btnLamMoi);
+        
         pnlNorth.add(pnlNorthLeft, BorderLayout.WEST);
 
         // Panel Tìm kiếm và Lọc
@@ -68,7 +75,8 @@ public class QuanLiHoaDonGUI extends JPanel {
             "Mã Nhân Viên",
             "Mã Khách Hàng",
             "SĐT Khách Hàng",
-            "Ngày lập (yyyy-MM-dd)"
+            "Ngày lập (Một ngày)",
+            "Khoảng ngày"
         });
         cmbTieuChiTimKiem.setFont(new Font("Arial", Font.PLAIN, 14));
         cmbTieuChiTimKiem.setPreferredSize(new Dimension(180, 30));
@@ -90,13 +98,27 @@ public class QuanLiHoaDonGUI extends JPanel {
         ));
 
         chonLichNgayTimKiem = new JDateChooser();
-        chonLichNgayTimKiem.setDateFormatString("yyyy-MM-dd");
-        chonLichNgayTimKiem.setPreferredSize(new Dimension(200, 30));
+        chonLichNgayTimKiem.setDateFormatString("dd/MM/yyyy");
+        chonLichNgayTimKiem.setPreferredSize(new Dimension(150, 30));
         chonLichNgayTimKiem.setFont(new Font("Arial", Font.PLAIN, 14));
+        chonLichNgayTimKiem.setDate(new Date());
+
+        chonLichNgayKetThuc = new JDateChooser();
+        chonLichNgayKetThuc.setDateFormatString("dd/MM/yyyy");
+        chonLichNgayKetThuc.setPreferredSize(new Dimension(150, 30));
+        chonLichNgayKetThuc.setFont(new Font("Arial", Font.PLAIN, 14));
+        chonLichNgayKetThuc.setDate(new Date());
+
+        pnlDateRange = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        pnlDateRange.add(new JLabel("Từ:"));
+        pnlDateRange.add(chonLichNgayTimKiem);
+        pnlDateRange.add(new JLabel("Đến:"));
+        pnlDateRange.add(chonLichNgayKetThuc);
 
         pnlNhapLieuTiimKiem = new JPanel(new CardLayout());
         pnlNhapLieuTiimKiem.add(txtTimKiem, "text");
         pnlNhapLieuTiimKiem.add(chonLichNgayTimKiem, "date");
+        pnlNhapLieuTiimKiem.add(pnlDateRange, "range");
 
         JPanel pnlTimKiem = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
         pnlTimKiem.add(new JLabel("Tìm kiếm"));
@@ -233,16 +255,7 @@ public class QuanLiHoaDonGUI extends JPanel {
 
     private void updateTable() {
         Response res = SocketClient.getInstance().sendRequest(
-                new Request(CommandType.GET_HOA_DON_MOI_NHAT_TRONG_NGAY, null));
-        // Thử GET_ALL trước; nếu server chỉ có GET theo ngày, dùng khoảng rộng
-        // Dùng CommandType phù hợp: lấy tất cả hóa đơn không lọc
-        // Fallback: lấy theo hình thức "tất cả" bằng GET_HOA_DON_BY_HINH_THUC null
-        // Để đơn giản: dùng 1 ngày rất xa về quá khứ đến hiện tại
-        // Server có GET_HOA_DON_BY_KHOANG_NGAY(LocalDate from, LocalDate to)
-        LocalDate from = LocalDate.of(2000, 1, 1);
-        LocalDate to = LocalDate.now();
-        res = SocketClient.getInstance().sendRequest(
-                new Request(CommandType.GET_HOA_DON_BY_KHOANG_NGAY, new Object[]{from, to}));
+                new Request(CommandType.GET_ALL_HOA_DON, null));
         if (res.isSuccess() && res.getData() != null) {
             updateTable((List<HoaDonDTO>) res.getData());
         } else {
@@ -251,6 +264,13 @@ public class QuanLiHoaDonGUI extends JPanel {
     }
 
     private void addEvents() {
+        btnLamMoi.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                updateTable();
+            }
+        });
+
         txtTimKiem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -258,12 +278,16 @@ public class QuanLiHoaDonGUI extends JPanel {
             }
         });
 
-        chonLichNgayTimKiem.addPropertyChangeListener("date", new PropertyChangeListener() {
+        PropertyChangeListener dateChange = new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                xuLyTimKiem();
+                if ("date".equals(evt.getPropertyName())) {
+                    xuLyTimKiem();
+                }
             }
-        });
+        };
+        chonLichNgayTimKiem.addPropertyChangeListener(dateChange);
+        chonLichNgayKetThuc.addPropertyChangeListener(dateChange);
 
         cmbBoLoc.addActionListener(new ActionListener() {
             @Override
@@ -278,9 +302,10 @@ public class QuanLiHoaDonGUI extends JPanel {
                 CardLayout cl = (CardLayout) pnlNhapLieuTiimKiem.getLayout();
                 String tieuChi = cmbTieuChiTimKiem.getSelectedItem().toString();
 
-                if (tieuChi.equals("Ngày lập (yyyy-MM-dd)")) {
+                if (tieuChi.equals("Ngày lập (Một ngày)")) {
                     cl.show(pnlNhapLieuTiimKiem, "date");
-                    chonLichNgayTimKiem.requestFocusInWindow();
+                } else if (tieuChi.equals("Khoảng ngày")) {
+                    cl.show(pnlNhapLieuTiimKiem, "range");
                 } else {
                     cl.show(pnlNhapLieuTiimKiem, "text");
                     txtTimKiem.selectAll();
@@ -307,67 +332,50 @@ public class QuanLiHoaDonGUI extends JPanel {
     }
 
     private void xuLyTimKiem() {
-        String tuKhoa = "";
         String tieuChi = cmbTieuChiTimKiem.getSelectedItem().toString();
+        List<HoaDonDTO> dsKetQua = new ArrayList<>();
+        Response res;
 
-        if (tieuChi.equals("Ngày lập (yyyy-MM-dd)")) {
+        if (tieuChi.equals("Ngày lập (Một ngày)")) {
             Date date = chonLichNgayTimKiem.getDate();
             if (date != null) {
                 LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-                tuKhoa = localDate.toString();
+                res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_HOA_DON_BY_NGAY, localDate));
+                if (res.isSuccess() && res.getData() != null) dsKetQua = (List<HoaDonDTO>) res.getData();
+            }
+        } else if (tieuChi.equals("Khoảng ngày")) {
+            Date fromDate = chonLichNgayTimKiem.getDate();
+            Date toDate = chonLichNgayKetThuc.getDate();
+            if (fromDate != null && toDate != null) {
+                LocalDate ldFrom = fromDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                LocalDate ldTo = toDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_HOA_DON_BY_KHOANG_NGAY, new Object[]{ldFrom, ldTo}));
+                if (res.isSuccess() && res.getData() != null) dsKetQua = (List<HoaDonDTO>) res.getData();
             }
         } else {
-            tuKhoa = txtTimKiem.getText().trim();
-        }
-
-        if (tuKhoa.isEmpty()) {
-            updateTable();
-            return;
-        }
-
-        List<HoaDonDTO> dsKetQua = new ArrayList<>();
-        try {
-            Response res;
+            String tuKhoa = txtTimKiem.getText().trim();
+            if (tuKhoa.isEmpty()) {
+                updateTable();
+                return;
+            }
             switch (tieuChi) {
                 case "Mã Hóa Đơn":
-                    res = SocketClient.getInstance().sendRequest(
-                            new Request(CommandType.GET_HOA_DON_BY_MA, tuKhoa));
-                    if (res.isSuccess() && res.getData() != null) {
-                        dsKetQua.add((HoaDonDTO) res.getData());
-                    }
+                    res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_HOA_DON_BY_MA, tuKhoa));
+                    if (res.isSuccess() && res.getData() != null) dsKetQua.add((HoaDonDTO) res.getData());
                     break;
                 case "Mã Nhân Viên":
-                    res = SocketClient.getInstance().sendRequest(
-                            new Request(CommandType.GET_HOA_DON_BY_MA_NV, tuKhoa));
-                    if (res.isSuccess() && res.getData() != null) {
-                        dsKetQua = (List<HoaDonDTO>) res.getData();
-                    }
+                    res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_HOA_DON_BY_MA_NV, tuKhoa));
+                    if (res.isSuccess() && res.getData() != null) dsKetQua = (List<HoaDonDTO>) res.getData();
                     break;
                 case "Mã Khách Hàng":
-                    res = SocketClient.getInstance().sendRequest(
-                            new Request(CommandType.GET_HOA_DON_BY_MA_KH, tuKhoa));
-                    if (res.isSuccess() && res.getData() != null) {
-                        dsKetQua = (List<HoaDonDTO>) res.getData();
-                    }
+                    res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_HOA_DON_BY_MA_KH, tuKhoa));
+                    if (res.isSuccess() && res.getData() != null) dsKetQua = (List<HoaDonDTO>) res.getData();
                     break;
                 case "SĐT Khách Hàng":
-                    res = SocketClient.getInstance().sendRequest(
-                            new Request(CommandType.GET_HOA_DON_BY_SDT_KH, tuKhoa));
-                    if (res.isSuccess() && res.getData() != null) {
-                        dsKetQua = (List<HoaDonDTO>) res.getData();
-                    }
-                    break;
-                case "Ngày lập (yyyy-MM-dd)":
-                    LocalDate date = LocalDate.parse(tuKhoa);
-                    res = SocketClient.getInstance().sendRequest(
-                            new Request(CommandType.GET_HD_BY_NGAY_LAP, date));
-                    if (res.isSuccess() && res.getData() != null) {
-                        dsKetQua = (List<HoaDonDTO>) res.getData();
-                    }
+                    res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_HOA_DON_BY_SDT_KH, tuKhoa));
+                    if (res.isSuccess() && res.getData() != null) dsKetQua = (List<HoaDonDTO>) res.getData();
                     break;
             }
-        } catch (DateTimeParseException e) {
-            System.err.println("Lỗi định dạng ngày: " + e.getMessage());
         }
         updateTable(dsKetQua);
     }
@@ -422,5 +430,12 @@ public class QuanLiHoaDonGUI extends JPanel {
                 }
             }
         }
+    }
+
+    private void setupButton(JButton button, Color bgColor) {
+        button.setBackground(bgColor);
+        button.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        button.setFocusPainted(false);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
     }
 }
