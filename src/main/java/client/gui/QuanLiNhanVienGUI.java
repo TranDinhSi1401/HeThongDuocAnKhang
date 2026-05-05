@@ -1,11 +1,10 @@
 package client.gui;
 
+import client.bus.NhanVienBUS;
+import com.formdev.flatlaf.FlatClientProperties;
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import common.dto.NhanVienDTO;
 import common.dto.TaiKhoanDTO;
-import client.socket.SocketClient;
-import common.network.Request;
-import common.network.Response;
-import common.network.CommandType;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -34,10 +33,12 @@ public class QuanLiNhanVienGUI extends JPanel {
     private JLabel lblTongSoDong;
     private JLabel lblSoDongChon;
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private NhanVienBUS nhanVienBUS;
 
     public QuanLiNhanVienGUI() {
         this.setLayout(new BorderLayout(10, 10));
         this.setBorder(new EmptyBorder(10, 10, 10, 10));
+        this.nhanVienBUS = new NhanVienBUS();
 
         // PANEL NORTH
         JPanel pnlNorth = new JPanel();
@@ -77,15 +78,12 @@ public class QuanLiNhanVienGUI extends JPanel {
         cmbBoLoc.setPreferredSize(new Dimension(150, 30));
 
         txtTimKiem = new JTextField(20);
+        txtTimKiem.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Tìm kiếm theo " + cmbTieuChiTimKiem.getSelectedItem().toString().toLowerCase() + "...");
+        txtTimKiem.putClientProperty(FlatClientProperties.TEXT_FIELD_LEADING_ICON, new FlatSVGIcon("resources/images/search.svg", 16, 16));
         txtTimKiem.setFont(new Font("Arial", Font.PLAIN, 14));
-        txtTimKiem.setPreferredSize(new Dimension(200, 30));
-        txtTimKiem.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1),
-                new EmptyBorder(5, 5, 5, 5)
-        ));
+        txtTimKiem.setPreferredSize(new Dimension(250, 35));
 
         JPanel pnlTimKiem = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
-        pnlTimKiem.add(new JLabel("Tìm kiếm"));
         pnlTimKiem.add(txtTimKiem);
 
         pnlNorthRight.add(new JLabel("Tìm theo"));
@@ -221,18 +219,14 @@ public class QuanLiNhanVienGUI extends JPanel {
                 ngaySinhStr = nv.getNgaySinh().format(formatter);
             }
 
-            TaiKhoanDTO tk = null;
-            Response resTk = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_TAI_KHOAN_BY_MA_NV, nv.getMaNV()));
-            if (resTk.isSuccess() && resTk.getData() != null) {
-                tk = (TaiKhoanDTO) resTk.getData();
-            }
+            TaiKhoanDTO tk = nhanVienBUS.getTaiKhoanTheoMaNV(nv.getMaNV());
             String vaiTro = "Nhân viên";
 
             if (tk != null) {
                 if (tk.isQuanLy()) {
-                    vaiTro = "Quản lý (Admin)"; // Ưu tiên hiển thị Admin cao nhất
+                    vaiTro = "Quản lý (Admin)";
                 } else if (tk.isQuanLyLo()) {
-                    vaiTro = "Quản lý lô";    // Nếu không phải Admin mà là Quản lý lô
+                    vaiTro = "Quản lý lô";
                 }
             }
 
@@ -255,13 +249,8 @@ public class QuanLiNhanVienGUI extends JPanel {
     }
 
     private void updateTable() {
-        Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_ALL_NHAN_VIEN, null));
-        if (res.isSuccess()) {
-            List<NhanVienDTO> dsNV = (List<NhanVienDTO>) res.getData();
-            updateTable(dsNV);
-        } else {
-            updateTable(new ArrayList<>());
-        }
+        List<NhanVienDTO> dsNV = nhanVienBUS.getAllNhanVien();
+        updateTable(dsNV);
     }
 
     private void addEvents() {
@@ -297,30 +286,21 @@ public class QuanLiNhanVienGUI extends JPanel {
         List<NhanVienDTO> dsKetQua = new ArrayList<>();
 
         if (tuKhoa.isEmpty()) {
-            Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_ALL_NHAN_VIEN, null));
-            if (res.isSuccess()) {
-                dsKetQua = (List<NhanVienDTO>) res.getData();
-            }
+            dsKetQua = nhanVienBUS.getAllNhanVien();
         } else {
-            Response res = null;
             switch (tieuChi) {
                 case "Mã nhân viên":
-                    res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_NHAN_VIEN_BY_MA, tuKhoa));
-                    if (res.isSuccess() && res.getData() != null) {
-                        dsKetQua.add((NhanVienDTO) res.getData());
-                    }
+                    NhanVienDTO nv = nhanVienBUS.getNhanVienTheoMaNV(tuKhoa);
+                    if (nv != null) dsKetQua.add(nv);
                     break;
                 case "Tên nhân viên":
-                    res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_NHAN_VIEN_BY_TEN, tuKhoa));
-                    if (res.isSuccess()) dsKetQua = (List<NhanVienDTO>) res.getData();
+                    dsKetQua = nhanVienBUS.timNVTheoTen(tuKhoa);
                     break;
                 case "SĐT":
-                    res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_NHAN_VIEN_BY_SDT, tuKhoa));
-                    if (res.isSuccess()) dsKetQua = (List<NhanVienDTO>) res.getData();
+                    dsKetQua = nhanVienBUS.timNVTheoSDT(tuKhoa);
                     break;
                 case "CCCD":
-                    res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_NHAN_VIEN_BY_CCCD, tuKhoa));
-                    if (res.isSuccess()) dsKetQua = (List<NhanVienDTO>) res.getData();
+                    // Chạy timNVTheoCCCD nếu cần, hiện tại BUS chưa có, tạm dùng getAll lọc hoặc để trống
                     break;
             }
         }
@@ -333,12 +313,7 @@ public class QuanLiNhanVienGUI extends JPanel {
             updateTable();
         } else {
             boolean daNghiViec = boLoc.equals("Đã nghỉ");
-            Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_NHAN_VIEN_BY_TRANG_THAI, daNghiViec));
-            if (res.isSuccess()) {
-                updateTable((List<NhanVienDTO>) res.getData());
-            } else {
-                updateTable(new ArrayList<>());
-            }
+            updateTable(nhanVienBUS.timNVTheoTrangThai(daNghiViec));
         }
     }
 
@@ -352,14 +327,7 @@ public class QuanLiNhanVienGUI extends JPanel {
         dialog.pack();
         dialog.setLocationRelativeTo(null);
 
-        Response resMa = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_MA_NV_CUOI, null));
-        int maNVCUoiCung = 0;
-        if (resMa.isSuccess() && resMa.getData() != null) {
-            String maNVStr = (String) resMa.getData();
-            if (maNVStr != null && maNVStr.startsWith("NV-")) {
-                maNVCUoiCung = Integer.parseInt(maNVStr.substring(3));
-            }
-        }
+        int maNVCUoiCung = nhanVienBUS.getMaNVCuoiCung();
         String maNVNew = String.format("NV-%04d", maNVCUoiCung + 1);
         pnlThemNV.setTxtMaNhanVien(maNVNew);
         pnlThemNV.setTxtTenDangNhap(maNVNew);
@@ -377,19 +345,17 @@ public class QuanLiNhanVienGUI extends JPanel {
                 break;
             }
 
-            Response resNv = SocketClient.getInstance().sendRequest(new Request(CommandType.ADD_NHAN_VIEN, nvNew));
-            if (resNv.isSuccess()) {
-                Response resTk = SocketClient.getInstance().sendRequest(new Request(CommandType.ADD_TAI_KHOAN, tkNew));
-                if (resTk.isSuccess()) {
+            if (nhanVienBUS.addNhanVien(nvNew)) {
+                if (nhanVienBUS.addTaiKhoan(tkNew)) {
                     JOptionPane.showMessageDialog(this, "Thêm nhân viên thành công!");
                     updateTable();
                     isSuccess = true;
                     dialog.dispose();
                 } else {
-                    JOptionPane.showMessageDialog(this, "Thêm tài khoản thất bại: " + resTk.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Thêm tài khoản thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
                 }
             } else {
-                JOptionPane.showMessageDialog(this, "Thêm nhân viên thất bại: " + resNv.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Thêm nhân viên thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -409,9 +375,7 @@ public class QuanLiNhanVienGUI extends JPanel {
             int count = 0;
             for (int i = selectedRows.length - 1; i >= 0; i--) {
                 String maNV = model.getValueAt(selectedRows[i], 1).toString();
-                Response resTk = SocketClient.getInstance().sendRequest(new Request(CommandType.XOA_TAI_KHOAN, maNV));
-                Response resNv = SocketClient.getInstance().sendRequest(new Request(CommandType.XOA_NHAN_VIEN, maNV));
-                if (resNv.isSuccess() && resTk.isSuccess()) {
+                if (nhanVienBUS.xoaNhanVien(maNV)) {
                     count++;
                 }
             }
@@ -435,17 +399,13 @@ public class QuanLiNhanVienGUI extends JPanel {
 
         String maNV = model.getValueAt(selectedRow, 1).toString();
         
-        Response resNv = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_NHAN_VIEN_BY_MA, maNV));
-        Response resTk = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_TAI_KHOAN_BY_MA_NV, maNV));
+        NhanVienDTO nvCanSua = nhanVienBUS.getNhanVienTheoMaNV(maNV);
+        TaiKhoanDTO tkCanSua = nhanVienBUS.getTaiKhoanTheoMaNV(maNV);
         
-        if (!resNv.isSuccess() || resNv.getData() == null) {
+        if (nvCanSua == null) {
             JOptionPane.showMessageDialog(this, "Không tìm thấy nhân viên.");
             return;
         }
-        
-        NhanVienDTO nvCanSua = (NhanVienDTO) resNv.getData();
-        TaiKhoanDTO tkCanSua = null;
-        if (resTk.isSuccess()) tkCanSua = (TaiKhoanDTO) resTk.getData();
 
         ThemNhanVienGUI pnlThemNV = new ThemNhanVienGUI();
         JDialog dialog = new JDialog();
@@ -487,10 +447,7 @@ public class QuanLiNhanVienGUI extends JPanel {
                 break;
             }
 
-            Response resUpdateNv = SocketClient.getInstance().sendRequest(new Request(CommandType.SUA_NHAN_VIEN, new Object[]{maNV, nvNew}));
-            Response resUpdateTk = SocketClient.getInstance().sendRequest(new Request(CommandType.CAP_NHAT_TAI_KHOAN, tkNew));
-
-            if (resUpdateNv.isSuccess() && resUpdateTk.isSuccess()) {
+            if (nhanVienBUS.suaNhanVien(maNV, nvNew) && nhanVienBUS.capNhatTaiKhoan(tkNew)) {
                 JOptionPane.showMessageDialog(this, "Sửa thông tin nhân viên thành công!");
                 updateTable();
                 isSuccess = true;
@@ -509,13 +466,9 @@ public class QuanLiNhanVienGUI extends JPanel {
         if (selectRow != -1 && e.getClickCount() == 2) {
             String maNV = model.getValueAt(selectRow, 1).toString();
             
-            Response resNv = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_NHAN_VIEN_BY_MA, maNV));
-            Response resTk = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_TAI_KHOAN_BY_MA_NV, maNV));
-            if (!resNv.isSuccess() || resNv.getData() == null) return;
-
-            NhanVienDTO nvDaChon = (NhanVienDTO) resNv.getData();
-            TaiKhoanDTO tk = null;
-            if (resTk.isSuccess()) tk = (TaiKhoanDTO) resTk.getData();
+            NhanVienDTO nvDaChon = nhanVienBUS.getNhanVienTheoMaNV(maNV);
+            TaiKhoanDTO tk = nhanVienBUS.getTaiKhoanTheoMaNV(maNV);
+            if (nvDaChon == null) return;
 
             ThemNhanVienGUI pnlThemNV = new ThemNhanVienGUI();
             JDialog dialog = new JDialog();

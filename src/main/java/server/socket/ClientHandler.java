@@ -208,6 +208,7 @@ public class ClientHandler implements Runnable {
                 case GET_CTXL_BY_MA_CTHD  -> Response.ok(hoaDonService.getCTXLByMaCTHD((String) data));
 
                 // ===== LO SAN PHAM =====
+                case GET_ALL_LO_SAN_PHAM   -> Response.ok(loSanPhamService.getAllLoSanPham());
                 case GET_LO_BY_MA_SP       -> Response.ok(loSanPhamService.getLoSanPhamTheoMaSP((String) data));
                 case GET_LO_BY_MA          -> Response.ok(loSanPhamService.timLoSanPham((String) data));
                 case GET_LO_BY_MA_CTHD     -> Response.ok(loSanPhamService.getLoSanPhamTheoMaCTHD((String) data));
@@ -229,8 +230,14 @@ public class ClientHandler implements Runnable {
                     Object[] arr = (Object[]) data;
                     yield Response.ok(loSanPhamService.capNhatSoLuongLo((LoSanPhamDTO) arr[0], (Integer) arr[1]));
                 }
+                case UPDATE_LO_SAN_PHAM -> {
+                    Object[] arr = (Object[]) data;
+                    yield Response.ok(loSanPhamService.capNhatSoLuongLo((LoSanPhamDTO) arr[0], (Integer) arr[1]));
+                }
+                case DELETE_LO_SAN_PHAM -> Response.ok(loSanPhamService.huyLoSanPham((LoSanPhamDTO) data));
 
                 // ===== LICH SU LO =====
+                case GET_ALL_LICH_SU_LO      -> Response.ok(loSanPhamService.getAllLichSuLo());
                 case GET_LICH_SU_LO_BY_MA_LO -> Response.ok(loSanPhamService.getLichSuLoTheoMaLo((String) data));
                 case ADD_LICH_SU_LO           -> Response.ok(loSanPhamService.addLichSuLo((LichSuLoDTO) data));
 
@@ -307,21 +314,9 @@ public class ClientHandler implements Runnable {
                 case ADD_LICH_SU_CA_LAM      -> Response.ok(caLamService.addLichSuCaLam((LichSuCaLamDTO) data));
                 case UPDATE_LICH_SU_CA_LAM   -> Response.ok(caLamService.updateLichSuCaLam((LichSuCaLamDTO) data));
 
-                // ===== LO SAN PHAM =====
-                case GET_ALL_LO_SAN_PHAM      -> Response.ok(loSanPhamService.getAllLoSanPham());
-                case GET_LO_BY_MA            -> Response.ok(loSanPhamService.timLoSanPham((String) data));
-                case GET_LO_BY_MA_SP         -> Response.ok(loSanPhamService.getLoSanPhamTheoMaSP((String) data));
-                case ADD_LO_SAN_PHAM         -> Response.ok(loSanPhamService.addLoSanPham((LoSanPhamDTO) data));
-                case UPDATE_LO_SAN_PHAM      -> {
-                    Object[] arr = (Object[]) data;
-                    yield Response.ok(loSanPhamService.capNhatSoLuongLo((LoSanPhamDTO) arr[0], (int) arr[1]));
-                }
-                case DELETE_LO_SAN_PHAM      -> Response.ok(loSanPhamService.huyLoSanPham((LoSanPhamDTO) data));
-                case DEM_LO_THEO_TRANG_THAI  -> Response.ok(loSanPhamService.demLoTheoTrangThai());
+                default -> Response.fail("Lệnh không hợp lệ hoặc chưa được hỗ trợ: " + cmd);
 
-                // ===== LICH SU LO =====
-                case GET_ALL_LICH_SU_LO      -> Response.ok(loSanPhamService.getAllLichSuLo());
-                case ADD_LICH_SU_LO          -> Response.ok(loSanPhamService.addLichSuLo((LichSuLoDTO) data));
+
             };
         } catch (Exception e) {
             return Response.fail("Lỗi server: " + e.getMessage());

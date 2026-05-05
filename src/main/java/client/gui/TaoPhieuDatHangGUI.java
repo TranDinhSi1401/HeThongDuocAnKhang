@@ -5,11 +5,14 @@
 package client.gui;
 import java.util.ArrayList;
 
-import hethongnhathuocduocankhang.bus.PhieuDatHangBUS;
-import hethongnhathuocduocankhang.entity.DonViTinh;
-import hethongnhathuocduocankhang.entity.NhaCungCap;
-import hethongnhathuocduocankhang.entity.SanPham;
-import hethongnhathuocduocankhang.entity.TaiKhoan;
+import client.bus.PhieuDatHangBUS;
+import common.dto.DonViTinhDTO;
+import common.dto.NhaCungCapDTO;
+import common.dto.NhanVienDTO;
+import common.dto.SanPhamDTO;
+import common.dto.TaiKhoanDTO;
+import common.network.*;
+import client.socket.SocketClient;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.FocusEvent;
@@ -461,7 +464,7 @@ public class TaoPhieuDatHangGUI extends javax.swing.JPanel {
            txtTimSanPham.requestFocus();
            return;
        }
-       SanPham s = phieuDatBUS.timSanPham(maSanPham);
+       SanPhamDTO s = phieuDatBUS.timSanPham(maSanPham);
        DefaultTableModel m = (DefaultTableModel) tblSanPham.getModel();
        m.setRowCount(0);
        if(s!=null)
@@ -562,13 +565,13 @@ public class TaoPhieuDatHangGUI extends javax.swing.JPanel {
     private javax.swing.JTextField txtTimSanPham;
     // End of variables declaration//GEN-END:variables
     
-    TaiKhoan tk = GiaoDienChinhGUI.getTk();
+    TaiKhoanDTO tk = GiaoDienChinhGUI.getTkDTO();
 
     private void getSanPham() {
-        ArrayList<SanPham> dsSP = phieuDatBUS.danhsachSanPham();
+        List<SanPhamDTO> dsSP = phieuDatBUS.danhsachSanPham();
         DefaultTableModel m = (DefaultTableModel) tblSanPham.getModel();
         m.setRowCount(0);
-        for(SanPham sp : dsSP){
+        for(SanPhamDTO sp : dsSP){
             m.addRow(new Object[]{sp.getMaSP(), sp.getTen()});
         }
     }
@@ -578,7 +581,13 @@ public class TaoPhieuDatHangGUI extends javax.swing.JPanel {
             JOptionPane.showMessageDialog(this, "Nhân viên chưa đăng nhập!");
             return;
         }
-        txtTenNhanVien.setText(tk.getNhanVien().getHoTenDem() + " " + tk.getNhanVien().getTen());
+        Response resNv = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_NHAN_VIEN_BY_MA, tk.getMaNV()));
+        if (resNv.isSuccess() && resNv.getData() != null) {
+            NhanVienDTO nv = (NhanVienDTO) resNv.getData();
+            txtTenNhanVien.setText(nv.getHoTenDem() + " " + nv.getTen());
+        } else {
+            txtTenNhanVien.setText(tk.getMaNV());
+        }
         //ngayLap.setDate(new Date());
     }
 
@@ -811,9 +820,9 @@ public class TaoPhieuDatHangGUI extends javax.swing.JPanel {
 
     
     public void loadTable(String ma){
-        SanPham sp = phieuDatBUS.timSanPham(ma);
-        NhaCungCap ncc = phieuDatBUS.timNhaCC(ma);
-        DonViTinh dvt = phieuDatBUS.giaSanPham(ma);
+        SanPhamDTO sp = phieuDatBUS.timSanPham(ma);
+        NhaCungCapDTO ncc = phieuDatBUS.timNhaCC(ma);
+        DonViTinhDTO dvt = phieuDatBUS.giaSanPham(ma);
         if(ncc==null){
             JOptionPane.showMessageDialog(this, "Nhà cung cấp rỗng!");
             return;

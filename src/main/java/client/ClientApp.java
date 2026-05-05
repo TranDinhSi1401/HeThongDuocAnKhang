@@ -14,8 +14,8 @@ import javax.swing.*;
  * lấy từ Server qua Socket ({@link client.socket.SocketClient}).
  *
  * Cách chạy:
- *   1. Khởi động {@link server.socket.Server} trước.
- *   2. Chạy class này.
+ * 1. Khởi động {@link server.socket.Server} trước.
+ * 2. Chạy class này.
  */
 public class ClientApp {
 

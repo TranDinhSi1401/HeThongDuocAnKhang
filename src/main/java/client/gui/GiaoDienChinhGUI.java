@@ -43,21 +43,7 @@ public class GiaoDienChinhGUI extends JFrame {
         return currentTaiKhoan;
     }
 
-    public static hethongnhathuocduocankhang.entity.TaiKhoan getTk() {
-        if (currentTaiKhoan == null) return null;
-        hethongnhathuocduocankhang.entity.NhanVien nv = new hethongnhathuocduocankhang.entity.NhanVien();
-        nv.setMaNV(currentTaiKhoan.getMaNV());
-        return new hethongnhathuocduocankhang.entity.TaiKhoan(
-            currentTaiKhoan.getMaNV(), 
-            nv, 
-            currentTaiKhoan.getMatKhau(), 
-            currentTaiKhoan.isQuanLy(), 
-            currentTaiKhoan.isQuanLyLo(), 
-            currentTaiKhoan.isBiKhoa(), 
-            currentTaiKhoan.getEmail(), 
-            currentTaiKhoan.getNgayTao()
-        );
-    }
+
 
     // ── Constructor ──────────────────────────────────────────
     public GiaoDienChinhGUI(TaiKhoanDTO taiKhoan) {

@@ -7,7 +7,7 @@ package client.gui;
 import com.toedter.calendar.JDateChooser;
 import common.dto.NhanVienDTO;
 import common.dto.TaiKhoanDTO;
-import hethongnhathuocduocankhang.util.PasswordUtil;
+import common.util.PasswordUtil;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

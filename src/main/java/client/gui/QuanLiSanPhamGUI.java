@@ -1,6 +1,8 @@
 package client.gui;
 
-import hethongnhathuocduocankhang.bus.SanPhamBUS;
+import client.bus.SanPhamBUS;
+import com.formdev.flatlaf.FlatClientProperties;
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -31,7 +33,7 @@ public class QuanLiSanPhamGUI extends JPanel {
 
         // Khởi tạo BUS và load dữ liệu
         sanPhamBUS = new SanPhamBUS();
-        sanPhamBUS.loadDataToTable(this, null);
+        sanPhamBUS.loadDataToTable(table, null);
 
         // Gắn sự kiện
         initEvents();
@@ -70,15 +72,12 @@ public class QuanLiSanPhamGUI extends JPanel {
         cmbBoLoc.setPreferredSize(new Dimension(180, 30));
 
         txtTimKiem = new JTextField(20);
+        txtTimKiem.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Tìm kiếm...");
+        txtTimKiem.putClientProperty(FlatClientProperties.TEXT_FIELD_LEADING_ICON, new FlatSVGIcon("resources/images/search.svg", 16, 16));
         txtTimKiem.setFont(new Font("Arial", Font.PLAIN, 14));
-        txtTimKiem.setPreferredSize(new Dimension(200, 30));
-        txtTimKiem.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1),
-                new EmptyBorder(5, 5, 5, 5)
-        ));
+        txtTimKiem.setPreferredSize(new Dimension(250, 35));
 
         JPanel pnlTimKiem = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
-        pnlTimKiem.add(new JLabel("Tìm kiếm:"));
         pnlTimKiem.add(txtTimKiem);
 
         pnlNorthRight.add(new JLabel("Tìm theo:"));
@@ -160,7 +159,7 @@ public class QuanLiSanPhamGUI extends JPanel {
             ThemSanPhamGUI dialog = new ThemSanPhamGUI(sanPhamBUS, false, "");
             dialog.setVisible(true);
             // Sau khi dialog đóng -> load lại bảng
-            sanPhamBUS.loadDataToTable(this, null);
+            sanPhamBUS.loadDataToTable(table, null);
         });
 
         // Sự kiện SỬA
@@ -173,7 +172,7 @@ public class QuanLiSanPhamGUI extends JPanel {
             String maSP = model.getValueAt(selectedRow, 1).toString();
             ThemSanPhamGUI dialog = new ThemSanPhamGUI(sanPhamBUS, true, maSP);
             dialog.setVisible(true);
-            sanPhamBUS.loadDataToTable(this, null);
+            sanPhamBUS.loadDataToTable(table, null);
         });
 
         // Sự kiện XÓA

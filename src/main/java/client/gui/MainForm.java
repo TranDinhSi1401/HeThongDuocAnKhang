@@ -3,7 +3,7 @@ package client.gui;
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.formdev.flatlaf.util.UIScale;
-import hethongnhathuocduocankhang.bus.DangNhapBUS;
+import client.bus.DangNhapBUS;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.ComponentOrientation;
@@ -73,7 +73,7 @@ public class MainForm extends JLayeredPane {
         menu.addMenuEvent((int index, int subIndex, MenuAction action) -> {
             // Application.mainForm.showForm(new DefaultForm("Form : " + index + " " + subIndex));
             if (index == 0) {
-                if (GiaoDienChinhGUI.getTk().isQuanLy()) {
+                if (GiaoDienChinhGUI.isQuanLy()) {
                     GiaoDienChinhGUI.showFormByKey("dashboardQuanLi", DashBoardQuanLi::new);
                 } else {
                     GiaoDienChinhGUI.showFormByKey("dashboardNhanVien", DashBoardNhanVien::new);
@@ -83,9 +83,10 @@ public class MainForm extends JLayeredPane {
             } else if (index == 2) {
                 GiaoDienChinhGUI.showFormByKey("traHang", TraHangGUI::new);
             } else if (index == 3) {
-                GiaoDienChinhGUI.showFormByKey("traCuuChung", TraCuuChungGUI::new);
+                JOptionPane.showMessageDialog(this, "Chức năng tra cứu chung hiện đang bị vô hiệu hóa do đang bảo trì.");
+                action.cancel();
             } else if (index == 4) {
-                if(GiaoDienChinhGUI.getTk().isQuanLy()) {
+                if(GiaoDienChinhGUI.isQuanLy()) {
                     switch (subIndex) {
                         case 1 ->
                             GiaoDienChinhGUI.showFormByKey("quanLiKhachHang", QuanLiKhachHangGUI::new);
@@ -114,7 +115,7 @@ public class MainForm extends JLayeredPane {
                     action.cancel();
                 }           
             } else if (index == 5) {
-                if(GiaoDienChinhGUI.getTk().isQuanLy() || GiaoDienChinhGUI.getTk().isQuanLyLo()) {
+                if(GiaoDienChinhGUI.isQuanLy() || GiaoDienChinhGUI.isQuanLyLo()) {
                     GiaoDienChinhGUI.showFormByKey("loSanPham", () -> {
                         try {
                             return new LoSanPhamGUI();

@@ -56,7 +56,7 @@ public class DashBoardNhanVien extends javax.swing.JPanel {
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         //setBackground(new Color(255, 255, 255));
 
-        String maNVLogin = GiaoDienChinhGUI.getTk().getTenDangNhap().trim();
+        String maNVLogin = GiaoDienChinhGUI.getTkDTO().getMaNV().trim();
         Response resNV = SocketClient.getInstance().sendRequest(
                 new Request(CommandType.GET_NHAN_VIEN_BY_MA, maNVLogin));
         if (resNV.isSuccess() && resNV.getData() != null) {
@@ -105,7 +105,7 @@ public class DashBoardNhanVien extends javax.swing.JPanel {
     private void configureBtnVaoCa() {
         btnVaoCa.setOpaque(true);
         // Dùng SocketClient thay VaoRaCaBUS
-        String maNV = GiaoDienChinhGUI.getTk().getTenDangNhap().trim();
+        String maNV = GiaoDienChinhGUI.getTkDTO().getMaNV().trim();
 
         Response resKiemTra = SocketClient.getInstance().sendRequest(
                 new Request(CommandType.GET_LSCL_DANG_LAM_BY_MA_NV, maNV));
@@ -193,7 +193,7 @@ public class DashBoardNhanVien extends javax.swing.JPanel {
         if (nv.getNgaySinh() != null) {
             lblNgaySinh.setText(nv.getNgaySinh().format(formatter));
         }
-        lblChucVu.setText(GiaoDienChinhGUI.getTk().isQuanLyLo() ? "Quản lý lô" : "Nhân viên");
+        lblChucVu.setText(GiaoDienChinhGUI.isQuanLyLo() ? "Quản lý lô" : "Nhân viên");
         lblTrangThai.setText(nv.isNghiViec() ? "Nghỉ việc" : "Đang làm việc");
         lblSdt.setText(nv.getSdt());
     }
@@ -277,7 +277,7 @@ public class DashBoardNhanVien extends javax.swing.JPanel {
         LocalDate homQua = homNay.minusDays(1);
         double dtHomNay = 0.0, dtHomQua = 0.0;
         int hdHomNay = 0, hdHomQua = 0;
-        String currentNV = GiaoDienChinhGUI.getTk().getTenDangNhap().trim();
+        String currentNV = GiaoDienChinhGUI.getTkDTO().getMaNV().trim();
 
         Response resHDHomNay = SocketClient.getInstance().sendRequest(
                 new Request(CommandType.GET_HD_BY_NGAY_LAP, homNay));
@@ -448,7 +448,7 @@ public class DashBoardNhanVien extends javax.swing.JPanel {
 
         LocalDate homNay = LocalDate.now();
         NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
-        String maNVHienTai = GiaoDienChinhGUI.getTk().getTenDangNhap().trim();
+        String maNVHienTai = GiaoDienChinhGUI.getTkDTO().getMaNV().trim();
         Response resHD = SocketClient.getInstance().sendRequest(
                 new Request(CommandType.GET_HOA_DON_BY_MA_NV, maNVHienTai));
         if (resHD.isSuccess() && resHD.getData() != null) {
@@ -490,7 +490,7 @@ public class DashBoardNhanVien extends javax.swing.JPanel {
             }
         };
 
-        String maNV = GiaoDienChinhGUI.getTk().getTenDangNhap().trim();
+        String maNV = GiaoDienChinhGUI.getTkDTO().getMaNV().trim();
         DateTimeFormatter dinhDangThGian = DateTimeFormatter.ofPattern("HH:mm:ss");
         Response resLS = SocketClient.getInstance().sendRequest(
                 new Request(CommandType.GET_LSCL_BY_MA_NV, maNV));

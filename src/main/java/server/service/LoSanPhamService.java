@@ -19,11 +19,11 @@ public class LoSanPhamService {
     private final LichSuLoDAO lichSuLoDAO = new LichSuLoDAO();
 
     public List<LoSanPhamDTO> getAllLoSanPham() {
-        return loSanPhamDAO.findAll().stream().map(EntityMapper::toDTO).collect(Collectors.toList());
+        return loSanPhamDAO.loadAll().stream().map(EntityMapper::toDTO).collect(Collectors.toList());
     }
 
     public List<LichSuLoDTO> getAllLichSuLo() {
-        return lichSuLoDAO.findAll().stream().map(EntityMapper::toDTO).collect(Collectors.toList());
+        return lichSuLoDAO.loadAll().stream().map(EntityMapper::toDTO).collect(Collectors.toList());
     }
 
     public List<LoSanPhamDTO> getLoSanPhamTheoMaSP(String maSP) {

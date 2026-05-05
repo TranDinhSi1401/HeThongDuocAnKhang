@@ -3,6 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
  */
 package client.gui;
+// Removed server imports
 
 import com.microsoft.sqlserver.jdbc.SQLServerException;
 import common.dto.*;
@@ -10,9 +11,9 @@ import common.network.CommandType;
 import common.network.Request;
 import common.network.Response;
 import client.socket.SocketClient;
-import hethongnhathuocduocankhang.bus.TraHangBUS;
-import hethongnhathuocduocankhang.entity.TinhTrangSanPhamEnum;
-import hethongnhathuocduocankhang.entity.TruongHopDoiTraEnum;
+import client.bus.TraHangBUS;
+import common.entity.TinhTrangSanPhamEnum;
+import common.entity.TruongHopDoiTraEnum;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -61,6 +62,7 @@ public class TraHangGUI extends javax.swing.JPanel {
     private JLabel lblSoNgayHD;
     private JLabel lblTongTienTra;
     private final TraHangBUS traHangBUS = new TraHangBUS();
+    private int count = 0;
     /**
      * Creates new form TraHangGUI
      */
@@ -601,7 +603,7 @@ public class TraHangGUI extends javax.swing.JPanel {
             if (maHoaDon != null && !maHoaDon.trim().isEmpty()) {
                 try {
                     // GỌI BUS: Kiểm tra điều kiện
-                    HoaDon hoaDon = traHangBUS.kiemTraDieuKienTraHang(maHoaDon);
+                    HoaDonDTO hoaDon = traHangBUS.kiemTraDieuKienTraHang(maHoaDon);
 
                     // Nếu không có exception thì thêm hóa đơn vào GUI
                     addHoaDon(maHoaDon, hoaDon); 
@@ -628,11 +630,10 @@ public class TraHangGUI extends javax.swing.JPanel {
     private void btnXacNhanActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_btnXacNhanActionPerformed
         // TODO add your handling code here:
         try {
-            jTextField3.setText(NhanVienDAO.getNhanVienTheoMaNV(GiaoDienChinhGUI.getTk().getTenDangNhap()).getHoTenDem()
-                    + " " + NhanVienDAO.getNhanVienTheoMaNV(GiaoDienChinhGUI.getTk().getTenDangNhap()).getTen());
-        } catch (Exception e) {
-
-        }
+            NhanVienDTO nv = (NhanVienDTO) SocketClient.getInstance().sendRequest(new Request(CommandType.GET_NHAN_VIEN_BY_MA, GiaoDienChinhGUI.getTkDTO().getMaNV())).getData();
+            if(nv != null)
+                jTextField3.setText(nv.getHoTenDem() + " " + nv.getTen());
+        } catch (Exception e) { }
         DefaultTableModel dtmCTHD = (DefaultTableModel) tblCTHD.getModel();
 
         int soLuongChonHienTai = 0;
@@ -720,7 +721,7 @@ int chon = JOptionPane.showConfirmDialog(null, "Xác nhận tạo phiếu trả?
             if (maHoaDon != null && !maHoaDon.trim().isEmpty()) {
                 try {
                     // GỌI BUS: Kiểm tra điều kiện
-                    HoaDon hoaDon = traHangBUS.kiemTraDieuKienTraHang(maHoaDon);
+                    HoaDonDTO hoaDon = traHangBUS.kiemTraDieuKienTraHang(maHoaDon);
 
                     // Nếu không có exception thì thêm hóa đơn vào GUI
                     addHoaDon(maHoaDon, hoaDon); 
@@ -752,10 +753,10 @@ int chon = JOptionPane.showConfirmDialog(null, "Xác nhận tạo phiếu trả?
                 lyDoEnumStr = "DI_UNG_MAN_CAM";
 
             boolean isNguyenVen = (boolean)dtm.getValueAt(selectRow, 7);
-            dtm.setValueAt(TraHangBUS.layPhanTramHoanTra(lyDoEnumStr, isNguyenVen), selectRow, 8);
+            dtm.setValueAt(traHangBUS.layPhanTramHoanTra(lyDoEnumStr, isNguyenVen), selectRow, 8);
             
             double thanhTienGoc = boDinhDangTien(dtm.getValueAt(selectRow, 5).toString());
-            double tienHoanTra = TraHangBUS.tinhTienHoanTraItem(thanhTienGoc, lyDoEnumStr, isNguyenVen);
+            double tienHoanTra = traHangBUS.tinhTienHoanTraItem(thanhTienGoc, lyDoEnumStr, isNguyenVen);
             dtm.setValueAt(dinhDangTien(tienHoanTra), selectRow, 9);
 
             capNhatTongTienTra();
@@ -997,7 +998,7 @@ int chon = JOptionPane.showConfirmDialog(null, "Xác nhận tạo phiếu trả?
         jTextField5.setText(ngay + "/" + thang + "/" + nam);
 
         // GỌI BUS: Sinh mã phiếu
-        String maPhieuTraHang = TraHangBUS.phatSinhMaPhieuTraHang();
+        String maPhieuTraHang = traHangBUS.phatSinhMaPhieuTraHang();
         txtMaPhieuTraHang.setText(maPhieuTraHang);
     }
     private void taoLyDo() {
@@ -1036,7 +1037,8 @@ int chon = JOptionPane.showConfirmDialog(null, "Xác nhận tạo phiếu trả?
         int nam = LocalDate.now().getYear();
         nam = nam % 1000;
         String ngayThangNam = String.format("%02d%02d%02d", ngay, thang, nam);
-        int soPhieuHomNay = PhieuTraHangDAO.phieuTraHangMoiNhatHomNay();
+        Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_PTH_CUOI_CUNG, null));
+        int soPhieuHomNay = (res.isSuccess()) ? (int) res.getData() : 0;
         String maPhieuTraHang = String.format("PTH-%s-%04d", ngayThangNam, soPhieuHomNay + 1);
 
         return maPhieuTraHang;
@@ -1086,7 +1088,7 @@ int chon = JOptionPane.showConfirmDialog(null, "Xác nhận tạo phiếu trả?
 
     private PhieuTraHangDTO getPhieuTraHang() {
         String maPTH = txtMaPhieuTraHang.getText();
-        String maNV = GiaoDienChinhGUI.getTk().getMaNV();
+        String maNV = GiaoDienChinhGUI.getTkDTO().getMaNV();
         String maHD = txtMaHoaDonTrongPhieuTraHang.getText();
         double tongTien = boDinhDangTien(txtTongThanhTien.getText());
 
@@ -1208,12 +1210,7 @@ int chon = JOptionPane.showConfirmDialog(null, "Xác nhận tạo phiếu trả?
     }
 
     
-    private void luuPhieuVaoCSDL(PhieuTraHang pth, List<ChiTietPhieuTraHang> list) {
-        PhieuTraHangDAO.themPhieuTra(pth);
-        for (ChiTietPhieuTraHang ctpth : list) {
-            ChiTietPhieuTraDAO.insertChiTietPhieuTra(ctpth);
-        }
-    }
+    // Removed direct DB save from GUI
 
 
     private void capNhatTongTienTra() {
@@ -1225,10 +1222,10 @@ int chon = JOptionPane.showConfirmDialog(null, "Xác nhận tạo phiếu trả?
         String maCTHD = dtm.getValueAt(i, 10).toString();
         
         // Validation: Kiểm tra số lượng hợp lệ (Logic này giữ ở GUI hoặc chuyển vào BUS tùy bạn, tạm thời giữ nguyên)
-        if (soLuong > ChiTietHoaDonDAO.getChiTietHoaDonDaTungTraRoiTheoMaCTHD(maCTHD).getSoLuong()) {
+        ChiTietHoaDonDTO cthdInfo = traHangBUS.getChiTietHoaDonByMa(maCTHD);
+        if (cthdInfo != null && soLuong > cthdInfo.getSoLuong()) {
             dtm.setValueAt(1,i, 2);
-            JOptionPane.showMessageDialog(null, "Số lượng trả không được vượt quá số lượng mua là "+ChiTietHoaDonDAO.getChiTietHoaDonDaTungTraRoiTheoMaCTHD(maCTHD).getSoLuong()+"! (Dòng " + (i + 1) + ")");
-            // Reset lại số lượng về mặc định hoặc xử lý tùy ý
+            JOptionPane.showMessageDialog(null, "Số lượng trả không được vượt quá số lượng mua là "+cthdInfo.getSoLuong()+"! (Dòng " + (i + 1) + ")");
             return; 
         }
         else if(soLuong<=0){
@@ -1248,14 +1245,18 @@ int chon = JOptionPane.showConfirmDialog(null, "Xác nhận tạo phiếu trả?
         // 3. Chuẩn bị dữ liệu để tính hoàn trả
         boolean isNguyenVen = (boolean) dtm.getValueAt(i, 7);
         String lyDoString = dtm.getValueAt(i, 6).toString();
-        TruongHopDoiTraEnum lyDoEnum = convertStringToEnum(lyDoString); // Hàm phụ trợ chuyển đổi (xem bên dưới)
+        String lyDoEnumStr = "NHU_CAU_KHACH_HANG";
+        if (lyDoString.equals(TruongHopDoiTraEnum.HANG_LOI_DO_NHA_SAN_XUAT.getTruongHopDoiTra())) 
+            lyDoEnumStr = "HANG_LOI_DO_NHA_SAN_XUAT";
+        else if (lyDoString.equals(TruongHopDoiTraEnum.DI_UNG_MAN_CAM.getTruongHopDoiTra())) 
+            lyDoEnumStr = "DI_UNG_MAN_CAM";
 
         // 4. GỌI BUS: Lấy phần trăm hiển thị (Cột 8)
-        String hienThiPhanTram = TraHangBUS.layPhanTramHoanTra(lyDoEnum, isNguyenVen);
+        String hienThiPhanTram = traHangBUS.layPhanTramHoanTra(lyDoEnumStr, isNguyenVen);
         dtm.setValueAt(hienThiPhanTram, i, 8);
 
         // 5. GỌI BUS: Tính tiền hoàn trả (Cột 9)
-        double tienHoanTra = TraHangBUS.tinhTienHoanTraItem(thanhTienGoc, lyDoEnum, isNguyenVen);
+        double tienHoanTra = traHangBUS.tinhTienHoanTraItem(thanhTienGoc, lyDoEnumStr, isNguyenVen);
         dtm.setValueAt(dinhDangTien(tienHoanTra), i, 9);
     }
 

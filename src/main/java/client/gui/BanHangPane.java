@@ -6,7 +6,7 @@ package client.gui;
 
 import com.formdev.flatlaf.FlatClientProperties;
 import com.kitfox.svg.app.beans.SVGIcon;
-import hethongnhathuocduocankhang.bus.BanHangBUS;
+import client.bus.BanHangBUS;
 import common.dto.*;
 import common.network.*;
 import client.socket.SocketClient;

@@ -4,11 +4,12 @@
  */
 package client.gui.baocao;
 
-import hethongnhathuocduocankhang.dao.HoaDonDAO;
-import hethongnhathuocduocankhang.dao.PhieuTraHangDAO;
-import hethongnhathuocduocankhang.dao.BaoCaoDoanhThuDAO;
-import hethongnhathuocduocankhang.entity.HoaDon;
-import hethongnhathuocduocankhang.entity.PhieuTraHang;
+import common.dto.HoaDonDTO;
+import common.dto.PhieuTraHangDTO;
+import client.socket.SocketClient;
+import common.network.Request;
+import common.network.Response;
+import common.network.CommandType;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -432,8 +433,12 @@ public class BaoCaoDoanhThu extends javax.swing.JPanel {
 
                 // --- GỌI DAO ---
                 // Chỉ lấy dữ liệu, KHÔNG cập nhật giao diện ở đây
-                BaoCaoDoanhThuDAO thongKeDAO = new BaoCaoDoanhThuDAO();
-                return thongKeDAO.getDoanhThuMap(dbTuNgay, dbDenNgay, loaiThongKe);
+                // TODO: Chuyển sang dùng SocketClient để lấy dữ liệu báo cáo từ Server
+                Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_DOANH_THU_TUNG_NGAY_TRONG_KHOANG, new Object[]{dbTuNgay, dbDenNgay, loaiThongKe}));
+                if (res.isSuccess()) {
+                    return (Map<String, double[]>) res.getData();
+                }
+                return new HashMap<>();
             }
 
             @Override
@@ -482,7 +487,7 @@ public class BaoCaoDoanhThu extends javax.swing.JPanel {
     }
 
     // Get key cho HoaDon hoặc PhieuTraHang
-    private String getKey(HoaDon hd, String loaiThongKe) {
+    private String getKey(HoaDonDTO hd, String loaiThongKe) {
         LocalDate date = hd.getNgayLapHoaDon().toLocalDate();
         if ("Theo ngày".equals(loaiThongKe)) {
             return date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
@@ -497,7 +502,7 @@ public class BaoCaoDoanhThu extends javax.swing.JPanel {
         return "";
     }
 
-    private String getKey(PhieuTraHang pt, String loaiThongKe) {
+    private String getKey(PhieuTraHangDTO pt, String loaiThongKe) {
         LocalDate date = pt.getNgayLapPhieuTraHang().toLocalDate();
         if ("Theo ngày".equals(loaiThongKe)) {
             return date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));

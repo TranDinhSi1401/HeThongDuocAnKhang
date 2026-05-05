@@ -3,6 +3,10 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
  */
 package client.gui;
+import client.socket.SocketClient;
+import common.dto.*;
+import common.network.*;
+import java.awt.*;
 
 import org.jfree.chart3d.graphics2d.TextAnchor;
 import client.socket.SocketClient;
@@ -115,10 +119,10 @@ public class DashBoardQuanLi extends javax.swing.JPanel {
 
         String[] cacThang = {"Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6", "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"};
 
-        Response resNam = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_NAM_HD_CU_NHAT_VA_MOI_NHAT, null));
+        Response resNam = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_NAM_HOA_DON, null));
         Map<String, Integer> namInfo = (resNam.isSuccess()) ? (Map<String, Integer>) resNam.getData() : new java.util.HashMap<>();
-        int startYear = namInfo.getOrDefault("namCuNhat", LocalDate.now().getYear());
-        int endYear = namInfo.getOrDefault("namMoiNhat", LocalDate.now().getYear());
+        int startYear = (namInfo != null && namInfo.containsKey("namCuNhat")) ? namInfo.get("namCuNhat") : LocalDate.now().getYear();
+        int endYear = (namInfo != null && namInfo.containsKey("namMoiNhat")) ? namInfo.get("namMoiNhat") : LocalDate.now().getYear();
         int arrayLength = endYear - startYear + 1;
         String[] cacNam = new String[arrayLength];
         for (int i = 0; i < arrayLength; i++) {
@@ -271,12 +275,11 @@ public class DashBoardQuanLi extends javax.swing.JPanel {
 
     private void configureBtnVaoCa() {
         btnVaoCa.setOpaque(true);
-        // Khởi tạo BUS
-        VaoRaCaBUS lsBUS = new VaoRaCaBUS();
         String maNV = GiaoDienChinhGUI.getTkDTO().getMaNV();
 
         // 1. XỬ LÝ TRẠNG THÁI NÚT KHI KHỞI ĐỘNG
-        if (lsBUS.kiemTraDangLamViec(maNV)) {
+        Response resDangLam = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_LSCL_DANG_LAM_BY_MA_NV, maNV));
+        if (resDangLam.isSuccess() && resDangLam.getData() != null) {
             btnVaoCa.setText("Ra Ca");
             btnVaoCa.setBackground(Color.RED);
         } else {
@@ -293,11 +296,14 @@ public class DashBoardQuanLi extends javax.swing.JPanel {
         // 3. SỰ KIỆN CLICK NÚT MỚI
         btnVaoCa.addActionListener(e -> {
             try {
-                // Lấy thông tin Ca làm hiện tại từ BUS
-                CaLamDTO caLam = lsBUS.getCaLamHienTai();
+                // Lấy thông tin Ca làm hiện tại
+                LocalTime gioHienTai = LocalTime.now();
+                String tenCaFilter = (gioHienTai.getHour() >= 6 && gioHienTai.getHour() < 14) ? "Ca Sáng" : "Ca Tối";
+                Response resCa = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_CA_LAM_BY_TEN, tenCaFilter));
+                CaLamDTO caLam = (resCa.isSuccess()) ? (CaLamDTO) resCa.getData() : null;
 
                 if (caLam == null) {
-                    JOptionPane.showMessageDialog(this, "Không xác định được Ca Làm hiện tại (hoặc lỗi kết nối)!");
+                    JOptionPane.showMessageDialog(this, "Không xác định được Ca Làm hiện tại!");
                     return;
                 }
 
@@ -315,13 +321,20 @@ public class DashBoardQuanLi extends javax.swing.JPanel {
                         return;
                     }
 
-                    // Gọi BUS để xử lý dữ liệu
-                    if (lsBUS.xuLyVaoCa(maNV, caLam)) {
+                    // Gọi Server để xử lý dữ liệu
+                    LichSuCaLamDTO ls = LichSuCaLamDTO.builder()
+                            .maNV(maNV)
+                            .maCa(caLam.getMaCa())
+                            .ngayLamViec(LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                            .thoiGianVaoCa(LocalTime.now())
+                            .build();
+                    Response resVao = SocketClient.getInstance().sendRequest(new Request(CommandType.ADD_LICH_SU_CA_LAM, ls));
+                    if (resVao.isSuccess()) {
                         JOptionPane.showMessageDialog(this, "Vào ca thành công lúc " + java.time.LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")));
                         btnVaoCa.setText("Ra Ca");
                         btnVaoCa.setBackground(Color.RED);
                     } else {
-                        JOptionPane.showMessageDialog(this, "Lỗi: Không thể vào ca (Có thể bạn đã chấm công rồi).");
+                        JOptionPane.showMessageDialog(this, "Lỗi: " + resVao.getMessage());
                     }
 
                 } else {
@@ -356,13 +369,14 @@ public class DashBoardQuanLi extends javax.swing.JPanel {
                             "Xác nhận ra ca", JOptionPane.YES_NO_OPTION);
 
                     if (confirmRaCa == JOptionPane.YES_OPTION) {
-                        // Gọi BUS để xử lý dữ liệu
-                        if (lsBUS.xuLyRaCa(maNV, caLam, ghiChu)) {
+                        // Gọi Server để xử lý dữ liệu
+                        Response resRa = SocketClient.getInstance().sendRequest(new Request(CommandType.UPDATE_LICH_SU_CA_LAM, new Object[]{maNV, caLam.getMaCa(), LocalDate.now(), LocalTime.now(), ghiChu}));
+                        if (resRa.isSuccess()) {
                             JOptionPane.showMessageDialog(this, "Ra ca thành công!");
                             btnVaoCa.setText("Vào Ca");
                             btnVaoCa.setBackground(Color.GREEN);
                         } else {
-                            JOptionPane.showMessageDialog(this, "Lỗi: Không tìm thấy phiên làm việc để ra ca.");
+                            JOptionPane.showMessageDialog(this, "Lỗi: " + resRa.getMessage());
                         }
                     }
                 }
@@ -483,28 +497,25 @@ public class DashBoardQuanLi extends javax.swing.JPanel {
             }
         };
 
-        Map<SanPham, Integer> dsSPSapHetHang = SanPhamDAO.getSPSapHetHang();
+        Response resSP = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_SAN_PHAM_SAP_HET_HANG, null));
+        Map<SanPhamDTO, Integer> dsSPSapHetHang = (resSP.isSuccess()) ? (Map<SanPhamDTO, Integer>) resSP.getData() : new java.util.HashMap<>();
         int stt = 0;
-        for (Map.Entry<SanPham, Integer> i : dsSPSapHetHang.entrySet()) {
-            stt++;
-            DonViTinh dvtCB = null;
-            ArrayList<DonViTinh> dsDVTSP = DonViTinhDAO.getDonViTinhTheoMaSP(i.getKey().getMaSP());
-            for (DonViTinh d : dsDVTSP) {
-                if (d.isDonViTinhCoBan()) {
-                    dvtCB = d;
-                    break;
-                }
-            }
+        if (dsSPSapHetHang != null) {
+            for (Map.Entry<SanPhamDTO, Integer> i : dsSPSapHetHang.entrySet()) {
+                stt++;
+                Response resDVT = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_DVT_CO_BAN_BY_MA_SP, i.getKey().getMaSP()));
+                DonViTinhDTO dvtCB = (resDVT.isSuccess()) ? (DonViTinhDTO) resDVT.getData() : null;
 
-            Object[] row = {
-                stt + "",
-                i.getKey().getMaSP(),
-                i.getKey().getTen(),
-                dvtCB.getTenDonVi(),
-                i.getValue(),
-                i.getKey().getTonToiDa()
-            };
-            dtmSPSapHetHang.addRow(row);
+                Object[] row = {
+                    stt + "",
+                    i.getKey().getMaSP(),
+                    i.getKey().getTen(),
+                    (dvtCB != null ? dvtCB.getTenDonViTinh() : ""),
+                    i.getValue(),
+                    i.getKey().getTonToiDa()
+                };
+                dtmSPSapHetHang.addRow(row);
+            }
         }
 
         DefaultTableCellRenderer rendererTonKhoDo = new DefaultTableCellRenderer() {
@@ -599,27 +610,36 @@ public class DashBoardQuanLi extends javax.swing.JPanel {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
         // Load Dữ liệu
-        ArrayList<LoSanPham> dsLo = LoSanPhamDAO.dsLoSanPham();
-        ArrayList<LoSanPham> dsLoSapHetHan = (ArrayList<LoSanPham>) new QuanLyLoBUS().thongKe(dsLo).get("dsLoSapHetHan");
-        int stt = 0;
-        for (LoSanPham i : dsLoSapHetHan) {
-            stt++;
-            DonViTinh dvtCB = null;
-            ArrayList<DonViTinh> dsDVTSP = DonViTinhDAO.getDonViTinhTheoMaSP(i.getSanPham().getMaSP());
-            for (DonViTinh d : dsDVTSP) {
-                if (d.isDonViTinhCoBan()) {
-                    dvtCB = d;
-                    break;
+        Response resLo = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_ALL_LO_SAN_PHAM, null));
+        java.util.List<LoSanPhamDTO> dsLo = (resLo.isSuccess()) ? (java.util.List<LoSanPhamDTO>) resLo.getData() : new java.util.ArrayList<>();
+        
+        // Lọc các lô sắp hết hạn (giả sử client tự lọc tạm)
+        java.util.List<LoSanPhamDTO> dsLoSapHetHan = new java.util.ArrayList<>();
+        if (dsLo != null) {
+            LocalDate threshold = LocalDate.now().plusMonths(6);
+            for(LoSanPhamDTO l : dsLo) {
+                if(l.getNgayHetHan().isBefore(threshold)) {
+                    dsLoSapHetHan.add(l);
                 }
             }
+        }
+
+        int stt = 0;
+        for (LoSanPhamDTO i : dsLoSapHetHan) {
+            stt++;
+            Response resDVT = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_DVT_CO_BAN_BY_MA_SP, i.getMaSP()));
+            DonViTinhDTO dvtCB = (resDVT.isSuccess()) ? (DonViTinhDTO) resDVT.getData() : null;
+            
+            Response resSPInfo = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_SAN_PHAM_BY_MA, i.getMaSP()));
+            SanPhamDTO sp = (resSPInfo.isSuccess()) ? (SanPhamDTO) resSPInfo.getData() : null;
 
             Object[] row = {
                 stt + "",
                 i.getMaLoSanPham(),
-                i.getSanPham().getMaSP(),
-                SanPhamDAO.timSPTheoMa(i.getSanPham().getMaSP()).getTen(),
+                i.getMaSP(),
+                (sp != null ? sp.getTen() : ""),
                 i.getSoLuong(),
-                (dvtCB != null ? dvtCB.getTenDonVi() : ""),
+                (dvtCB != null ? dvtCB.getTenDonViTinh() : ""),
                 i.getNgayHetHan().format(formatter) + ""
             };
             dtmLoSapHetHan.addRow(row);
@@ -711,46 +731,32 @@ public class DashBoardQuanLi extends javax.swing.JPanel {
     private void veBieuDo(int thang, int nam, String tieuChi) {
         if (tieuChi.equals("tháng")) {
             LocalDate hienTai = LocalDate.of(nam, thang, 1);
-            // B1: Lấy dữ liệu từ DAO
-            Map<Integer, Double> data = HoaDonDAO.getDoanhThuTungNgayTrongThang(hienTai);
+            Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_DOANH_THU_TUNG_NGAY, hienTai));
+            Map<Integer, Double> data = (res.isSuccess()) ? (Map<Integer, Double>) res.getData() : new java.util.HashMap<>();
 
-            // B2: Tạo Dataset (Đầu vào cho JFreeChart)
             DefaultCategoryDataset dataset = taoDataset(data);
-
-            // B3: Tạo đối tượng JFreeChart đã tùy chỉnh
             JFreeChart chart = taoBieuDoCoBan(dataset, tieuChi, thang, nam);
-
-            // B4: TẠO CHARTPANEL
-            // ChartPanel là một component Swing (giống JPanel)dùng để chứa đối tượng JFreeChart
             ChartPanel chartPanel = new ChartPanel(chart);
 
-            // B5: THÊM CHARTPANEL VÀO PNLCENTER
-            pnlCenter.removeAll(); // Xóa biểu đồ cũ (nếu có)
-            pnlCenter.add(chartPanel, BorderLayout.CENTER); // Thêm biểu đồ mới
+            pnlCenter.removeAll();
+            pnlCenter.add(chartPanel, BorderLayout.CENTER);
             chartPanel.addChartMouseListener(new CustomChartMouseListener(chart, tieuChi));
-            pnlCenter.revalidate(); // Yêu cầu vẽ lại layout
-            pnlCenter.repaint();    // Yêu cầu vẽ lại đồ họa
+            pnlCenter.revalidate();
+            pnlCenter.repaint();
         } else {
             LocalDate thoiGian = LocalDate.of(nam, thang, 1);
-            // B1: Lấy dữ liệu từ DAO
-            Map<Integer, Double> data = HoaDonDAO.getDoanhThuTungThangTrongNam(thoiGian);
+            Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_DOANH_THU_TUNG_THANG, thoiGian));
+            Map<Integer, Double> data = (res.isSuccess()) ? (Map<Integer, Double>) res.getData() : new java.util.HashMap<>();
 
-            // B2: Tạo Dataset (Đầu vào cho JFreeChart)
             DefaultCategoryDataset dataset = taoDataset(data);
-
-            // B3: Tạo đối tượng JFreeChart đã tùy chỉnh
             JFreeChart chart = taoBieuDoCoBan(dataset, tieuChi, thang, nam);
-
-            // B4: TẠO CHARTPANEL
-            // ChartPanel là một component Swing (giống JPanel) dùng để chứa đối tượng JFreeChart
             ChartPanel chartPanel = new ChartPanel(chart);
 
-            // B5: THÊM CHARTPANEL VÀO PNLCENTER
-            pnlCenter.removeAll(); // Xóa biểu đồ cũ (nếu có)
-            pnlCenter.add(chartPanel, BorderLayout.CENTER); // Thêm biểu đồ mới
+            pnlCenter.removeAll();
+            pnlCenter.add(chartPanel, BorderLayout.CENTER);
             chartPanel.addChartMouseListener(new CustomChartMouseListener(chart, tieuChi));
-            pnlCenter.revalidate(); // Yêu cầu vẽ lại layout
-            pnlCenter.repaint();    // Yêu cầu vẽ lại đồ họa
+            pnlCenter.revalidate();
+            pnlCenter.repaint();
         }
     }
 
@@ -828,7 +834,7 @@ public class DashBoardQuanLi extends javax.swing.JPanel {
         return null;
     }
 
-    public void renderThongTinNhanVien(NhanVien nv) {
+    public void renderThongTinNhanVien(NhanVienDTO nv) {
         lblMaNV.setText(nv.getMaNV());
         lblHoTen.setText(nv.getHoTenDem() + " " + nv.getTen());
         if (nv.isGioiTinh()) {
@@ -839,7 +845,7 @@ public class DashBoardQuanLi extends javax.swing.JPanel {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         String formattedDate = nv.getNgaySinh().format(formatter);
         lblNgaySinh.setText(formattedDate);
-        lblChucVu.setText(GiaoDienChinhGUI.getTk().isQuanLy() ? "Quản lý" : "Nhân viên");
+        lblChucVu.setText(GiaoDienChinhGUI.getTkDTO().isQuanLy() ? "Quản lý" : "Nhân viên");
         lblTrangThai.setText(nv.isNghiViec() ? "Nghỉ việc" : "Đang làm việc");
         lblSdt.setText(nv.getSdt());
     }
@@ -1235,8 +1241,11 @@ public class DashBoardQuanLi extends javax.swing.JPanel {
         LocalDate homNay = LocalDate.now();
         LocalDate homQua = homNay.minusDays(1);
 
-        double doanhThuHomNay = HoaDonDAO.getDoanhThuTheoNgay(homNay);
-        double doanhThuHomQua = HoaDonDAO.getDoanhThuTheoNgay(homQua);
+        Response resNay = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_DOANH_THU_NGAY, homNay));
+        double doanhThuHomNay = (resNay.isSuccess() && resNay.getData() != null) ? (Double) resNay.getData() : 0.0;
+        
+        Response resQua = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_DOANH_THU_NGAY, homQua));
+        double doanhThuHomQua = (resQua.isSuccess() && resQua.getData() != null) ? (Double) resQua.getData() : 0.0;
 
         // Tính % tăng trưởng:
         double phanTramDoanhThu = 0;
@@ -1247,8 +1256,11 @@ public class DashBoardQuanLi extends javax.swing.JPanel {
         JPanel pnlDoanhThu = taoPanelThongKeCon("Doanh thu hôm nay", doanhThuHomNay, phanTramDoanhThu, true);
 
         // HÓA ĐƠN
-        int hoaDonHomNay = HoaDonDAO.timHDTheoNgayLap(homNay).size();
-        int hoaDonHomQua = HoaDonDAO.timHDTheoNgayLap(homQua).size();
+        Response resHDNay = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_HOA_DON_BY_NGAY, homNay));
+        int hoaDonHomNay = (resHDNay.isSuccess() && resHDNay.getData() != null) ? ((java.util.List<?>) resHDNay.getData()).size() : 0;
+        
+        Response resHDQua = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_HOA_DON_BY_NGAY, homQua));
+        int hoaDonHomQua = (resHDQua.isSuccess() && resHDQua.getData() != null) ? ((java.util.List<?>) resHDQua.getData()).size() : 0;
 
         double phanTramHoaDon = 0;
         if (hoaDonHomQua > 0) {

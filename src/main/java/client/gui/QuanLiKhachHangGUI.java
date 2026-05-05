@@ -1,14 +1,9 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package client.gui;
 
+import client.bus.KhachHangBUS;
+import com.formdev.flatlaf.FlatClientProperties;
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import common.dto.KhachHangDTO;
-import common.network.CommandType;
-import common.network.Request;
-import common.network.Response;
-import client.socket.SocketClient;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -33,10 +28,12 @@ public class QuanLiKhachHangGUI extends JPanel {
     private DefaultTableModel model;
     private JLabel lblTongSoDong;
     private JLabel lblSoDongChon;
+    private KhachHangBUS khachHangBUS;
 
     public QuanLiKhachHangGUI() {
         this.setLayout(new BorderLayout(10, 10));
         this.setBorder(new EmptyBorder(10, 10, 10, 10));
+        this.khachHangBUS = new KhachHangBUS();
 
         // PANEL NORTH
         JPanel pnlNorth = new JPanel();
@@ -74,15 +71,12 @@ public class QuanLiKhachHangGUI extends JPanel {
         cmbTieuChiTimKiem.setPreferredSize(new Dimension(150, 30));
 
         txtTimKiem = new JTextField(20);
+        txtTimKiem.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Tìm kiếm...");
+        txtTimKiem.putClientProperty(FlatClientProperties.TEXT_FIELD_LEADING_ICON, new FlatSVGIcon("resources/images/search.svg", 16, 16));
         txtTimKiem.setFont(new Font("Arial", Font.PLAIN, 14));
-        txtTimKiem.setPreferredSize(new Dimension(200, 30));
-        txtTimKiem.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1),
-                new EmptyBorder(5, 5, 5, 5)
-        ));
+        txtTimKiem.setPreferredSize(new Dimension(250, 35));
 
         JPanel pnlTimKiem = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
-        pnlTimKiem.add(new JLabel("Tìm kiếm"));
         pnlTimKiem.add(txtTimKiem);
 
         pnlNorthRight.add(new JLabel("Tìm theo"));
@@ -203,12 +197,8 @@ public class QuanLiKhachHangGUI extends JPanel {
     }
 
     private void updateTable() {
-        Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_ALL_KHACH_HANG, null));
-        if (res.isSuccess() && res.getData() != null) {
-            updateTable((List<KhachHangDTO>) res.getData());
-        } else {
-            updateTable((List<KhachHangDTO>) null);
-        }
+        List<KhachHangDTO> dsKH = khachHangBUS.getAllKhachHang();
+        updateTable(dsKH);
     }
 
     // HÀM ĐĂNG KÝ TẤT CẢ SỰ KIỆN
@@ -278,32 +268,20 @@ public class QuanLiKhachHangGUI extends JPanel {
         List<KhachHangDTO> dsKetQua = new ArrayList<>();
 
         if (tuKhoa.isEmpty()) {
-            Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_ALL_KHACH_HANG, null));
-            if (res.isSuccess() && res.getData() != null) {
-                dsKetQua = (List<KhachHangDTO>) res.getData();
-            }
+            dsKetQua = khachHangBUS.getAllKhachHang();
         } else {
-            Request req = null;
             switch (tieuChi) {
                 case "Mã khách hàng":
-                    req = new Request(CommandType.GET_KHACH_HANG_BY_MA, tuKhoa);
+                    KhachHangDTO kh = khachHangBUS.getKhachHangByMa(tuKhoa);
+                    if (kh != null) dsKetQua.add(kh);
                     break;
                 case "Tên khách hàng":
-                    req = new Request(CommandType.GET_KHACH_HANG_BY_TEN, tuKhoa);
+                    dsKetQua = khachHangBUS.getKhachHangByTen(tuKhoa);
                     break;
                 case "Số điện thoại":
-                    req = new Request(CommandType.GET_KHACH_HANG_BY_SDT, tuKhoa);
+                    KhachHangDTO khSdt = khachHangBUS.getKhachHangBySdt(tuKhoa);
+                    if (khSdt != null) dsKetQua.add(khSdt);
                     break;
-            }
-            if (req != null) {
-                Response res = SocketClient.getInstance().sendRequest(req);
-                if (res.isSuccess() && res.getData() != null) {
-                    if (tieuChi.equals("Mã khách hàng")) {
-                        dsKetQua.add((KhachHangDTO) res.getData());
-                    } else {
-                        dsKetQua = (List<KhachHangDTO>) res.getData();
-                    }
-                }
             }
         }
         updateTable(dsKetQua);
@@ -320,11 +298,7 @@ public class QuanLiKhachHangGUI extends JPanel {
         dialog.pack();
         dialog.setLocationRelativeTo(null);
 
-        Response resMa = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_MA_KH_CUOI, null));
-        int maKHCUoiCung = 0;
-        if (resMa.isSuccess() && resMa.getData() != null) {
-            maKHCUoiCung = (int) resMa.getData();
-        }
+        int maKHCUoiCung = khachHangBUS.getMaKHCuoi();
         maKHCUoiCung++;
         String maKHNew = String.format("KH-%05d", maKHCUoiCung);
 
@@ -343,15 +317,14 @@ public class QuanLiKhachHangGUI extends JPanel {
                 break;
             }
 
-            Response resAdd = SocketClient.getInstance().sendRequest(new Request(CommandType.ADD_KHACH_HANG, khNew));
-            if (resAdd.isSuccess()) {
+            if (khachHangBUS.addKhachHang(khNew)) {
                 JOptionPane.showMessageDialog(this, "Thêm khách hàng thành công!");
                 updateTable();
                 isSuccess = true;
                 dialog.dispose();
             } else {
                 JOptionPane.showMessageDialog(this,
-                        "Thêm khách hàng thất bại: " + resAdd.getMessage(),
+                        "Thêm khách hàng thất bại!",
                         "Lỗi",
                         JOptionPane.ERROR_MESSAGE);
             }
@@ -387,8 +360,7 @@ public class QuanLiKhachHangGUI extends JPanel {
                 int row = selectedRows[i];
                 String maKH = model.getValueAt(row, 1).toString();
 
-                Response resDel = SocketClient.getInstance().sendRequest(new Request(CommandType.XOA_KHACH_HANG, maKH));
-                if (resDel.isSuccess()) {
+                if (khachHangBUS.xoaKhachHang(maKH)) {
                     soLuongXoaThanhCong++;
                 }
             }
@@ -413,12 +385,11 @@ public class QuanLiKhachHangGUI extends JPanel {
         }
 
         String maKH = model.getValueAt(selectedRow, 1).toString();
-        Response resGet = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_KHACH_HANG_BY_MA, maKH));
-        if (!resGet.isSuccess() || resGet.getData() == null) {
+        KhachHangDTO khCanSua = khachHangBUS.getKhachHangByMa(maKH);
+        if (khCanSua == null) {
             JOptionPane.showMessageDialog(this, "Không tìm thấy khách hàng để sửa.");
             return;
         }
-        KhachHangDTO khCanSua = (KhachHangDTO) resGet.getData();
 
         ThemKhachHangGUI pnlThemKH = new ThemKhachHangGUI();
         JDialog dialog = new JDialog();
@@ -447,15 +418,14 @@ public class QuanLiKhachHangGUI extends JPanel {
                 break;
             }
 
-            Response resSua = SocketClient.getInstance().sendRequest(new Request(CommandType.SUA_KHACH_HANG, new Object[]{maKH, khNew}));
-            if (resSua.isSuccess()) {
+            if (khachHangBUS.suaKhachHang(maKH, khNew)) {
                 JOptionPane.showMessageDialog(this, "Sửa thông tin khách hàng thành công!");
                 updateTable();
                 isSuccess = true;
                 dialog.dispose();
             } else {
                 JOptionPane.showMessageDialog(this,
-                        "Sửa thông tin khách hàng thất bại: " + resSua.getMessage(),
+                        "Sửa thông tin khách hàng thất bại!",
                         "Lỗi",
                         JOptionPane.ERROR_MESSAGE);
             }
@@ -466,11 +436,7 @@ public class QuanLiKhachHangGUI extends JPanel {
         int selectRow = table.getSelectedRow();
         if (selectRow != -1) {
             String maKH = model.getValueAt(selectRow, 1).toString();
-            Response resGet = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_KHACH_HANG_BY_MA, maKH));
-            KhachHangDTO khDaChon = null;
-            if (resGet.isSuccess()) {
-                khDaChon = (KhachHangDTO) resGet.getData();
-            }
+            KhachHangDTO khDaChon = khachHangBUS.getKhachHangByMa(maKH);
 
             if (khDaChon != null && e.getClickCount() == 2) { // Double click
                 ThemKhachHangGUI pnlThemKH = new ThemKhachHangGUI();

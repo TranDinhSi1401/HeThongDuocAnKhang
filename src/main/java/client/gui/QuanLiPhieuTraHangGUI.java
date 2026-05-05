@@ -203,7 +203,7 @@ public class QuanLiPhieuTraHangGUI extends JPanel {
                 pth.getMaHoaDon(),
                 tenNV,
                 pth.getNgayLapPhieuTraHang().format(formatter), 
-                String.format("%,.0f VND", pth.getTongTienHoanTra()) 
+                String.format("%,.0f VND", pth.getTongTienHoaTra()) 
             };
             model.addRow(row);
         }

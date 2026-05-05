@@ -103,12 +103,7 @@ public class Menu extends JPanel {
                 + "border:null");
         JScrollBar vscroll = scroll.getVerticalScrollBar();
         vscroll.setUnitIncrement(10);
-        vscroll.putClientProperty(FlatClientProperties.STYLE, ""
-                + "width:$Menu.scroll.width;"
-                + "trackInsets:$Menu.scroll.trackInsets;"
-                + "thumbInsets:$Menu.scroll.thumbInsets;"
-                + "background:$Menu.ScrollBar.background;"
-                + "thumb:$Menu.ScrollBar.thumb");
+        // Bỏ style scrollbar vì gây lỗi trên một số phiên bản JDK/FlatLaf
         createMenu();
         lightDarkMode = new LightDarkMode();
         toolBarAccentColor = new ToolBarAccentColor(this);

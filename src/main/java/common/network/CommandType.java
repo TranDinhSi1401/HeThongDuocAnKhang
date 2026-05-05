@@ -39,11 +39,13 @@ public enum CommandType implements Serializable {
     SUA_DON_VI_TINH,
     XOA_DON_VI_TINH,
     XOA_DVT_BY_MA_SP,
+    GET_DVT_BY_MA,
 
     // ===== MaVachSanPham =====
     ADD_MA_VACH,
     DELETE_MA_VACH,
     GET_MA_VACH_BY_MA_SP,
+    GET_ALL_MA_VACH,
 
     // ===== KhachHang =====
     GET_ALL_KHACH_HANG,
@@ -92,12 +94,16 @@ public enum CommandType implements Serializable {
     GET_SO_PTH,
     GET_TONG_TIEN_CAC_PTH,
     ADD_HOA_DON,
+    GET_ALL_HOA_DON,
+    GET_DOANH_THU_NGAY,
+    GET_DOANH_THU_THANG,
+    GET_DOANH_THU_TUNG_NGAY,
+    GET_DOANH_THU_TUNG_THANG,
     GET_DOANH_THU_TUNG_NGAY_TRONG_KHOANG,
     GET_DOANH_THU_TUNG_THANG_TRONG_NAM,
     GET_DOANH_THU_TUNG_QUY_TRONG_NAM,
     GET_DOANH_THU_TUNG_NAM_TRONG_KHOANG,
-    GET_NAM_HD_CU_NHAT_VA_MOI_NHAT,
-    GET_DOANH_THU_THEO_NGAY,
+    GET_NAM_HOA_DON,
     GET_HD_BY_NGAY_LAP,
 
     // ===== ChiTietHoaDon =====
@@ -114,6 +120,7 @@ public enum CommandType implements Serializable {
     GET_CTXL_BY_MA_CTHD,
 
     // ===== LoSanPham =====
+    GET_ALL_LO_SAN_PHAM,
     GET_LO_BY_MA_SP,
     GET_LO_BY_MA,
     GET_LO_BY_MA_CTHD,
@@ -125,9 +132,13 @@ public enum CommandType implements Serializable {
     TRU_SO_LUONG_LO,
     CONG_SO_LUONG_LO,
     CAP_NHAT_SO_LUONG_LO,
+    UPDATE_LO_SAN_PHAM,
     HUY_LO_SAN_PHAM,
+    DELETE_LO_SAN_PHAM,
+    GET_LO_SAP_HET_HAN,
 
     // ===== LichSuLo =====
+    GET_ALL_LICH_SU_LO,
     GET_LICH_SU_LO_BY_MA_LO,
     ADD_LICH_SU_LO,
 
@@ -192,6 +203,7 @@ public enum CommandType implements Serializable {
     GET_PTH_BY_MA,
     GET_PTH_BY_MA_NV,
     GET_PTH_BY_NGAY,
+    GET_PTH_CUOI_CUNG,
     GET_ALL_PHIEU_TRA_HANG,
     ADD_PHIEU_TRA_HANG,
     GET_SO_PTH_CUOI,
@@ -199,6 +211,11 @@ public enum CommandType implements Serializable {
     // ===== ChiTietPhieuTraHang =====
     GET_CTPTH_BY_MA_PTH,
     ADD_CHI_TIET_PHIEU_TRA_HANG,
+    GET_SO_LUONG_PHIEU_TRA_BY_MA_HD,
+    GET_TONG_TIEN_TRA_BY_MA_HD,
+    GET_CTHD_CHUA_TRA_BY_MA_HD,
+    GENERATE_MA_PHIEU_TRA_HANG,
+    ADD_PHIEU_TRA_HANG_FULL,
 
     // ===== CaLam =====
     GET_ALL_CA_LAM,

@@ -9,7 +9,7 @@ import common.network.CommandType;
 import common.network.Request;
 import common.network.Response;
 import client.socket.SocketClient;
-import hethongnhathuocduocankhang.bus.QuanLyLoBUS;
+import client.bus.QuanLyLoBUS;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -56,7 +56,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 public class LoSanPhamGUI extends javax.swing.JPanel {
 
     private String ngayLap;
-    TaiKhoanDTO tk = GiaoDienChinhGUI.getTk();
+    private TaiKhoanDTO tk = GiaoDienChinhGUI.getTkDTO();
     private SwingWorker<Void, Object[]> currentSearchWorker = null;
 
     /**
@@ -141,7 +141,13 @@ public class LoSanPhamGUI extends javax.swing.JPanel {
                     txtNgayHetHan.setText(lo.getNgayHetHan().toString());
                     txtDonViTinh.setText(donVi);
                     txtSoLuong.setText(sl);
-                    txtGiaNhap.setText(SanPhamCungCapDAO.getSanPhamCungCap(maSP).getGiaNhap() + " VND");
+                    Response resSpcc = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_SPCC_BY_MA_SP, maSP));
+                    if (resSpcc.isSuccess() && resSpcc.getData() != null) {
+                        List<SanPhamCungCapDTO> spccs = (List<SanPhamCungCapDTO>) resSpcc.getData();
+                        if (!spccs.isEmpty()) {
+                            txtGiaNhap.setText(spccs.get(0).getGiaNhap() + " VND");
+                        }
+                    }
                 }
             }
         });
@@ -1076,9 +1082,10 @@ public class LoSanPhamGUI extends javax.swing.JPanel {
         } catch (Exception e) {
             return;
         }
-        List<MaVachSanPham> dsMaVach = MaVachSanPhamDAO.timMaSPTheoMaVach();
-        Map<String, MaVachSanPham> mapMaVach = new HashMap<>();
-        for (MaVachSanPham mv : dsMaVach) {
+        Response resMV = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_ALL_MA_VACH, null));
+        List<MaVachSanPhamDTO> dsMaVach = (resMV.isSuccess()) ? (List<MaVachSanPhamDTO>) resMV.getData() : new ArrayList<>();
+        Map<String, MaVachSanPhamDTO> mapMaVach = new HashMap<>();
+        for (MaVachSanPhamDTO mv : dsMaVach) {
             mapMaVach.put(mv.getMaVach(), mv);
         }
         try (FileInputStream fis = new FileInputStream(filee); XSSFWorkbook work = new XSSFWorkbook(fis)) {
@@ -1130,7 +1137,7 @@ public class LoSanPhamGUI extends javax.swing.JPanel {
                 if (colMaVach < rowData.size()) {
                     Object as = rowData.get(colMaVach);
                     String maVachh = as.toString().trim();
-                    MaVachSanPham maV = mapMaVach.get(maVachh);
+                    MaVachSanPhamDTO maV = mapMaVach.get(maVachh);
                     if (maV == null) {
                         JOptionPane.showMessageDialog(this,
                                 "Mã sản phẩm " + maVachh
@@ -1138,7 +1145,7 @@ public class LoSanPhamGUI extends javax.swing.JPanel {
                                 "Lỗi dữ liệu", JOptionPane.ERROR_MESSAGE);
                         continue;
                     }
-                    rowData.set(colMaVach, maV.getSanPham().getMaSP());
+                    rowData.set(colMaVach, maV.getMaSP());
 
                 }
                 if (colSoLuongDat < rowData.size()) {
@@ -1202,7 +1209,7 @@ public class LoSanPhamGUI extends javax.swing.JPanel {
             Cell c = date.getCell(0);
             String layNgay = c.getStringCellValue();
             String ngayTaoExcel = layNgay.split(":")[1].trim();
-            ngayLap = QuanLyLoBUS.chuyenDinhDang(ngayTaoExcel);
+            ngayLap = new QuanLyLoBUS().chuyenDinhDang(ngayTaoExcel);
             JOptionPane.showMessageDialog(this, "Thêm thành công " + soSP + " từ file excel!");
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Lỗi đọc file: " + e.getMessage());
@@ -1299,8 +1306,8 @@ public class LoSanPhamGUI extends javax.swing.JPanel {
             String maSP = tbl.getValueAt(i, 0).toString();
             String maLo = tbl.getValueAt(i, 2).toString();
             String tenNcc = tbl.getValueAt(i, 3).toString();
-            LocalDate sx = LocalDate.parse(QuanLyLoBUS.chuyenDinhDang(tbl.getValueAt(i, 5).toString()));
-            LocalDate hh = LocalDate.parse(QuanLyLoBUS.chuyenDinhDang(tbl.getValueAt(i, 6).toString()));
+            LocalDate sx = LocalDate.parse(new QuanLyLoBUS().chuyenDinhDang(tbl.getValueAt(i, 5).toString()));
+            LocalDate hh = LocalDate.parse(new QuanLyLoBUS().chuyenDinhDang(tbl.getValueAt(i, 6).toString()));
             int slDat = Integer.parseInt(tbl.getValueAt(i, 7).toString());
             int slGiao = Integer.parseInt(tbl.getValueAt(i, 8).toString());
             String giaNhapStr = tbl.getValueAt(i, 9).toString().replaceAll("[^0-9.]", "");
@@ -1424,7 +1431,7 @@ public class LoSanPhamGUI extends javax.swing.JPanel {
                 lo.getMaSP(),
                 sp != null ? sp.getTen() : "",
                 lo.getMaLoSanPham(),
-                donVi != null ? donVi.getTenDonVi() : "",
+                donVi != null ? donVi.getTenDonViTinh() : "",
                 lo.getSoLuong() 
         });
         
@@ -1432,7 +1439,7 @@ public class LoSanPhamGUI extends javax.swing.JPanel {
         txtTenSanPham.setText(sp != null ? sp.getTen() : "");
         txtMaSanPham.setText(lo.getMaSP());
         txtNhaCungCap.setText(ncc != null ? ncc.getTenNCC() : "");
-        txtDonViTinh.setText(donVi != null ? donVi.getTenDonVi() : "");
+        txtDonViTinh.setText(donVi != null ? donVi.getTenDonViTinh() : "");
         txtSoLuong.setText(lo.getSoLuong() + "");
         txtNgaySanXuat.setText(lo.getNgaySanXuat() + "");
         txtNgayHetHan.setText(lo.getNgayHetHan() + "");
@@ -1482,7 +1489,7 @@ public class LoSanPhamGUI extends javax.swing.JPanel {
         txtSoLuong.setText("");
         txtGiaNhap.setText("");
         txtTimKiem.requestFocus();
-        ArrayList<LoSanPhamDTO> ds = new QuanLyLoBUS().getLoKhongHuy();
+        List<LoSanPhamDTO> ds = new QuanLyLoBUS().getLoKhongHuy();
         DefaultTableModel tbl = (DefaultTableModel) tblLoSanPham.getModel();
         if (ds.size() > tbl.getRowCount()) {
             tbl.setRowCount(0);
@@ -1635,7 +1642,7 @@ public class LoSanPhamGUI extends javax.swing.JPanel {
                         lo.getMaSP(),
                         sp != null ? sp.getTen() : "",
                         lo.getMaLoSanPham(),
-                        donVi != null ? donVi.getTenDonVi() : "",
+                        donVi != null ? donVi.getTenDonViTinh() : "",
                         lo.getSoLuong() 
                 };
                 tbl.addRow(row);
@@ -1726,7 +1733,7 @@ public class LoSanPhamGUI extends javax.swing.JPanel {
 
     @SuppressWarnings("unchecked")
     private void loadDanhSachLoSanPham() {
-        ArrayList<LoSanPhamDTO> dsLo = new QuanLyLoBUS().getLoKhongHuy();
+        List<LoSanPhamDTO> dsLo = new QuanLyLoBUS().getLoKhongHuy();
         if (dsLo == null || dsLo.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Không tồn tại lô sản phẩm");
             return;
@@ -1761,7 +1768,7 @@ public class LoSanPhamGUI extends javax.swing.JPanel {
     @SuppressWarnings("unchecked")
     private void loadLaiDanhSachLo() {
         DefaultTableModel tbl = (DefaultTableModel) tblLoSanPham.getModel();
-        ArrayList<LoSanPhamDTO> dsLo = new QuanLyLoBUS().getLoKhongHuy();
+        List<LoSanPhamDTO> dsLo = new QuanLyLoBUS().getLoKhongHuy();
         QuanLyLoBUS bus = new QuanLyLoBUS();
         for (LoSanPhamDTO lo : dsLo) {
             tbl.addRow(bus.toTableRow(lo));
@@ -1787,7 +1794,7 @@ public class LoSanPhamGUI extends javax.swing.JPanel {
     }
 
     public void capNhatSoLo() {
-        int[] stats = QuanLyLoBUS.layThongKeLoTheoTrangThai();
+        int[] stats = new QuanLyLoBUS().layThongKeLoTheoTrangThaiArray();
         // stats: [0]=Còn hạn, [1]=Sắp hết hạn, [2]=Hết hạn, [3]=Đã hủy
         txtConHan.setText(stats[0] + " lô");
         txtSapHetHan.setText(stats[1] + " lô");

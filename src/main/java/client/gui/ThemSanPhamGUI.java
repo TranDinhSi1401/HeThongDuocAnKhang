@@ -1,7 +1,7 @@
 package client.gui;
 
-import hethongnhathuocduocankhang.bus.SanPhamBUS;
-import hethongnhathuocduocankhang.entity.LoaiSanPhamEnum;
+import client.bus.SanPhamBUS;
+
 import java.awt.*;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
