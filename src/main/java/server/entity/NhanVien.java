@@ -31,8 +31,8 @@ public class NhanVien {
     @Column(name = "cccd")
     private String cccd;
 
-    @Column(name = "gioi_tinh")
-    private boolean gioiTinh;
+    @Column(name = "gioi_tinh", nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
+    private Boolean gioiTinh;
 
     @Column(name = "ngay_sinh")
     private LocalDate ngaySinh;
@@ -40,8 +40,8 @@ public class NhanVien {
     @Column(name = "dia_chi")
     private String diaChi;
 
-    @Column(name = "nghi_viec")
-    private boolean nghiViec;
+    @Column(name = "nghi_viec", nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
+    private Boolean nghiViec;
 
     @OneToMany(mappedBy = "nhanVien", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<LichSuCaLam> lichSuCaLams;

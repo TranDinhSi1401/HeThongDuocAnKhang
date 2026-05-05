@@ -45,7 +45,7 @@ public class DonViTinhDAO extends AbstractGenericDaoImpl<DonViTinh, String> {
             dvt.setTenDonViTinh(dvtNew.getTenDonViTinh());
             dvt.setHeSoQuyDoi(dvtNew.getHeSoQuyDoi());
             dvt.setGiaBanTheoDonVi(dvtNew.getGiaBanTheoDonVi());
-            dvt.setDonViTinhCoBan(dvtNew.isDonViTinhCoBan());
+            dvt.setDonViTinhCoBan(dvtNew.getDonViTinhCoBan());
             em.merge(dvt);
             return true;
         });

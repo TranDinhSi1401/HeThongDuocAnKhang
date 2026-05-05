@@ -32,8 +32,8 @@ public class LoSanPham {
     @Column(name = "ngay_het_han")
     private LocalDate ngayHetHan;
 
-    @Column(name = "da_huy")
-    private boolean daHuy;
+    @Column(name = "da_huy", nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
+    private Boolean daHuy;
 
     @OneToMany(mappedBy = "loSanPham", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ChiTietPhieuNhap> chiTietPhieuNhaps;

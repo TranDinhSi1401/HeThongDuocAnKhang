@@ -102,7 +102,7 @@ public class EntityMapper {
                 .ten(entity.getTen())
                 .sdt(entity.getSdt())
                 .diemTichLuy(entity.getDiemTichLuy())
-                .daXoa(entity.isDaXoa())
+                .daXoa(entity.getDaXoa() != null ? entity.getDaXoa() : false)
                 .build();
     }
 
@@ -130,10 +130,10 @@ public class EntityMapper {
                 .ten(entity.getTen())
                 .sdt(entity.getSdt())
                 .cccd(entity.getCccd())
-                .gioiTinh(entity.isGioiTinh())
+                .gioiTinh(entity.getGioiTinh() != null ? entity.getGioiTinh() : false)
                 .ngaySinh(entity.getNgaySinh())
                 .diaChi(entity.getDiaChi())
-                .nghiViec(entity.isNghiViec())
+                .nghiViec(entity.getNghiViec() != null ? entity.getNghiViec() : false)
                 .build();
     }
 
@@ -144,12 +144,12 @@ public class EntityMapper {
         return TaiKhoanDTO.builder()
                 .maNV(entity.getMaNV())
                 .matKhau(entity.getMatKhau())
-                .quanLy(entity.isQuanLy())
-                .biKhoa(entity.isBiKhoa())
+                .quanLy(entity.getQuanLy() != null ? entity.getQuanLy() : false)
+                .biKhoa(entity.getBiKhoa() != null ? entity.getBiKhoa() : false)
                 .email(entity.getEmail())
                 .ngayTao(entity.getNgayTao())
-                .daXoa(entity.isDaXoa())
-                .quanLyLo(entity.isQuanLyLo())
+                .daXoa(entity.getDaXoa() != null ? entity.getDaXoa() : false)
+                .quanLyLo(entity.getQuanLyLo() != null ? entity.getQuanLyLo() : false)
                 .build();
     }
 
@@ -196,7 +196,7 @@ public class EntityMapper {
                         ? entity.getLoaiSanPham().name() : null)
                 .tonToiThieu(entity.getTonToiThieu())
                 .tonToiDa(entity.getTonToiDa())
-                .daXoa(entity.isDaXoa())
+                .daXoa(entity.getDaXoa() != null ? entity.getDaXoa() : false)
                 .build();
     }
 
@@ -224,8 +224,8 @@ public class EntityMapper {
                 .tenDonViTinh(entity.getTenDonViTinh())
                 .heSoQuyDoi(entity.getHeSoQuyDoi())
                 .giaBanTheoDonVi(entity.getGiaBanTheoDonVi())
-                .donViTinhCoBan(entity.isDonViTinhCoBan())
-                .daXoa(entity.isDaXoa())
+                .donViTinhCoBan(entity.getDonViTinhCoBan() != null ? entity.getDonViTinhCoBan() : false)
+                .daXoa(entity.getDaXoa() != null ? entity.getDaXoa() : false)
                 .build();
     }
 
@@ -269,12 +269,13 @@ public class EntityMapper {
                 if (entity.getSanPham() != null) {
                         tenSanPham = entity.getSanPham().getTen();
 
-                        if (entity.getSanPham().getDonViTinhs() != null) {
+                        // Lấy đơn vị tính cơ bản (hoặc đơn vị tính đầu tiên nếu không có cơ bản)
+                        if (entity.getSanPham().getDonViTinhs() != null && !entity.getSanPham().getDonViTinhs().isEmpty()) {
                                 DonViTinh donViTinhChon = null;
                                 for (DonViTinh donViTinh : entity.getSanPham().getDonViTinhs()) {
-                                        if (donViTinhChon == null || donViTinh.isDonViTinhCoBan()) {
+                                        if (donViTinhChon == null || (donViTinh.getDonViTinhCoBan() != null && donViTinh.getDonViTinhCoBan())) {
                                                 donViTinhChon = donViTinh;
-                                                if (donViTinh.isDonViTinhCoBan()) {
+                                                if (donViTinh.getDonViTinhCoBan() != null && donViTinh.getDonViTinhCoBan()) {
                                                         break;
                                                 }
                                         }
@@ -285,7 +286,7 @@ public class EntityMapper {
                         }
                 }
 
-                if (entity.getChiTietPhieuNhaps() != null) {
+                if (entity.getChiTietPhieuNhaps() != null && !entity.getChiTietPhieuNhaps().isEmpty()) {
                         for (ChiTietPhieuNhap chiTietPhieuNhap : entity.getChiTietPhieuNhaps()) {
                                 if (chiTietPhieuNhap.getNhaCungCap() != null) {
                                         tenNhaCungCap = chiTietPhieuNhap.getNhaCungCap().getTenNCC();
@@ -299,13 +300,13 @@ public class EntityMapper {
                 .maLoSanPham(entity.getMaLoSanPham())
                 .maSP(entity.getSanPham() != null ? entity.getSanPham().getMaSP() : null)
                                 .tenSP(tenSanPham)
-                                .tenDonVi(tenDonViTinh)
+                                .tenDonVi(tenDonViTinh != null ? tenDonViTinh : "")
                                 .tenNhaCungCap(tenNhaCungCap)
                                 .giaNhap(giaNhap)
                 .soLuong(entity.getSoLuong())
                 .ngaySanXuat(entity.getNgaySanXuat())
                 .ngayHetHan(entity.getNgayHetHan())
-                .daHuy(entity.isDaHuy())
+                .daHuy(entity.getDaHuy() != null ? entity.getDaHuy() : false)
                 .build();
     }
 
@@ -330,7 +331,7 @@ public class EntityMapper {
                 .diaChi(entity.getDiaChi())
                 .sdt(entity.getSdt())
                 .email(entity.getEmail())
-                .daXoa(entity.isDaXoa())
+                .daXoa(entity.getDaXoa() != null ? entity.getDaXoa() : false)
                 .build();
     }
 
@@ -342,7 +343,7 @@ public class EntityMapper {
                 .id(entity.getId())
                 .maSP(entity.getSanPham() != null ? entity.getSanPham().getMaSP() : null)
                 .maNCC(entity.getNhaCungCap() != null ? entity.getNhaCungCap().getMaNCC() : null)
-                .trangThaiHopTac(entity.isTrangThaiHopTac())
+                .trangThaiHopTac(entity.getTrangThaiHopTac() != null ? entity.getTrangThaiHopTac() : true)
                 .giaNhap(entity.getGiaNhap())
                 .build();
     }
@@ -378,7 +379,7 @@ public class EntityMapper {
                 .soLuongToiThieu(entity.getSoLuongToiThieu())
                 .soLuongToiDa(entity.getSoLuongToiDa())
                 .ngayChinhSua(entity.getNgayChinhSua())
-                .daXoa(entity.isDaXoa())
+                .daXoa(entity.getDaXoa() != null ? entity.getDaXoa() : false)
                 .build();
     }
 

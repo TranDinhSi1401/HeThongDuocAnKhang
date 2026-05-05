@@ -36,8 +36,8 @@ public class SanPham {
     @Column(name = "ton_toi_da")
     private int tonToiDa;
 
-    @Column(name = "da_xoa")
-    private boolean daXoa;
+    @Column(name = "da_xoa", nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
+    private Boolean daXoa;
 
     @OneToMany(mappedBy = "sanPham", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<MaVachSanPham> maVachSanPhams;

@@ -55,10 +55,10 @@ public class NhanVienDAO extends AbstractGenericDaoImpl<NhanVien, String> {
             nv.setTen(nvNew.getTen());
             nv.setSdt(nvNew.getSdt());
             nv.setCccd(nvNew.getCccd());
-            nv.setGioiTinh(nvNew.isGioiTinh());
+            nv.setGioiTinh(nvNew.getGioiTinh());
             nv.setNgaySinh(nvNew.getNgaySinh());
             nv.setDiaChi(nvNew.getDiaChi());
-            nv.setNghiViec(nvNew.isNghiViec());
+            nv.setNghiViec(nvNew.getNghiViec());
             em.merge(nv);
             return true;
         });

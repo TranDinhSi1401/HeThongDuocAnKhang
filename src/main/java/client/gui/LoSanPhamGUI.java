@@ -1410,27 +1410,33 @@ public class LoSanPhamGUI extends javax.swing.JPanel {
         currentSearchWorker = new SwingWorker<Void, Object[]>() {
             @Override
             protected Void doInBackground() throws Exception {
-                Response res = SocketClient.getInstance().sendRequest(
-                        new Request(CommandType.GET_ALL_LO_SAN_PHAM, null));
-                if (!res.isSuccess()) {
-                    throw new RuntimeException(res.getMessage());
-                }
-
-                @SuppressWarnings("unchecked")
-                List<LoSanPhamDTO> ds = (List<LoSanPhamDTO>) res.getData();
-                if (ds == null) {
-                    return null;
-                }
-
-                String noiDungLower = noiDung.toLowerCase();
-                for (LoSanPhamDTO lo : ds) {
-                    if (isCancelled()) {
-                        break;
+                try {
+                    // Lấy tất cả lô sản phẩm (bao gồm cả lô hủy để có đủ dữ liệu filter)
+                    Response res = SocketClient.getInstance().sendRequest(
+                            new Request(CommandType.GET_ALL_LO_SAN_PHAM, null));
+                    if (!res.isSuccess()) {
+                        throw new RuntimeException(res.getMessage());
                     }
-                    if (!matchesLotSearch(lo, tieuChi, noiDungLower, trangThai)) {
-                        continue;
+
+                    @SuppressWarnings("unchecked")
+                    List<LoSanPhamDTO> ds = (List<LoSanPhamDTO>) res.getData();
+                    if (ds == null || ds.isEmpty()) {
+                        return null;
                     }
-                    publish(dtoToSearchRow(lo));
+
+                    String noiDungLower = noiDung.toLowerCase();
+                    for (LoSanPhamDTO lo : ds) {
+                        if (isCancelled()) {
+                            break;
+                        }
+                        if (!matchesLotSearch(lo, tieuChi, noiDungLower, trangThai)) {
+                            continue;
+                        }
+                        publish(dtoToSearchRow(lo));
+                    }
+                } catch (Exception e) {
+                    Logger.getLogger(LoSanPhamGUI.class.getName()).log(Level.SEVERE, null, e);
+                    throw e;
                 }
                 return null;
             }
@@ -1453,6 +1459,7 @@ public class LoSanPhamGUI extends javax.swing.JPanel {
                 } catch (Exception ex) {
                     if (!(ex instanceof java.util.concurrent.CancellationException)) {
                         JOptionPane.showMessageDialog(LoSanPhamGUI.this, "Lỗi tìm kiếm: " + ex.getMessage());
+                        Logger.getLogger(LoSanPhamGUI.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
             }
@@ -1710,9 +1717,23 @@ public class LoSanPhamGUI extends javax.swing.JPanel {
                             break;
                         }
 
+                        // Lấy tên sản phẩm từ LoSanPham
+                        String tenSanPham = "";
+                        try {
+                            Response loRes = SocketClient.getInstance().sendRequest(
+                                new Request(CommandType.GET_LO_SAN_PHAM_BY_MA, i.getMaLoSanPham())
+                            );
+                            if (loRes.isSuccess() && loRes.getData() instanceof LoSanPhamDTO) {
+                                LoSanPhamDTO lo = (LoSanPhamDTO) loRes.getData();
+                                tenSanPham = safeString(lo.getTenSP());
+                            }
+                        } catch (Exception ignored) {
+                            // Nếu lấy không được, để trống
+                        }
+
                         Object[] row = new Object[] {
                                 i.getMaLoSanPham(),
-                                "", // Tên sản phẩm sẽ để trống vì server chỉ trả DTO
+                                tenSanPham,
                                 i.getThoiGian(),
                                 i.getHanhDong(),
                                 i.getSoLuongSau(),

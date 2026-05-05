@@ -41,7 +41,7 @@ public class SanPhamDAO extends AbstractGenericDaoImpl<SanPham, String> {
     public boolean suaSanPham(String maSP, SanPham spNew) {
         return doInTransaction(em -> {
             SanPham sp = em.find(SanPham.class, maSP);
-            if (sp == null || sp.isDaXoa()) return false;
+            if (sp == null || (sp.getDaXoa() != null && sp.getDaXoa())) return false;
             sp.setTen(spNew.getTen());
             sp.setMoTa(spNew.getMoTa());
             sp.setThanhPhan(spNew.getThanhPhan());

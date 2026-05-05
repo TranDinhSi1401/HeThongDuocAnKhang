@@ -45,9 +45,9 @@ public class TaiKhoanDAO extends AbstractGenericDaoImpl<TaiKhoan, String> {
         return doInTransaction(em -> {
             TaiKhoan existing = em.find(TaiKhoan.class, tk.getMaNV());
             if (existing == null) return false;
-            existing.setQuanLy(tk.isQuanLy());
-            existing.setQuanLyLo(tk.isQuanLyLo());
-            existing.setBiKhoa(tk.isBiKhoa());
+            existing.setQuanLy(tk.getQuanLy());
+            existing.setQuanLyLo(tk.getQuanLyLo());
+            existing.setBiKhoa(tk.getBiKhoa());
             existing.setEmail(tk.getEmail());
             em.merge(existing);
             return true;

@@ -27,8 +27,8 @@ public class SanPhamCungCap {
     @JoinColumn(name = "ma_ncc", insertable = false, updatable = false)
     private NhaCungCap nhaCungCap;
 
-    @Column(name = "trang_thai_hop_tac")
-    private boolean trangThaiHopTac;
+    @Column(name = "trang_thai_hop_tac", nullable = false, columnDefinition = "BOOLEAN DEFAULT true")
+    private Boolean trangThaiHopTac;
 
     @Column(name = "gia_nhap")
     private double giaNhap;

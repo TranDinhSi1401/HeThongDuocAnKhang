@@ -18,7 +18,13 @@ public class LoSanPhamDAO extends AbstractGenericDaoImpl<LoSanPham, String> {
     /** Lấy tất cả lô sản phẩm. */
     public List<LoSanPham> getAllLoSanPham() {
         return doInTransaction(em ->
-            em.createQuery("SELECT lsp FROM LoSanPham lsp ORDER BY lsp.ngayHetHan ASC", LoSanPham.class)
+            em.createQuery(
+                "SELECT DISTINCT lsp FROM LoSanPham lsp " +
+                "LEFT JOIN FETCH lsp.sanPham sp " +
+                "LEFT JOIN FETCH sp.donViTinhs " +
+                "LEFT JOIN FETCH lsp.chiTietPhieuNhaps " +
+                "ORDER BY lsp.ngayHetHan ASC",
+                LoSanPham.class)
               .getResultList()
         );
     }
@@ -27,7 +33,11 @@ public class LoSanPhamDAO extends AbstractGenericDaoImpl<LoSanPham, String> {
     public List<LoSanPham> getAllLoSanPhamKhongHuy() {
         return doInTransaction(em ->
             em.createQuery(
-                "SELECT lsp FROM LoSanPham lsp WHERE lsp.daHuy = false ORDER BY lsp.ngayHetHan ASC",
+                "SELECT DISTINCT lsp FROM LoSanPham lsp " +
+                "LEFT JOIN FETCH lsp.sanPham sp " +
+                "LEFT JOIN FETCH sp.donViTinhs " +
+                "LEFT JOIN FETCH lsp.chiTietPhieuNhaps " +
+                "WHERE lsp.daHuy = false ORDER BY lsp.ngayHetHan ASC",
                 LoSanPham.class)
               .getResultList()
         );
@@ -37,7 +47,11 @@ public class LoSanPhamDAO extends AbstractGenericDaoImpl<LoSanPham, String> {
     public List<LoSanPham> getLoSanPhamTheoMaSP(String maSP) {
         return doInTransaction(em ->
             em.createQuery(
-                "SELECT lsp FROM LoSanPham lsp WHERE lsp.sanPham.maSP = :maSP " +
+                "SELECT DISTINCT lsp FROM LoSanPham lsp " +
+                "LEFT JOIN FETCH lsp.sanPham sp " +
+                "LEFT JOIN FETCH sp.donViTinhs " +
+                "LEFT JOIN FETCH lsp.chiTietPhieuNhaps " +
+                "WHERE lsp.sanPham.maSP = :maSP " +
                 "AND lsp.ngayHetHan > CURRENT_DATE AND lsp.soLuong > 0 ORDER BY lsp.ngayHetHan ASC",
                 LoSanPham.class)
               .setParameter("maSP", maSP)
@@ -47,7 +61,18 @@ public class LoSanPhamDAO extends AbstractGenericDaoImpl<LoSanPham, String> {
 
     /** Tìm lô theo mã lô. */
     public LoSanPham timLoSanPham(String maLo) {
-        return findById(maLo);
+        return doInTransaction(em -> {
+            List<LoSanPham> result = em.createQuery(
+                "SELECT DISTINCT lsp FROM LoSanPham lsp " +
+                "LEFT JOIN FETCH lsp.sanPham sp " +
+                "LEFT JOIN FETCH sp.donViTinhs " +
+                "LEFT JOIN FETCH lsp.chiTietPhieuNhaps " +
+                "WHERE lsp.maLoSanPham = :maLo",
+                LoSanPham.class)
+              .setParameter("maLo", maLo)
+              .getResultList();
+            return result.isEmpty() ? null : result.get(0);
+        });
     }
 
     /** Tìm lô sản phẩm theo mã chi tiết hóa đơn. */
@@ -113,7 +138,13 @@ public class LoSanPhamDAO extends AbstractGenericDaoImpl<LoSanPham, String> {
     /** Lấy danh sách lô theo mã SP (tất cả trạng thái). */
     public List<LoSanPham> dsLoTheoMaSanPham(String maSP) {
         return doInTransaction(em ->
-            em.createQuery("SELECT lsp FROM LoSanPham lsp WHERE lsp.sanPham.maSP = :maSP", LoSanPham.class)
+            em.createQuery(
+                "SELECT DISTINCT lsp FROM LoSanPham lsp " +
+                "LEFT JOIN FETCH lsp.sanPham sp " +
+                "LEFT JOIN FETCH sp.donViTinhs " +
+                "LEFT JOIN FETCH lsp.chiTietPhieuNhaps " +
+                "WHERE lsp.sanPham.maSP = :maSP",
+                LoSanPham.class)
               .setParameter("maSP", maSP)
               .getResultList()
         );
@@ -123,7 +154,12 @@ public class LoSanPhamDAO extends AbstractGenericDaoImpl<LoSanPham, String> {
     public List<LoSanPham> getLoSPTheoMaNhaCungCap(String ma) {
         return doInTransaction(em ->
             em.createQuery(
-                "SELECT DISTINCT ctpn.loSanPham FROM ChiTietPhieuNhap ctpn WHERE ctpn.nhaCungCap.maNCC = :maNCC",
+                "SELECT DISTINCT ctpn.loSanPham FROM ChiTietPhieuNhap ctpn " +
+                "LEFT JOIN FETCH ctpn.loSanPham lsp " +
+                "LEFT JOIN FETCH lsp.sanPham sp " +
+                "LEFT JOIN FETCH sp.donViTinhs " +
+                "LEFT JOIN FETCH lsp.chiTietPhieuNhaps " +
+                "WHERE ctpn.nhaCungCap.maNCC = :maNCC",
                 LoSanPham.class)
               .setParameter("maNCC", ma)
               .getResultList()

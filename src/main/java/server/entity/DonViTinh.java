@@ -31,11 +31,11 @@ public class DonViTinh {
     @Column(name = "gia_ban_theo_don_vi")
     private double giaBanTheoDonVi;
 
-    @Column(name = "don_vi_tinh_co_ban")
-    private boolean donViTinhCoBan;
+    @Column(name = "don_vi_tinh_co_ban", nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
+    private Boolean donViTinhCoBan;
 
-    @Column(name = "da_xoa")
-    private boolean daXoa;
+    @Column(name = "da_xoa", nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
+    private Boolean daXoa;
 
     @OneToMany(mappedBy = "donViTinh", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ChiTietHoaDon> chiTietHoaDons;
