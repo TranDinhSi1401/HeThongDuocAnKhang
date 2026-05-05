@@ -1,9 +1,11 @@
 package server.dao;
 
+import common.dto.DoanhThu;
 import server.entity.HoaDon;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -98,19 +100,25 @@ public class HoaDonDAO extends AbstractGenericDaoImpl<HoaDon, String> {
 
     /** Lấy số thứ tự HD cuối cùng trong ngày theo format "HD-YYYYMMDD-XXX". */
     public int getSoHDCuoiCungTrongNgay(LocalDate ngay) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-        String ngayFormatted = ngay.format(formatter);
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("ddMMyy");
+        String ngayStr = ngay.format(dtf);
+        String prefix = "HD-" + ngayStr + "-";
 
         return doInTransaction(em -> {
-            String prefix = "HD-" + ngay + "-";
             List<String> result = em.createQuery(
-                "SELECT hd.maHoaDon FROM HoaDon hd WHERE hd.maHoaDon LIKE :prefix ORDER BY hd.maHoaDon DESC",
-                String.class)
-                .setParameter("prefix", prefix + "%")
-                .setMaxResults(1)
-                .getResultList();
-            if (!result.isEmpty() && result.get(0) != null)
-                return Integer.parseInt(result.get(0).substring(prefix.length()));
+                            "SELECT hd.maHoaDon FROM HoaDon hd " +
+                                    "WHERE hd.maHoaDon LIKE :prefix " +
+                                    "ORDER BY hd.maHoaDon DESC", String.class)
+                    .setParameter("prefix", prefix + "%")
+                    .setMaxResults(1)
+                    .getResultList();
+
+            if (!result.isEmpty() && result.get(0) != null) {
+                String maCuoi = result.get(0);
+                // Cắt lấy 4 số cuối cùng
+                String soThuTuStr = maCuoi.substring(maCuoi.lastIndexOf("-") + 1);
+                return Integer.parseInt(soThuTuStr);
+            }
             return 0;
         });
     }
@@ -208,5 +216,174 @@ public class HoaDonDAO extends AbstractGenericDaoImpl<HoaDon, String> {
             }
             return result;
         });
+    }
+    // Lấy doanh từng ngày theo khoảng thời gian (dùng cho biểu đồ doanh thu theo ngày)
+    public List<DoanhThu> getDoanhThuTungNgayTrongKhoangThoiGian(LocalDate begin, LocalDate end) {
+        if (begin == null || end == null || begin.isAfter(end)) {
+            return new ArrayList<>();
+        }
+
+        return doInTransaction(em -> {
+            // Dùng inclusiveEnd để lấy trọn vẹn dữ liệu ngày cuối cùng
+            LocalDate inclusiveEnd = end.plusDays(1);
+
+            String jpql = """
+            SELECT new common.dto.DoanhThu(
+                CAST(hd.ngayLapHoaDon AS date), 
+                COUNT(hd.maHoaDon), 
+                SUM(hd.tongTien)
+            )
+            FROM HoaDon hd
+            WHERE hd.ngayLapHoaDon >= :begin 
+              AND hd.ngayLapHoaDon < :end
+            GROUP BY CAST(hd.ngayLapHoaDon AS date)
+            ORDER BY CAST(hd.ngayLapHoaDon AS date)
+            """;
+
+            return em.createQuery(jpql, DoanhThu.class)
+                    .setParameter("begin", begin.atStartOfDay())
+                    .setParameter("end", inclusiveEnd.atStartOfDay())
+                    .getResultList();
+        });
+    }
+
+    public List<DoanhThu> getDoanhThuTungThangTrongNam(int nam) {
+        // 1. Lấy dữ liệu thực tế từ DB bằng JPQL
+        List<DoanhThu> resultsFromDB = doInTransaction(em -> {
+            String jpql = """
+            SELECT new common.dto.DoanhThu(
+                MONTH(hd.ngayLapHoaDon), 
+                COUNT(hd.maHoaDon), 
+                SUM(hd.tongTien)
+            )
+            FROM HoaDon hd
+            WHERE YEAR(hd.ngayLapHoaDon) = :nam
+            GROUP BY MONTH(hd.ngayLapHoaDon)
+            ORDER BY MONTH(hd.ngayLapHoaDon)
+            """;
+
+            return em.createQuery(jpql, DoanhThu.class)
+                    .setParameter("nam", nam)
+                    .getResultList();
+        });
+
+        // 2. Map dữ liệu vào đủ 12 tháng (để các tháng không có doanh thu vẫn hiện số 0)
+        List<DoanhThu> fullYearList = new ArrayList<>();
+        Map<Integer, DoanhThu> dataMap = new HashMap<>();
+
+        // Đưa kết quả từ DB vào Map để tra cứu nhanh
+        for (DoanhThu dt : resultsFromDB) {
+            // Vì trong Constructor DoanhThu ta ép kiểu toString(),
+            // ta cần lấy lại số tháng để làm key
+            dataMap.put(Integer.parseInt(dt.getThoiGian()), dt);
+        }
+
+        // Tạo đủ 12 tháng
+        for (int i = 1; i <= 12; i++) {
+            if (dataMap.containsKey(i)) {
+                DoanhThu dt = dataMap.get(i);
+                // Định dạng lại thoiGian hiển thị thành "Tháng/Năm"
+                dt.setThoiGian(i + "/" + nam);
+                fullYearList.add(dt);
+            } else {
+                // Tháng không có dữ liệu thì tạo mới với giá trị 0
+                fullYearList.add(new DoanhThu(i + "/" + nam, 0L, 0.0));
+            }
+        }
+
+        return fullYearList;
+    }
+
+    public List<DoanhThu> getDoanhThuTungQuyTrongNam(int nam) {
+        // 1. Lấy dữ liệu thực tế từ DB
+        List<DoanhThu> resultsFromDB = doInTransaction(em -> {
+            // Công thức (MONTH(hd.ngayLapHoaDon) + 2) / 3 sẽ trả về Quý (1, 2, 3, 4)
+            String jpql = """
+            SELECT new common.dto.DoanhThu(
+                (MONTH(hd.ngayLapHoaDon) + 2) / 3, 
+                COUNT(hd.maHoaDon), 
+                SUM(hd.tongTien)
+            )
+            FROM HoaDon hd
+            WHERE YEAR(hd.ngayLapHoaDon) = :nam
+            GROUP BY (MONTH(hd.ngayLapHoaDon) + 2) / 3
+            ORDER BY (MONTH(hd.ngayLapHoaDon) + 2) / 3
+            """;
+
+            return em.createQuery(jpql, DoanhThu.class)
+                    .setParameter("nam", nam)
+                    .getResultList();
+        });
+
+        // 2. Map dữ liệu vào đủ 4 Quý để đảm bảo không bị thiếu Quý nào
+        List<DoanhThu> fullYearQuarters = new ArrayList<>();
+        Map<Integer, DoanhThu> dataMap = new HashMap<>();
+
+        for (DoanhThu dt : resultsFromDB) {
+            // Ép kiểu ngược lại từ String (do Constructor DTO xử lý) về Integer để làm key
+            dataMap.put(Double.valueOf(dt.getThoiGian()).intValue(), dt);
+        }
+
+        for (int i = 1; i <= 4; i++) {
+            if (dataMap.containsKey(i)) {
+                DoanhThu dt = dataMap.get(i);
+                dt.setThoiGian("Quý " + i + "/" + nam);
+                fullYearQuarters.add(dt);
+            } else {
+                // Quý không có doanh thu
+                fullYearQuarters.add(new DoanhThu("Quý " + i + "/" + nam, 0L, 0.0));
+            }
+        }
+
+        return fullYearQuarters;
+    }
+
+    public List<DoanhThu> getDoanhThuTungNamTheoKhoang(int namBatDau, int namKetThuc) {
+        if (namBatDau > namKetThuc) {
+            return new ArrayList<>();
+        }
+
+        // 1. Lấy dữ liệu thực tế từ Database
+        List<DoanhThu> resultsFromDB = doInTransaction(em -> {
+            String jpql = """
+            SELECT new common.dto.DoanhThu(
+                YEAR(hd.ngayLapHoaDon), 
+                COUNT(hd.maHoaDon), 
+                SUM(hd.tongTien)
+            )
+            FROM HoaDon hd
+            WHERE YEAR(hd.ngayLapHoaDon) >= :start 
+              AND YEAR(hd.ngayLapHoaDon) <= :end
+            GROUP BY YEAR(hd.ngayLapHoaDon)
+            ORDER BY YEAR(hd.ngayLapHoaDon)
+            """;
+
+            return em.createQuery(jpql, DoanhThu.class)
+                    .setParameter("start", namBatDau)
+                    .setParameter("end", namKetThuc)
+                    .getResultList();
+        });
+
+        // 2. Map dữ liệu vào khoảng năm từ namBatDau đến namKetThuc
+        List<DoanhThu> fullYearRangeList = new ArrayList<>();
+        Map<Integer, DoanhThu> dataMap = new HashMap<>();
+
+        for (DoanhThu dt : resultsFromDB) {
+            // Ép kiểu ngược từ String (do Constructor DTO xử lý) về Integer làm key
+            dataMap.put(Double.valueOf(dt.getThoiGian()).intValue(), dt);
+        }
+
+        for (int nam = namBatDau; nam <= namKetThuc; nam++) {
+            if (dataMap.containsKey(nam)) {
+                DoanhThu dt = dataMap.get(nam);
+                dt.setThoiGian(String.valueOf(nam)); // Đảm bảo hiển thị đúng số năm
+                fullYearRangeList.add(dt);
+            } else {
+                // Năm không có dữ liệu doanh thu
+                fullYearRangeList.add(new DoanhThu(String.valueOf(nam), 0L, 0.0));
+            }
+        }
+
+        return fullYearRangeList;
     }
 }

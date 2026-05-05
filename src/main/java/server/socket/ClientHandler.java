@@ -210,7 +210,16 @@ public class ClientHandler implements Runnable {
                     Object[] arr = (Object[]) data;
                     yield Response.ok(hoaDonService.timHDTheoKhoangNgay((LocalDate) arr[0], (LocalDate) arr[1]));
                 }
-
+                case GET_DOANH_THU_THEO_NGAY_TRONG_KHOANG_THOI_GIAN -> {
+                    Object[] arr = (Object[]) data;
+                    yield Response.ok(hoaDonService.getDoanhThuTungNgayTrongKhoangThoiGian((LocalDate) arr[0], (LocalDate) arr[1]));
+                }
+                case GET_DOANH_THU_TUNG_THANG_TRONG_NAM -> Response.ok(hoaDonService.getDoanhThuTungThangTrongNam((Integer) data));
+                case GET_DOANH_THU_TUNG_QUY_TRONG_NAM -> Response.ok(hoaDonService.getDoanhThuTungQuyTrongNam((Integer) data));
+                case GET_DOANH_THU_TUNG_NAM_THEO_KHOANG -> {
+                    Object[] arr = (Object[]) data;
+                    yield Response.ok(hoaDonService.getDoanhThuTungNamTheoKhoang((Integer) arr[0], (Integer) arr[1]));
+                }
                 // ===== CHI TIET HOA DON =====
                 case GET_CTHD_BY_MA_HD     -> Response.ok(hoaDonService.getCTHDByMaHD((String) data));
                 case ADD_CHI_TIET_HOA_DON  -> Response.ok(hoaDonService.addChiTietHoaDon((ChiTietHoaDonDTO) data));

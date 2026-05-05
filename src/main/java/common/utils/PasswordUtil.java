@@ -54,8 +54,10 @@ public class PasswordUtil {
     public static boolean quenMatKhau(String taiKhoan, String email) {
         // Sinh mật khẩu mới
         String newPassword = PasswordUtil.generateTempPassword();
+        // Hashed password
+        String hashedPass = PasswordUtil.hashPassword(newPassword);
         // Cập nhật
-        Request request = new Request(CommandType.QUEN_MAT_KHAU, new Object[]{taiKhoan, email, newPassword});
+        Request request = new Request(CommandType.QUEN_MAT_KHAU, new Object[]{taiKhoan, email, hashedPass});
         Boolean check = (Boolean) SocketClient.getInstance().sendRequest(request).getData();
         // Gửi mail
         String subject = "Yêu cầu đặt lại mật khẩu";

@@ -4,9 +4,8 @@
  */
 package client.gui;
 
-import common.dto.*;
-import common.network.*;
 import client.socket.SocketClient;
+import common.dto.DoanhThu;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -31,6 +30,10 @@ import javax.swing.KeyStroke;
 import javax.swing.ToolTipManager;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+
+import common.network.CommandType;
+import common.network.Request;
+import common.network.Response;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -103,36 +106,36 @@ public class ThongKeHoaDonGUI extends javax.swing.JPanel {
     private void initComponents() {
 
         pLoc = new javax.swing.JPanel();
-        lblLoaiThoiGian = new javax.swing.JLabel();
+        lblLoaiThoiGian = new JLabel();
         cbbLoaiThoiGian = new javax.swing.JComboBox<>();
-        lblNam = new javax.swing.JLabel();
+        lblNam = new JLabel();
         cbbNam = new javax.swing.JComboBox<>();
-        lblNamBatDau = new javax.swing.JLabel();
+        lblNamBatDau = new JLabel();
         cbbNamBatDau = new javax.swing.JComboBox<>();
-        lblNamKetThuc = new javax.swing.JLabel();
+        lblNamKetThuc = new JLabel();
         cbbNamKetThuc = new javax.swing.JComboBox<>();
-        lblNgayBatDau = new javax.swing.JLabel();
+        lblNgayBatDau = new JLabel();
         txtNgayBatDau = new org.jdesktop.swingx.JXDatePicker();
-        lblNgayKetThuc = new javax.swing.JLabel();
+        lblNgayKetThuc = new JLabel();
         txtNgayKetThuc = new org.jdesktop.swingx.JXDatePicker();
         btnThongKe = new javax.swing.JButton();
         btnLamMoi = new javax.swing.JButton();
         pDuLieuTongHop = new javax.swing.JPanel();
         pTongHop = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
-        jLabel3 = new javax.swing.JLabel();
-        lblTongHoaDon = new javax.swing.JLabel();
+        jLabel3 = new JLabel();
+        lblTongHoaDon = new JLabel();
         jPanel6 = new javax.swing.JPanel();
-        lblTongDoanhThu = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
+        lblTongDoanhThu = new JLabel();
+        jLabel2 = new JLabel();
         pTable = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         table = new javax.swing.JTable();
         pBieuDo = new javax.swing.JPanel();
 
-        setLayout(new java.awt.BorderLayout());
+        setLayout(new BorderLayout());
 
-        pLoc.setBackground(new java.awt.Color(255, 255, 255));
+        pLoc.setBackground(new Color(255, 255, 255));
         pLoc.setLayout(new javax.swing.BoxLayout(pLoc, javax.swing.BoxLayout.X_AXIS));
 
         lblLoaiThoiGian.setText("Loại thời gian:");
@@ -141,7 +144,7 @@ public class ThongKeHoaDonGUI extends javax.swing.JPanel {
         cbbLoaiThoiGian.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Ngày", "Tháng", "Quý", "Năm" }));
         pLoc.add(Box.createHorizontalStrut(10));
         cbbLoaiThoiGian.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(ActionEvent evt) {
                 cbbLoaiThoiGianActionPerformed(evt);
             }
         });
@@ -181,12 +184,12 @@ public class ThongKeHoaDonGUI extends javax.swing.JPanel {
         pLoc.add(Box.createHorizontalStrut(10));
         pLoc.add(txtNgayKetThuc);
 
-        btnThongKe.setBackground(new java.awt.Color(0, 203, 0));
-        btnThongKe.setForeground(new java.awt.Color(255, 255, 255));
+        btnThongKe.setBackground(new Color(0, 203, 0));
+        btnThongKe.setForeground(new Color(255, 255, 255));
         btnThongKe.setText("Thống kê [F6]");
         pLoc.add(Box.createHorizontalStrut(50));
         btnThongKe.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(ActionEvent evt) {
                 btnThongKeActionPerformed(evt);
             }
         });
@@ -195,7 +198,7 @@ public class ThongKeHoaDonGUI extends javax.swing.JPanel {
         btnLamMoi.setText("Làm mới [F5]");
         pLoc.add(Box.createHorizontalStrut(10));
         btnLamMoi.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(ActionEvent evt) {
                 btnLamMoiActionPerformed(evt);
             }
         });
@@ -204,52 +207,52 @@ public class ThongKeHoaDonGUI extends javax.swing.JPanel {
         // padding: top, left, bottom, right
         pLoc.setBorder(BorderFactory.createEmptyBorder(20, 10, 10, 10));
 
-        add(pLoc, java.awt.BorderLayout.PAGE_START);
+        add(pLoc, BorderLayout.PAGE_START);
 
-        pDuLieuTongHop.setBackground(new java.awt.Color(255, 255, 255));
+        pDuLieuTongHop.setBackground(new Color(255, 255, 255));
         pDuLieuTongHop.setPreferredSize(new java.awt.Dimension(100, 350));
-        pDuLieuTongHop.setLayout(new java.awt.BorderLayout(10, 0));
+        pDuLieuTongHop.setLayout(new BorderLayout(10, 0));
 
-        pTongHop.setBackground(new java.awt.Color(255, 255, 255));
+        pTongHop.setBackground(new Color(255, 255, 255));
         pTongHop.setLayout(new javax.swing.BoxLayout(pTongHop, javax.swing.BoxLayout.Y_AXIS));
 
-        jPanel2.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel2.setBackground(new Color(255, 255, 255));
         jPanel2.setPreferredSize(new java.awt.Dimension(200, 100));
         jPanel2.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(new Color(220, 220, 220), 1),
             BorderFactory.createEmptyBorder(20, 15, 20, 15)
         ));
-        jPanel2.setLayout(new java.awt.BorderLayout());
+        jPanel2.setLayout(new BorderLayout());
 
         jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
-        jLabel3.setForeground(new java.awt.Color(102, 102, 102));
+        jLabel3.setForeground(new Color(102, 102, 102));
         jLabel3.setText("Tổng số hóa đơn");
-        jPanel2.add(jLabel3, java.awt.BorderLayout.PAGE_START);
+        jPanel2.add(jLabel3, BorderLayout.PAGE_START);
 
         lblTongHoaDon.setFont(new java.awt.Font("Segoe UI", 1, 22)); // NOI18N
-        lblTongHoaDon.setForeground(new java.awt.Color(51, 51, 51));
+        lblTongHoaDon.setForeground(new Color(51, 51, 51));
         lblTongHoaDon.setText("0");
-        jPanel2.add(lblTongHoaDon, java.awt.BorderLayout.CENTER);
+        jPanel2.add(lblTongHoaDon, BorderLayout.CENTER);
 
         pTongHop.add(jPanel2);
 
-        jPanel6.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel6.setBackground(new Color(255, 255, 255));
         jPanel6.setPreferredSize(new java.awt.Dimension(200, 100));
         jPanel6.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(new Color(220, 220, 220), 1),
             BorderFactory.createEmptyBorder(20, 15, 20, 15)
         ));
-        jPanel6.setLayout(new java.awt.BorderLayout());
+        jPanel6.setLayout(new BorderLayout());
 
         lblTongDoanhThu.setFont(new java.awt.Font("Segoe UI", 1, 22)); // NOI18N
-        lblTongDoanhThu.setForeground(new java.awt.Color(51, 51, 51));
+        lblTongDoanhThu.setForeground(new Color(51, 51, 51));
         lblTongDoanhThu.setText("0 ₫");
-        jPanel6.add(lblTongDoanhThu, java.awt.BorderLayout.CENTER);
+        jPanel6.add(lblTongDoanhThu, BorderLayout.CENTER);
 
         jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
-        jLabel2.setForeground(new java.awt.Color(102, 102, 102));
+        jLabel2.setForeground(new Color(102, 102, 102));
         jLabel2.setText("Tổng doanh thu");
-        jPanel6.add(jLabel2, java.awt.BorderLayout.PAGE_START);
+        jPanel6.add(jLabel2, BorderLayout.PAGE_START);
 
         pTongHop.add(Box.createVerticalStrut(10));
 
@@ -257,12 +260,12 @@ public class ThongKeHoaDonGUI extends javax.swing.JPanel {
 
         pDuLieuTongHop.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        pDuLieuTongHop.add(pTongHop, java.awt.BorderLayout.LINE_START);
+        pDuLieuTongHop.add(pTongHop, BorderLayout.LINE_START);
 
-        pTable.setLayout(new java.awt.BorderLayout());
+        pTable.setLayout(new BorderLayout());
 
-        table.setBackground(new java.awt.Color(255, 255, 255));
-        table.setModel(new javax.swing.table.DefaultTableModel(
+        table.setBackground(new Color(255, 255, 255));
+        table.setModel(new DefaultTableModel(
             new Object [][] {
 
             },
@@ -272,19 +275,20 @@ public class ThongKeHoaDonGUI extends javax.swing.JPanel {
         ));
         jScrollPane1.setViewportView(table);
 
-        pTable.add(jScrollPane1, java.awt.BorderLayout.CENTER);
+        pTable.add(jScrollPane1, BorderLayout.CENTER);
 
-        pDuLieuTongHop.add(pTable, java.awt.BorderLayout.CENTER);
+        pDuLieuTongHop.add(pTable, BorderLayout.CENTER);
 
-        add(pDuLieuTongHop, java.awt.BorderLayout.PAGE_END);
-        add(pBieuDo, java.awt.BorderLayout.CENTER);
+        add(pDuLieuTongHop, BorderLayout.PAGE_END);
+        add(pBieuDo, BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnThongKeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnThongKeActionPerformed
+    private void btnThongKeActionPerformed(ActionEvent evt) {//GEN-FIRST:event_btnThongKeActionPerformed
         String loaiThoiGian = cbbLoaiThoiGian.getSelectedItem().toString();
         if(loaiThoiGian.equalsIgnoreCase("ngày")) {
             if (txtNgayBatDau.getDate() == null || txtNgayKetThuc.getDate() == null) {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn ngày bắt đầu và ngày kết thúc");
+                JOptionPane.showMessageDialog(this,
+                        "Vui lòng chọn ngày bắt đầu và ngày kết thúc");
                 return;
             }
 
@@ -292,32 +296,65 @@ public class ThongKeHoaDonGUI extends javax.swing.JPanel {
             LocalDate ngayKetThuc = txtNgayKetThuc.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
             if (ngayBatDau.isAfter(ngayKetThuc)) {
-                JOptionPane.showMessageDialog(this, "Ngày bắt đầu không được lớn hơn ngày kết thúc");
+                JOptionPane.showMessageDialog(this,
+                        "Ngày bắt đầu không được lớn hơn ngày kết thúc");
                 return;
             }
-            
-            Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_DOANH_THU_TUNG_NGAY_TRONG_KHOANG, new Object[]{ngayBatDau, ngayKetThuc}));
-            java.util.List<DoanhThuDTO> data = (res.isSuccess()) ? (java.util.List<DoanhThuDTO>) res.getData() : new java.util.ArrayList<>();
+            Request request = new Request(CommandType.GET_DOANH_THU_THEO_NGAY_TRONG_KHOANG_THOI_GIAN, new Object[]{ngayBatDau, ngayKetThuc});
+            Response response = SocketClient.getInstance().sendRequest(request);
+            if(!response.isSuccess()) {
+                JOptionPane.showMessageDialog(this,
+                        "Lỗi kết nối:\n" + response.getMessage(),
+                        "Connection Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            List<DoanhThu> data = (List<DoanhThu>) response.getData();
             veBieuDoVaBangDuLieuTheoNgay(data, ngayBatDau, ngayKetThuc);
         } else if (loaiThoiGian.equalsIgnoreCase("tháng")) {  
             int nam = Integer.parseInt(cbbNam.getSelectedItem().toString());
-            Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_DOANH_THU_TUNG_THANG_TRONG_NAM, nam));
-            java.util.List<DoanhThuDTO> data = (res.isSuccess()) ? (java.util.List<DoanhThuDTO>) res.getData() : new java.util.ArrayList<>();
+            Request request = new Request(CommandType.GET_DOANH_THU_TUNG_THANG_TRONG_NAM, nam);
+            Response response = SocketClient.getInstance().sendRequest(request);
+            if(!response.isSuccess()) {
+                JOptionPane.showMessageDialog(this,
+                        "Lỗi kết nối:\n" + response.getMessage(),
+                        "Connection Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            List<DoanhThu> data = (List<DoanhThu>) response.getData();
             veBieuDoVaBangDuLieuTheoThang(data, nam);
         } else if (loaiThoiGian.equalsIgnoreCase("quý")) {
             int nam = Integer.parseInt(cbbNam.getSelectedItem().toString());
-            Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_DOANH_THU_TUNG_QUY_TRONG_NAM, nam));
-            java.util.List<DoanhThuDTO> data = (res.isSuccess()) ? (java.util.List<DoanhThuDTO>) res.getData() : new java.util.ArrayList<>();
+            Request request = new Request(CommandType.GET_DOANH_THU_TUNG_QUY_TRONG_NAM, nam);
+            Response response = SocketClient.getInstance().sendRequest(request);
+            if(!response.isSuccess()) {
+                JOptionPane.showMessageDialog(this,
+                        "Lỗi kết nối:\n" + response.getMessage(),
+                        "Connection Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            List<DoanhThu> data = (List<DoanhThu>) response.getData();
             veBieuDoVaBangDuLieuTheoQuy(data, nam);
         } else if (loaiThoiGian.equalsIgnoreCase("năm")) {
             int namBatDau = Integer.parseInt(cbbNamBatDau.getSelectedItem().toString());
             int namKetThuc = Integer.parseInt(cbbNamKetThuc.getSelectedItem().toString());            
             if(namBatDau > namKetThuc) {
-                JOptionPane.showMessageDialog(this, "Năm bắt đầu không được lớn hơn năm kết thúc");
+                JOptionPane.showMessageDialog(this,
+                        "Năm bắt đầu không được lớn hơn năm kết thúc");
                 return;
-            }           
-            Response res = SocketClient.getInstance().sendRequest(new Request(CommandType.GET_DOANH_THU_TUNG_NAM_TRONG_KHOANG, new Object[]{namBatDau, namKetThuc}));
-            java.util.List<DoanhThuDTO> data = (res.isSuccess()) ? (java.util.List<DoanhThuDTO>) res.getData() : new java.util.ArrayList<>();
+            }
+            Request request = new Request(CommandType.GET_DOANH_THU_TUNG_NAM_THEO_KHOANG, new Object[]{namBatDau, namKetThuc});
+            Response response = SocketClient.getInstance().sendRequest(request);
+            if(!response.isSuccess()) {
+                JOptionPane.showMessageDialog(this,
+                        "Lỗi kết nối:\n" + response.getMessage(),
+                        "Connection Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            List<DoanhThu> data = (List<DoanhThu>) response.getData();
             veBieuDoVaBangDuLieuTheoNam(data, namBatDau, namKetThuc);
         }   
         renderTongDoanhThuVaTongHoaDon();
@@ -340,12 +377,12 @@ public class ThongKeHoaDonGUI extends javax.swing.JPanel {
         cbbNamKetThuc.setVisible(check4);  
     }
     
-    private void cbbLoaiThoiGianActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbbLoaiThoiGianActionPerformed
+    private void cbbLoaiThoiGianActionPerformed(ActionEvent evt) {//GEN-FIRST:event_cbbLoaiThoiGianActionPerformed
         String type = cbbLoaiThoiGian.getSelectedItem().toString();
         toggleFilter(type);
     }//GEN-LAST:event_cbbLoaiThoiGianActionPerformed
 
-    private void btnLamMoiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLamMoiActionPerformed
+    private void btnLamMoiActionPerformed(ActionEvent evt) {//GEN-FIRST:event_btnLamMoiActionPerformed
         veBieuDoTrong();
         DefaultTableModel model = (DefaultTableModel)table.getModel();
         model.setRowCount(0);
@@ -355,12 +392,12 @@ public class ThongKeHoaDonGUI extends javax.swing.JPanel {
         toggleFilter("ngày");
     }//GEN-LAST:event_btnLamMoiActionPerformed
 
-    private void veBieuDoVaBangDuLieuTheoNgay(java.util.List<DoanhThuDTO> data, LocalDate begin, LocalDate end) {
+    private void veBieuDoVaBangDuLieuTheoNgay(List<DoanhThu> data, LocalDate begin, LocalDate end) {
         TimeSeries series = new TimeSeries("Doanh thu");
         DefaultTableModel model = (DefaultTableModel)table.getModel();
         model.setRowCount(0);
         
-        for (DoanhThuDTO dto : data) {
+        for (DoanhThu dto : data) {
                LocalDate ngay = LocalDate.parse(dto.getThoiGian());
 
                series.addOrUpdate(
@@ -444,13 +481,13 @@ public class ThongKeHoaDonGUI extends javax.swing.JPanel {
         pBieuDo.repaint();
     }
     
-    private void veBieuDoVaBangDuLieuTheoThang(java.util.List<DoanhThuDTO> data, int nam) {
+    private void veBieuDoVaBangDuLieuTheoThang(List<DoanhThu> data, int nam) {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 
         DefaultTableModel model = (DefaultTableModel) table.getModel();
         model.setRowCount(0);
 
-        for (DoanhThuDTO dto : data) {
+        for (DoanhThu dto : data) {
             // Biểu đồ
             dataset.addValue(
                 dto.getTongDoanhThu(),
@@ -496,13 +533,13 @@ public class ThongKeHoaDonGUI extends javax.swing.JPanel {
         pBieuDo.repaint();
     }
     
-    private void veBieuDoVaBangDuLieuTheoQuy(java.util.List<DoanhThuDTO> data, int nam) {
+    private void veBieuDoVaBangDuLieuTheoQuy(List<DoanhThu> data, int nam) {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 
         DefaultTableModel model = (DefaultTableModel) table.getModel();
         model.setRowCount(0);
 
-        for (DoanhThuDTO dto : data) {
+        for (DoanhThu dto : data) {
             // Biểu đồ
             dataset.addValue(
                 dto.getTongDoanhThu(),
@@ -548,13 +585,13 @@ public class ThongKeHoaDonGUI extends javax.swing.JPanel {
         pBieuDo.repaint();
     }
     
-    private void veBieuDoVaBangDuLieuTheoNam(java.util.List<DoanhThuDTO> data, int namBatDau, int namKetThuc) {
+    private void veBieuDoVaBangDuLieuTheoNam(List<DoanhThu> data, int namBatDau, int namKetThuc) {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 
         DefaultTableModel model = (DefaultTableModel) table.getModel();
         model.setRowCount(0);
 
-        for (DoanhThuDTO dto : data) {
+        for (DoanhThu dto : data) {
             // Biểu đồ
             dataset.addValue(
                 dto.getTongDoanhThu(),
@@ -680,7 +717,7 @@ public class ThongKeHoaDonGUI extends javax.swing.JPanel {
             // Ép điểm là HÌNH TRÒN
             renderer.setSeriesShape(
                 i,
-                new java.awt.geom.Ellipse2D.Double(-3, -3, 6, 6)
+                new Ellipse2D.Double(-3, -3, 6, 6)
             );
         }
 
@@ -701,19 +738,19 @@ public class ThongKeHoaDonGUI extends javax.swing.JPanel {
     private javax.swing.JComboBox<String> cbbNam;
     private javax.swing.JComboBox<String> cbbNamBatDau;
     private javax.swing.JComboBox<String> cbbNamKetThuc;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
+    private JLabel jLabel2;
+    private JLabel jLabel3;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JLabel lblLoaiThoiGian;
-    private javax.swing.JLabel lblNam;
-    private javax.swing.JLabel lblNamBatDau;
-    private javax.swing.JLabel lblNamKetThuc;
-    private javax.swing.JLabel lblNgayBatDau;
-    private javax.swing.JLabel lblNgayKetThuc;
-    private javax.swing.JLabel lblTongDoanhThu;
-    private javax.swing.JLabel lblTongHoaDon;
+    private JLabel lblLoaiThoiGian;
+    private JLabel lblNam;
+    private JLabel lblNamBatDau;
+    private JLabel lblNamKetThuc;
+    private JLabel lblNgayBatDau;
+    private JLabel lblNgayKetThuc;
+    private JLabel lblTongDoanhThu;
+    private JLabel lblTongHoaDon;
     private javax.swing.JPanel pBieuDo;
     private javax.swing.JPanel pDuLieuTongHop;
     private javax.swing.JPanel pLoc;

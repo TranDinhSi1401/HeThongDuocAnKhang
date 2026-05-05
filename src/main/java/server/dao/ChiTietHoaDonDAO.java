@@ -43,19 +43,26 @@ public class ChiTietHoaDonDAO extends AbstractGenericDaoImpl<ChiTietHoaDon, Stri
 
     /** Lấy số thứ tự CTHD cuối cùng trong ngày theo format "CTHD-YYYYMMDD-XXX". */
     public int getSoCTHDCuoiCungTrongNgay(LocalDate ngay) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        // 1. Định dạng lại ngày thành ddMMyy để khớp với CTHD-010625-xxxx
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("ddMMyy");
         String ngayFormatted = ngay.format(formatter);
+        String prefix = "CTHD-" + ngayFormatted + "-";
 
         return doInTransaction(em -> {
-            String prefix = "CTHD-" + ngay + "-";
             List<String> result = em.createQuery(
-                "SELECT cthd.maChiTietHoaDon FROM ChiTietHoaDon cthd " +
-                "WHERE cthd.maChiTietHoaDon LIKE :prefix ORDER BY cthd.maChiTietHoaDon DESC", String.class)
-                .setParameter("prefix", prefix + "%")
-                .setMaxResults(1)
-                .getResultList();
-            if (!result.isEmpty() && result.get(0) != null)
-                return Integer.parseInt(result.get(0).substring(prefix.length()));
+                            "SELECT cthd.maChiTietHoaDon FROM ChiTietHoaDon cthd " +
+                                    "WHERE cthd.maChiTietHoaDon LIKE :prefix " +
+                                    "ORDER BY cthd.maChiTietHoaDon DESC", String.class)
+                    .setParameter("prefix", prefix + "%")
+                    .setMaxResults(1)
+                    .getResultList();
+
+            if (!result.isEmpty() && result.get(0) != null) {
+                String maCuoi = result.get(0);
+                // Cắt chuỗi từ sau dấu gạch ngang cuối cùng để lấy số thứ tự
+                String soThuTuStr = maCuoi.substring(maCuoi.lastIndexOf("-") + 1);
+                return Integer.parseInt(soThuTuStr);
+            }
             return 0;
         });
     }
